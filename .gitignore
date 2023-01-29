@@ -1,0 +1,12 @@
+wandb/
+logs/
+dist/
+.DS_Store
+build/
+*.swp
+.idea
+*.pyc
+.pytest_cache
+*.egg-info
+__pycache__/
+*.so
