@@ -1,15 +1,6 @@
 import torch
 from deepvision import utils
 
-MODEL_CONFIGS = {
-    "ResNet18V2": {
-        "stackwise_filters": [64, 128, 256, 512],
-        "stackwise_blocks": [2, 2, 2, 2],
-        "stackwise_strides": [1, 2, 2, 2],
-    },
-
-}
-
 
 def BasicBlock(
         filters, kernel_size=3, stride=1, dilation=1, conv_shortcut=False, name=None
@@ -124,20 +115,15 @@ def Stack(
     return apply
 
 
-class ResNetV2(torch.nn.Module):
+class ResNetV2PT(torch.nn.Module):
     def __init__(self,
                  stackwise_filters,
                  stackwise_blocks,
                  stackwise_strides,
-                 include_top=True,
+                 include_top,
                  stackwise_dilations=None,
-                 name="ResNetV2",
-                 weights=None,
-                 input_shape=(None, None, 3),
-                 input_tensor=None,
                  pooling=None,
                  classes=None,
-                 classifier_activation="softmax",
                  block_fn=Block,
                  **kwargs, ):
         if include_top and not classes:
@@ -157,13 +143,33 @@ class ResNetV2(torch.nn.Module):
         self.stackwise_strides = stackwise_strides
         self.include_top = include_top
         self.classes = classes
+        self.pooling = pooling
 
         self.conv1 = torch.nn.Conv2d(input_shape[1], 64, 7,
             strides=2,
             use_bias=True,
             padding="same",
         )
-        self.maxpool1 = torch.nn.MaxPool2D(3, strides=2, padding="same")
+        self.maxpool1 = torch.nn.MaxPool2D(3, stride=2, padding="same")
+
+        self.stacks = []
+
+        num_stacks = len(stackwise_filters)
+        if stackwise_dilations is None:
+            stackwise_dilations = [1] * num_stacks
+
+        for stack_index in range(num_stacks):
+            self.stacks.append(Stack(
+                filters=stackwise_filters[stack_index],
+                blocks=stackwise_blocks[stack_index],
+                stride=stackwise_strides[stack_index],
+                dilations=stackwise_dilations[stack_index],
+                block_fn=block_fn,
+                first_shortcut=block_fn == Block or stack_index > 0,
+                stack_index=stack_index,
+            ))
+        self.batchnorm = torch.nn.BatchNorm()
+        self.top_dense = torch.nn.Linear(2048, classes)
 
 
     def forward(self, input_shape, input_tensor):
@@ -177,25 +183,15 @@ class ResNetV2(torch.nn.Module):
         if self.stackwise_dilations is None:
             stackwise_dilations = [1] * num_stacks
 
-        stack_level_outputs = {}
-        for stack_index in range(num_stacks):
-            x = Stack(
-                filters=self.stackwise_filters[stack_index],
-                blocks=self.tackwise_blocks[stack_index],
-                stride=self.stackwise_strides[stack_index],
-                dilations=stackwise_dilations[stack_index],
-                block_fn=self.block_fn,
-                first_shortcut=self.block_fn == Block or stack_index > 0,
-                stack_index=stack_index,
-            )(x)
-            stack_level_outputs[stack_index + 2] = x
+        for stack in self.stacks:
+            x = stack(x)
 
-        x = torch.nn.BatchNorm()(x)
+        x = self.batchnorm(x)
         x = torch.nn.ReLU()(x)
         if self.include_top:
             # [B, C, F, F] -> [B, avg C]
             x = torch.nn.AvgPool2D(x.shape[2])(x).flatten(1)
-            x = torch.nn.Linear(x.shape[1], self.classes)(x)
+            x = self.top_dense(x)
             x = torch.nn.Softmax()(x)
         else:
             if self.pooling == "avg":
@@ -205,6 +201,4 @@ class ResNetV2(torch.nn.Module):
         return x
 
 
-def ResNet18V2(**kwargs):
-    model = ResNetV2()
-    return model
+

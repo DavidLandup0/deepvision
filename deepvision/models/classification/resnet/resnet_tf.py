@@ -150,115 +150,85 @@ def Stack(
     return apply
 
 
-def ResNetV2(
+class ResNetV2TF(tf.keras.Model):
+
+    def __init__(self,
     stackwise_filters,
     stackwise_blocks,
     stackwise_strides,
-    include_rescaling,
     include_top,
     stackwise_dilations=None,
-    name="ResNetV2",
-    weights=None,
-    input_shape=(None, None, 3),
-    input_tensor=None,
     pooling=None,
     classes=None,
-    classifier_activation="softmax",
     block_fn=Block,
-    **kwargs,
-):
+    **kwargs,):
 
-    if include_top and not classes:
-        raise ValueError(
-            "If `include_top` is True, you should specify `classes`. "
-            f"Received: classes={classes}"
+        if self.include_top and not self.classes:
+            raise ValueError(
+                "If `include_top` is True, you should specify `classes`. "
+                f"Received: classes={self.classes}"
+            )
+
+        if self.include_top and self.pooling:
+            raise ValueError(
+                f"`pooling` must be `None` when `include_top=True`."
+                f"Received pooling={self.pooling} and include_top={self.include_top}. "
+            )
+
+        self.stackwise_dilations = stackwise_dilations
+        self.stackwise_filters = stackwise_filters
+        self.stackwise_blocks = stackwise_blocks
+        self.stackwise_strides = stackwise_strides
+        self.include_top = include_top
+        self.classes = classes
+        self.pooling = pooling
+
+        self.conv1 = layers.Conv2D(
+            64,
+            7,
+            strides=2,
+            use_bias=True,
+            padding="same",
+            name="conv1_conv",
         )
+        self.maxpool = layers.MaxPooling2D(3, strides=2, padding="same", name="pool1_pool")
 
-    if include_top and pooling:
-        raise ValueError(
-            f"`pooling` must be `None` when `include_top=True`."
-            f"Received pooling={pooling} and include_top={include_top}. "
-        )
+        self.stacks = []
 
-    inputs = utils.parse_model_inputs('tensorflow', input_shape, input_tensor)
-    x = inputs
+        num_stacks = len(stackwise_filters)
+        if stackwise_dilations is None:
+            stackwise_dilations = [1] * num_stacks
 
-    x = layers.Conv2D(
-        64,
-        7,
-        strides=2,
-        use_bias=True,
-        padding="same",
-        name="conv1_conv",
-    )(x)
+        for stack_index in range(num_stacks):
+            self.stacks.append(Stack(
+                filters=stackwise_filters[stack_index],
+                blocks=stackwise_blocks[stack_index],
+                stride=stackwise_strides[stack_index],
+                dilations=stackwise_dilations[stack_index],
+                block_fn=block_fn,
+                first_shortcut=block_fn == Block or stack_index > 0,
+                stack_index=stack_index,
+            ))
+        self.batchnorm = layers.BatchNormalization(epsilon=1.001e-5, name="post_bn")
+        self.top_dense = layers.Dense(classes, activation='softmax', name="predictions")
 
-    x = layers.MaxPooling2D(3, strides=2, padding="same", name="pool1_pool")(x)
+    def call(self):
 
-    num_stacks = len(stackwise_filters)
-    if stackwise_dilations is None:
-        stackwise_dilations = [1] * num_stacks
+        inputs = utils.parse_model_inputs('tensorflow', self.input_shape, self.input_tensor)
+        x = inputs
 
-    stack_level_outputs = {}
-    for stack_index in range(num_stacks):
-        x = Stack(
-            filters=stackwise_filters[stack_index],
-            blocks=stackwise_blocks[stack_index],
-            stride=stackwise_strides[stack_index],
-            dilations=stackwise_dilations[stack_index],
-            block_fn=block_fn,
-            first_shortcut=block_fn == Block or stack_index > 0,
-            stack_index=stack_index,
-        )(x)
-        stack_level_outputs[stack_index + 2] = x
+        x = self.conv1(x)
+        x = self.maxpool(x)
+        for stack in self.stacks:
+            x = stack(x)
+        x = self.batchnorm(x)
+        x = layers.Activation("relu", name="post_relu")(x)
 
-    x = layers.BatchNormalization(epsilon=1.001e-5, name="post_bn")(x)
-    x = layers.Activation("relu", name="post_relu")(x)
-
-    if include_top:
-        x = layers.GlobalAveragePooling2D(name="avg_pool")(x)
-        x = layers.Dense(classes, activation=classifier_activation, name="predictions")(
-            x
-        )
-    else:
-        if pooling == "avg":
+        if self.include_top:
             x = layers.GlobalAveragePooling2D(name="avg_pool")(x)
-        elif pooling == "max":
-            x = layers.GlobalMaxPooling2D(name="max_pool")(x)
-
-    # Create model.
-    model = tf.keras.Model(inputs, x, name=name, **kwargs)
-
-    if weights is not None:
-        model.load_weights(weights)
-
-
-def ResNet18V2(
-    include_rescaling,
-    include_top,
-    classes=None,
-    weights=None,
-    input_shape=(None, None, 3),
-    input_tensor=None,
-    pooling=None,
-    classifier_activation="softmax",
-    name="resnet18",
-    **kwargs,
-):
-    """Instantiates the ResNet18 architecture."""
-
-    return ResNetV2(
-        stackwise_filters=MODEL_CONFIGS["ResNet18V2"]["stackwise_filters"],
-        stackwise_blocks=MODEL_CONFIGS["ResNet18V2"]["stackwise_blocks"],
-        stackwise_strides=MODEL_CONFIGS["ResNet18V2"]["stackwise_strides"],
-        include_rescaling=include_rescaling,
-        include_top=include_top,
-        name=name,
-        weights=weights,
-        input_shape=input_shape,
-        input_tensor=input_tensor,
-        pooling=pooling,
-        classes=classes,
-        classifier_activation=classifier_activation,
-        block_fn=BasicBlock,
-        **kwargs,
-    )
+            x = self.top_dense(x)
+        else:
+            if self.pooling == "avg":
+                x = layers.GlobalAveragePooling2D(name="avg_pool")(x)
+            elif self.pooling == "max":
+                x = layers.GlobalMaxPooling2D(name="max_pool")(x)
