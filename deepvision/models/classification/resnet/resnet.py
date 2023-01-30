@@ -7,17 +7,19 @@ MODEL_CONFIGS = {
         "stackwise_blocks": [2, 2, 2, 2],
         "stackwise_strides": [1, 2, 2, 2],
     },
-
 }
 
-def ResNet18V2(include_top,
+
+def ResNet18V2(
+    include_top,
     backend,
     classes=None,
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
-    **kwargs):
-    if backend == 'pytorch':
+    **kwargs
+):
+    if backend == "pytorch":
         return ResNetV2PT(
             stackwise_filters=MODEL_CONFIGS["ResNet18V2"]["stackwise_filters"],
             stackwise_blocks=MODEL_CONFIGS["ResNet18V2"]["stackwise_blocks"],
@@ -27,8 +29,9 @@ def ResNet18V2(include_top,
             input_tensor=input_tensor,
             pooling=pooling,
             classes=classes,
-            **kwargs)
-    elif backend == 'tensorflow':
+            **kwargs
+        )
+    elif backend == "tensorflow":
         return ResNetV2TF(
             stackwise_filters=MODEL_CONFIGS["ResNet18V2"]["stackwise_filters"],
             stackwise_blocks=MODEL_CONFIGS["ResNet18V2"]["stackwise_blocks"],
@@ -38,5 +41,6 @@ def ResNet18V2(include_top,
             input_tensor=input_tensor,
             pooling=pooling,
             classes=classes,
-            **kwargs)
+            **kwargs
+        )
     return model

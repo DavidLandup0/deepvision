@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras import backend
 from tensorflow.keras import layers
+
 from deepvision import utils
 
 MODEL_CONFIGS = {
@@ -9,8 +10,8 @@ MODEL_CONFIGS = {
         "stackwise_blocks": [2, 2, 2, 2],
         "stackwise_strides": [1, 2, 2, 2],
     },
-
 }
+
 
 def BasicBlock(
     filters, kernel_size=3, stride=1, dilation=1, conv_shortcut=False, name=None
@@ -20,7 +21,8 @@ def BasicBlock(
         name = f"v2_basic_block_{backend.get_uid('v2_basic_block')}"
 
     def apply(x):
-        use_preactivation = layers.BatchNormalization(epsilon=1.001e-5, name=name + "_use_preactivation_bn"
+        use_preactivation = layers.BatchNormalization(
+            epsilon=1.001e-5, name=name + "_use_preactivation_bn"
         )(x)
 
         use_preactivation = layers.Activation(
@@ -47,8 +49,7 @@ def BasicBlock(
             use_bias=False,
             name=name + "_1_conv",
         )(use_preactivation)
-        x = layers.BatchNormalization(epsilon=1.001e-5, name=name + "_1_bn"
-        )(x)
+        x = layers.BatchNormalization(epsilon=1.001e-5, name=name + "_1_bn")(x)
         x = layers.Activation("relu", name=name + "_1_relu")(x)
 
         x = layers.Conv2D(
@@ -73,7 +74,8 @@ def Block(filters, kernel_size=3, stride=1, dilation=1, conv_shortcut=False, nam
         name = f"v2_block_{backend.get_uid('v2_block')}"
 
     def apply(x):
-        use_preactivation = layers.BatchNormalization(epsilon=1.001e-5, name=name + "_use_preactivation_bn"
+        use_preactivation = layers.BatchNormalization(
+            epsilon=1.001e-5, name=name + "_use_preactivation_bn"
         )(x)
 
         use_preactivation = layers.Activation(
@@ -98,8 +100,7 @@ def Block(filters, kernel_size=3, stride=1, dilation=1, conv_shortcut=False, nam
         x = layers.Conv2D(filters, 1, strides=1, use_bias=False, name=name + "_1_conv")(
             use_preactivation
         )
-        x = layers.BatchNormalization(epsilon=1.001e-5, name=name + "_1_bn"
-        )(x)
+        x = layers.BatchNormalization(epsilon=1.001e-5, name=name + "_1_bn")(x)
         x = layers.Activation("relu", name=name + "_1_relu")(x)
 
         x = layers.Conv2D(
@@ -111,8 +112,7 @@ def Block(filters, kernel_size=3, stride=1, dilation=1, conv_shortcut=False, nam
             dilation_rate=dilation,
             name=name + "_2_conv",
         )(x)
-        x = layers.BatchNormalization(epsilon=1.001e-5, name=name + "_2_bn"
-        )(x)
+        x = layers.BatchNormalization(epsilon=1.001e-5, name=name + "_2_bn")(x)
         x = layers.Activation("relu", name=name + "_2_relu")(x)
 
         x = layers.Conv2D(4 * filters, 1, name=name + "_3_conv")(x)
@@ -151,17 +151,18 @@ def Stack(
 
 
 class ResNetV2TF(tf.keras.Model):
-
-    def __init__(self,
-    stackwise_filters,
-    stackwise_blocks,
-    stackwise_strides,
-    include_top,
-    stackwise_dilations=None,
-    pooling=None,
-    classes=None,
-    block_fn=Block,
-    **kwargs,):
+    def __init__(
+        self,
+        stackwise_filters,
+        stackwise_blocks,
+        stackwise_strides,
+        include_top,
+        stackwise_dilations=None,
+        pooling=None,
+        classes=None,
+        block_fn=Block,
+        **kwargs,
+    ):
 
         if self.include_top and not self.classes:
             raise ValueError(
@@ -191,7 +192,9 @@ class ResNetV2TF(tf.keras.Model):
             padding="same",
             name="conv1_conv",
         )
-        self.maxpool = layers.MaxPooling2D(3, strides=2, padding="same", name="pool1_pool")
+        self.maxpool = layers.MaxPooling2D(
+            3, strides=2, padding="same", name="pool1_pool"
+        )
 
         self.stacks = []
 
@@ -200,21 +203,25 @@ class ResNetV2TF(tf.keras.Model):
             stackwise_dilations = [1] * num_stacks
 
         for stack_index in range(num_stacks):
-            self.stacks.append(Stack(
-                filters=stackwise_filters[stack_index],
-                blocks=stackwise_blocks[stack_index],
-                stride=stackwise_strides[stack_index],
-                dilations=stackwise_dilations[stack_index],
-                block_fn=block_fn,
-                first_shortcut=block_fn == Block or stack_index > 0,
-                stack_index=stack_index,
-            ))
+            self.stacks.append(
+                Stack(
+                    filters=stackwise_filters[stack_index],
+                    blocks=stackwise_blocks[stack_index],
+                    stride=stackwise_strides[stack_index],
+                    dilations=stackwise_dilations[stack_index],
+                    block_fn=block_fn,
+                    first_shortcut=block_fn == Block or stack_index > 0,
+                    stack_index=stack_index,
+                )
+            )
         self.batchnorm = layers.BatchNormalization(epsilon=1.001e-5, name="post_bn")
-        self.top_dense = layers.Dense(classes, activation='softmax', name="predictions")
+        self.top_dense = layers.Dense(classes, activation="softmax", name="predictions")
 
     def call(self):
 
-        inputs = utils.parse_model_inputs('tensorflow', self.input_shape, self.input_tensor)
+        inputs = utils.parse_model_inputs(
+            "tensorflow", self.input_shape, self.input_tensor
+        )
         x = inputs
 
         x = self.conv1(x)
