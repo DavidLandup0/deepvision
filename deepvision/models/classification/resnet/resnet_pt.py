@@ -113,24 +113,25 @@ class ResNetV2PT(torch.nn.Module):
         block_fn=Block,
         **kwargs,
     ):
-        if include_top and not classes:
-            raise ValueError(
-                "If `include_top` is True, you should specify `classes`. "
-                f"Received: classes={classes}"
-            )
-
-        if include_top and pooling:
-            raise ValueError(
-                f"`pooling` must be `None` when `include_top=True`."
-                f"Received pooling={pooling} and include_top={include_top}. "
-            )
+        self.include_top = include_top
+        self.pooling = pooling
+        self.classes = classes
         self.stackwise_dilations = stackwise_dilations
         self.stackwise_filters = stackwise_filters
         self.stackwise_blocks = stackwise_blocks
         self.stackwise_strides = stackwise_strides
-        self.include_top = include_top
-        self.classes = classes
-        self.pooling = pooling
+
+        if self.include_top and not self.classes:
+            raise ValueError(
+                "If `include_top` is True, you should specify `classes`. "
+                f"Received: classes={self.classes}"
+            )
+
+        if self.include_top and self.pooling:
+            raise ValueError(
+                f"`pooling` must be `None` when `include_top=True`."
+                f"Received pooling={self.pooling} and include_top={self.include_top}. "
+            )
 
         self.conv1 = torch.nn.Conv2d(
             input_shape[1],

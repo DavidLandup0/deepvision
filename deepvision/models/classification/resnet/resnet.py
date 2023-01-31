@@ -9,6 +9,8 @@ MODEL_CONFIGS = {
     },
 }
 
+MODEL_BACKBONES = {"tensorflow": ResNetV2TF, "pytorch": ResNetV2PT}
+
 
 def ResNet18V2(
     include_top,
@@ -17,30 +19,18 @@ def ResNet18V2(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
-    **kwargs
+    **kwargs,
 ):
-    if backend == "pytorch":
-        return ResNetV2PT(
-            stackwise_filters=MODEL_CONFIGS["ResNet18V2"]["stackwise_filters"],
-            stackwise_blocks=MODEL_CONFIGS["ResNet18V2"]["stackwise_blocks"],
-            stackwise_strides=MODEL_CONFIGS["ResNet18V2"]["stackwise_strides"],
-            include_top=include_top,
-            input_shape=input_shape,
-            input_tensor=input_tensor,
-            pooling=pooling,
-            classes=classes,
-            **kwargs
-        )
-    elif backend == "tensorflow":
-        return ResNetV2TF(
-            stackwise_filters=MODEL_CONFIGS["ResNet18V2"]["stackwise_filters"],
-            stackwise_blocks=MODEL_CONFIGS["ResNet18V2"]["stackwise_blocks"],
-            stackwise_strides=MODEL_CONFIGS["ResNet18V2"]["stackwise_strides"],
-            include_top=include_top,
-            input_shape=input_shape,
-            input_tensor=input_tensor,
-            pooling=pooling,
-            classes=classes,
-            **kwargs
-        )
+    model_placeholder = MODEL_BACKBONES.get(backend)
+    model = model_placeholder(
+        stackwise_filters=MODEL_CONFIGS["ResNet18V2"]["stackwise_filters"],
+        stackwise_blocks=MODEL_CONFIGS["ResNet18V2"]["stackwise_blocks"],
+        stackwise_strides=MODEL_CONFIGS["ResNet18V2"]["stackwise_strides"],
+        include_top=include_top,
+        input_shape=input_shape,
+        input_tensor=input_tensor,
+        pooling=pooling,
+        classes=classes,
+        **kwargs,
+    )
     return model
