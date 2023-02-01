@@ -4,15 +4,16 @@ from tensorflow.keras import layers
 
 from deepvision.utils.utils import parse_model_inputs
 
-MODEL_CONFIGS = {
-    "ResNet18V2": {
-        "stackwise_filters": [64, 128, 256, 512],
-        "stackwise_blocks": [2, 2, 2, 2],
-        "stackwise_strides": [1, 2, 2, 2],
-    },
-}
 
-def ResNetBlock(filters, kernel_size=3, stride=1, dilation=1, conv_shortcut=False, name=None):
+def ResNetV2Block(
+    filters,
+    kernel_size=3,
+    stride=1,
+    dilation=1,
+    conv_shortcut=False,
+    name=None,
+    type="basic",
+):
 
     if name is None:
         name = f"v2_block_{backend.get_uid('v2_block')}"
@@ -29,7 +30,7 @@ def ResNetBlock(filters, kernel_size=3, stride=1, dilation=1, conv_shortcut=Fals
         s = stride if dilation == 1 else 1
         if conv_shortcut:
             shortcut = layers.Conv2D(
-                4 * filters,
+                4 * filters if type == "bottleneck" else filters,
                 1,
                 strides=s,
                 name=name + "_0_conv",
@@ -41,9 +42,14 @@ def ResNetBlock(filters, kernel_size=3, stride=1, dilation=1, conv_shortcut=Fals
                 else x
             )
 
-        x = layers.Conv2D(filters, 1, strides=1, use_bias=False, name=name + "_1_conv")(
-            use_preactivation
-        )
+        x = layers.Conv2D(
+            filters,
+            1 if type == "bottleneck" else kernel_size,
+            strides=1,
+            use_bias=False,
+            padding="same",
+            name=name + "_1_conv",
+        )(use_preactivation)
         x = layers.BatchNormalization(epsilon=1.001e-5, name=name + "_1_bn")(x)
         x = layers.Activation("relu", name=name + "_1_relu")(x)
 
@@ -56,10 +62,10 @@ def ResNetBlock(filters, kernel_size=3, stride=1, dilation=1, conv_shortcut=Fals
             dilation_rate=dilation,
             name=name + "_2_conv",
         )(x)
-        x = layers.BatchNormalization(epsilon=1.001e-5, name=name + "_2_bn")(x)
-        x = layers.Activation("relu", name=name + "_2_relu")(x)
-
-        x = layers.Conv2D(4 * filters, 1, name=name + "_3_conv")(x)
+        if type == "bottleneck":
+            x = layers.BatchNormalization(epsilon=1.001e-5, name=name + "_2_bn")(x)
+            x = layers.Activation("relu", name=name + "_2_relu")(x)
+            x = layers.Conv2D(4 * filters, 1, name=name + "_3_conv")(x)
         x = layers.Add(name=name + "_out")([shortcut, x])
         return x
 
@@ -72,7 +78,7 @@ def Stack(
     stride=2,
     dilations=1,
     name=None,
-    block_fn=ResNetBlock,
+    block_type=None,
     first_shortcut=True,
     stack_index=1,
 ):
@@ -80,14 +86,25 @@ def Stack(
         name = f"v2_stack_{stack_index}"
 
     def apply(x):
-        x = block_fn(filters, conv_shortcut=first_shortcut, name=name + "_block1")(x)
+        x = ResNetV2Block(
+            filters,
+            conv_shortcut=first_shortcut,
+            name=name + "_block1",
+            type=block_type,
+        )(x)
         for i in range(2, blocks):
-            x = block_fn(filters, dilation=dilations, name=name + "_block" + str(i))(x)
-        x = block_fn(
+            x = ResNetV2Block(
+                filters,
+                dilation=dilations,
+                name=name + "_block" + str(i),
+                type=block_type,
+            )(x)
+        x = ResNetV2Block(
             filters,
             stride=stride,
             dilation=dilations,
             name=name + "_block" + str(blocks),
+            type=block_type,
         )(x)
         return x
 
@@ -106,7 +123,7 @@ class ResNetV2TF(tf.keras.Model):
         stackwise_dilations=None,
         pooling=None,
         classes=None,
-        block_fn=Block,
+        block_type=None,
         **kwargs,
     ):
 
@@ -145,8 +162,8 @@ class ResNetV2TF(tf.keras.Model):
                 blocks=stackwise_blocks[stack_index],
                 stride=stackwise_strides[stack_index],
                 dilations=stackwise_dilations[stack_index],
-                block_fn=block_fn,
-                first_shortcut=block_fn == Block or stack_index > 0,
+                block_type=block_type,
+                first_shortcut=block_type == "bottleneck" or stack_index > 0,
                 stack_index=stack_index,
             )(x)
 

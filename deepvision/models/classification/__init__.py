@@ -1,1 +1,1 @@
-from deepvision.models.classification.resnet import resnet
+from deepvision.models.classification.resnet import resnetv2
