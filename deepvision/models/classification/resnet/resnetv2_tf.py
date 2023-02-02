@@ -84,7 +84,7 @@ class Stack(layers.Layer):
         first_shortcut=True,
     ):
         super().__init__()
-        self.block1 = ResNetV2Block(
+        self.block_1 = ResNetV2Block(
             filters,
             conv_shortcut=first_shortcut,
             type=block_type,
