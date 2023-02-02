@@ -103,14 +103,14 @@ class Stack(torch.nn.Module):
         for i in range(2, blocks):
             self.middle_blocks.append(
                 ResNetV2Block(
-                    in_filters,
+                    4 * out_filters,
                     out_filters,
                     dilation=dilations,
                     type=block_type,
                 )
             )
         self.final_block = ResNetV2Block(
-            out_filters,
+            4 * out_filters,
             out_filters,
             stride=stride,
             dilation=dilations,
@@ -185,7 +185,7 @@ class ResNetV2PT(torch.nn.Module):
         for stack_index in range(num_stacks):
             self.stacks.append(
                 Stack(
-                    in_filters=prev_filters,
+                    in_filters=prev_filters if stack_index == 0 else prev_filters * 4,
                     out_filters=self.stackwise_filters[stack_index],
                     blocks=self.stackwise_blocks[stack_index],
                     stride=self.stackwise_strides[stack_index],
@@ -196,14 +196,18 @@ class ResNetV2PT(torch.nn.Module):
                 )
             )
             prev_filters = self.stackwise_filters[stack_index]
-
-        self.batchnorm = torch.nn.BatchNorm2d(self.stackwise_filters[-1])
+        final_dim = (
+            self.stackwise_filters[-1] * 4
+            if block_type == "bottleneck"
+            else self.stackwise_filters[-1]
+        )
+        self.batchnorm = torch.nn.BatchNorm2d(final_dim)
         self.pool = (
             torch.nn.AvgPool2d(7)
             if self.pooling == "avg" or self.pooling is None
             else torch.nn.MaxPool2d(7)
         )
-        self.top_dense = torch.nn.Linear(self.stackwise_filters[-1], classes)
+        self.top_dense = torch.nn.Linear(final_dim, classes)
 
     def forward(self, input_tensor):
         inputs = parse_model_inputs("pytorch", input_tensor.shape, input_tensor)
