@@ -15,7 +15,7 @@ it provides the *same API* across the board, so you no longer have to switch bet
 
 With DeepVision, you don't need to switch the library - you just change the backend with a single argument. Additionally, all implementations will strive to be *as equal as possible* between supported backends, providing the same number of parameters, through the same coding style and structure to enhance readability.
 
-### Basic Usage
+## Basic Usage
 
 DeepVision is deeply integrated with TensorFlow and PyTorch. You can switch between backends by specifying the backend during initialization:
 
@@ -54,7 +54,6 @@ n_classes = info.features["label"].num_classes
 
 def preprocess_img(img, label):
     img = tf.image.resize(img, (224, 224))
-    label = tf.one_hot(label, n_classes)
     return img, label
 
 train_set = train_set.map(preprocess_img).batch(32).prefetch(tf.data.AUTOTUNE)
@@ -66,12 +65,12 @@ tf_model = deepvision.models.ResNet18V2(include_top=True,
                                      backend='tensorflow')
 
 tf_model.compile(
-  loss=tf.keras.losses.CategoricalCrossentropy(),
+  loss=tf.keras.losses.SparseCategoricalCrossentropy(),
   optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
   metrics=['accuracy']
 )
 
-history = tf_model.fit(train_set, epochs=20, validation_data=test_set)
+history = tf_model.fit(train_set, epochs=1, validation_data=test_set)
 ```
 
 ### PyTorch Training Pipeline Example
@@ -112,11 +111,11 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 transform=transforms.Compose([transforms.ToTensor(),
                               transforms.Resize([224, 224])])
 
-mnist_train = CIFAR10('cifar10', train=True, download=True, transform=transform)
-mnist_test = CIFAR10('cifar10', train=False, download=True, transform=transform)
+cifar_train = CIFAR10('cifar10', train=True, download=True, transform=transform)
+cifar_test = CIFAR10('cifar10', train=False, download=True, transform=transform)
 
-train_dataloader = DataLoader(mnist_train, batch_size=32)
-val_loader = DataLoader(mnist_test, batch_size=32)
+train_dataloader = DataLoader(cifar_train, batch_size=32)
+val_dataloader = DataLoader(cifar_test, batch_size=32)
 
 pt_model = deepvision.models.ResNet18V2(include_top=True,
                                      classes=10,
@@ -128,8 +127,8 @@ optimizer = torch.optim.Adam(pt_model.parameters(), 1e-4)
 
 pt_model.compile(loss=loss, optimizer=optimizer)
 
-trainer = pl.Trainer(accelerator=device)
-trainer.fit(pt_model, train_dataloader, val_loader)
+trainer = pl.Trainer(accelerator=device, max_epochs=1)
+trainer.fit(pt_model, train_dataloader, val_dataloader)
 ```
 
 ### DeepVision as a Model Zoo
