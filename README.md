@@ -58,4 +58,18 @@ We want DeepVision to host a suite of visualization and explainability tools, fr
 
 ### DeepVision as a Utility Library
 
-Image operations (resizing, colorspace conversion, etc).
+Image operations (resizing, colorspace conversion, etc) and data augmentation.
+
+
+## Citing DeepVision
+
+If DeepVision plays a part of your research, we'd really appreciate a citation!
+
+```
+@misc{landup2023deepvision,
+  title={DeepVision},
+  author={David Landup},
+  year={2023},
+  howpublished={\url{https://github.com/DavidLandup0/deepvision/}},
+}
+```
