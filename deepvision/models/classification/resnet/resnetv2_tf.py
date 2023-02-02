@@ -49,7 +49,7 @@ def ResNetV2Block(
             x = layers.BatchNormalization(epsilon=1.001e-5)(x)
             x = layers.Activation("relu")(x)
             x = layers.Conv2D(4 * filters, 1)(x)
-        x = shortcut + x
+        x = layers.Add()([shortcut, x])
         return x
 
     return apply
