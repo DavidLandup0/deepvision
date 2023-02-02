@@ -37,6 +37,41 @@ pt_model = deepvision.models.ResNet50V2(include_top=True,
 
 **All models will share the same API, regardless of the backend**. With DeepVision, you can rest assured that training performance between PyTorch and TensorFlow models isn't due to the specific implementation.
 
+### TensorFlow Training Pipeline Example
+
+```
+import deepvision
+import tensorflow as tf
+import tensorflow_datasets as tfds
+
+(train_set, test_set), info = tfds.load("imagenette", 
+                                           split=["train", "validation"],
+                                           as_supervised=True, with_info=True)
+                                           
+n_classes = info.features["label"].num_classes
+
+def preprocess_img(img, label):
+    img = tf.image.resize(img, (224, 224))
+    label = tf.one_hot(label, n_classes)
+    return img, label
+
+train_set = train_set.map(preprocess_img).batch(32).prefetch(tf.data.AUTOTUNE)
+test_set = test_set.map(preprocess_img).batch(32).prefetch(tf.data.AUTOTUNE)
+
+tf_model = deepvision.models.ResNet18V2(include_top=True,
+                                     classes=n_classes,
+                                     input_shape=(224, 224, 3),
+                                     backend='tensorflow')
+
+tf_model.compile(
+  loss=tf.keras.losses.CategoricalCrossentropy(),
+  optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
+  metrics=['accuracy']
+)
+
+history = tf_model.fit(train_set, epochs=20, validation_data=test_set)
+```
+
 ### DeepVision as a Model Zoo
 
 We want DeepVision to host a model zoo across a wide variety of domains:
