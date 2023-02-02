@@ -1,4 +1,3 @@
-from deepvision import config
 from deepvision.models.classification.resnet.resnetv2_pt import ResNetV2PT
 from deepvision.models.classification.resnet.resnetv2_tf import ResNetV2TF
 
