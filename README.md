@@ -76,12 +76,6 @@ history = tf_model.fit(train_set, epochs=20, validation_data=test_set)
 
 ```python
 import deepvision
-
-pt_model = deepvision.models.ResNet18V2(include_top=True,
-                                     classes=10,
-                                     input_shape=(3, 224, 224),
-                                     backend='pytorch')
-
 import torch
 from torchvision.datasets import CIFAR10
 from torchvision import transforms
@@ -101,6 +95,11 @@ train, test = random_split(dataset, [40000, 10000])
 
 train_loader = DataLoader(train, batch_size=config['batch_size'])
 val_loader = DataLoader(test, batch_size=config['batch_size'])
+
+pt_model = deepvision.models.ResNet18V2(include_top=True,
+                                     classes=10,
+                                     input_shape=(3, 224, 224),
+                                     backend='pytorch')
 
 pt_model.to(device)
 total_batches = int(len(train)/config['batch_size'])
