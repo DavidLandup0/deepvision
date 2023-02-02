@@ -14,10 +14,10 @@ class ResNetV2Block(layers.Layer):
         stride=1,
         dilation=1,
         conv_shortcut=False,
-        type="basic",
+        block_type="basic",
     ):
         super().__init__()
-
+        self.block_type = block_type
         self.preact_bn = layers.BatchNormalization(epsilon=1.001e-5)
 
         s = stride if dilation == 1 else 1

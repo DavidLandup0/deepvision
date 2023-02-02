@@ -13,18 +13,18 @@ class ResNetV2Block(torch.nn.Module):
         stride=1,
         dilation=1,
         conv_shortcut=False,
-        type="basic",
+        block_type="basic",
     ):
         super().__init__()
         s = stride if dilation == 1 else 1
 
-        self.type = type
+        self.block_type = block_type
         self.preact_bn = torch.nn.BatchNorm2d(in_filters)
 
         if conv_shortcut:
             self.shortcut = torch.nn.Conv2d(
                 in_filters,
-                4 * out_filters if type == "bottleneck" else out_filters,
+                4 * out_filters if block_type == "bottleneck" else out_filters,
                 kernel_size=1,
                 stride=s,
             )
@@ -38,11 +38,11 @@ class ResNetV2Block(torch.nn.Module):
         self.conv2 = torch.nn.Conv2d(
             in_filters,
             out_filters,
-            kernel_size=1 if type == "bottleneck" else kernel_size,
+            kernel_size=1 if block_type == "bottleneck" else kernel_size,
             stride=1,
             bias=False,
             padding=same_padding(
-                kernel_size=1 if type == "bottleneck" else kernel_size, stride=1
+                kernel_size=1 if block_type == "bottleneck" else kernel_size, stride=1
             ),
         )
 
@@ -56,12 +56,12 @@ class ResNetV2Block(torch.nn.Module):
             padding=same_padding(kernel_size=kernel_size, stride=s),
             dilation=dilation,
         )
-        if self.type == "bottleneck":
+        if self.block_type == "bottleneck":
             self.bn3 = torch.nn.BatchNorm2d(out_filters)
             self.conv4 = torch.nn.Conv2d(out_filters, 4 * out_filters, 1)
 
     def forward(self, inputs):
-        x = self.preact_bn(input)
+        x = self.preact_bn(inputs)
         x = torch.nn.ReLU()(x)
         shortcut = self.shortcut(x)
 
