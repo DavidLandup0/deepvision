@@ -8,7 +8,6 @@ MODEL_CONFIGS = {
         "stackwise_blocks": [2, 2, 2, 2],
         "stackwise_strides": [1, 2, 2, 2],
     },
-
     "ResNet34V2": {
         "stackwise_filters": [64, 128, 256, 512],
         "stackwise_blocks": [3, 4, 6, 3],
@@ -35,6 +34,7 @@ MODEL_BACKBONES = {"tensorflow": ResNetV2TF, "pytorch": ResNetV2PT}
 
 
 def ResNet18V2(
+    backend,
     include_top,
     classes=None,
     input_shape=(None, None, 3),
@@ -42,8 +42,8 @@ def ResNet18V2(
     pooling=None,
     **kwargs,
 ):
-    model_placeholder = MODEL_BACKBONES.get(config.get_backend())
-    model = model_placeholder(
+    model_class = MODEL_BACKBONES.get(backend)
+    model = model_class(
         stackwise_filters=MODEL_CONFIGS["ResNet18V2"]["stackwise_filters"],
         stackwise_blocks=MODEL_CONFIGS["ResNet18V2"]["stackwise_blocks"],
         stackwise_strides=MODEL_CONFIGS["ResNet18V2"]["stackwise_strides"],
@@ -57,7 +57,9 @@ def ResNet18V2(
     )
     return model
 
+
 def ResNet34V2(
+    backend,
     include_top,
     classes=None,
     input_shape=(None, None, 3),
@@ -65,8 +67,8 @@ def ResNet34V2(
     pooling=None,
     **kwargs,
 ):
-    model_placeholder = MODEL_BACKBONES.get(config.get_backend())
-    model = model_placeholder(
+    model_class = MODEL_BACKBONES.get(backend)
+    model = model_class(
         stackwise_filters=MODEL_CONFIGS["ResNet34V2"]["stackwise_filters"],
         stackwise_blocks=MODEL_CONFIGS["ResNet34V2"]["stackwise_blocks"],
         stackwise_strides=MODEL_CONFIGS["ResNet34V2"]["stackwise_strides"],
@@ -80,7 +82,9 @@ def ResNet34V2(
     )
     return model
 
+
 def ResNet50V2(
+    backend,
     include_top,
     classes=None,
     input_shape=(None, None, 3),
@@ -88,8 +92,8 @@ def ResNet50V2(
     pooling=None,
     **kwargs,
 ):
-    model_placeholder = MODEL_BACKBONES.get(config.get_backend())
-    model = model_placeholder(
+    model_class = MODEL_BACKBONES.get(backend)
+    model = model_class(
         stackwise_filters=MODEL_CONFIGS["ResNet50V2"]["stackwise_filters"],
         stackwise_blocks=MODEL_CONFIGS["ResNet50V2"]["stackwise_blocks"],
         stackwise_strides=MODEL_CONFIGS["ResNet50V2"]["stackwise_strides"],
@@ -103,7 +107,9 @@ def ResNet50V2(
     )
     return model
 
+
 def ResNet101V2(
+    backend,
     include_top,
     classes=None,
     input_shape=(None, None, 3),
@@ -111,8 +117,8 @@ def ResNet101V2(
     pooling=None,
     **kwargs,
 ):
-    model_placeholder = MODEL_BACKBONES.get(config.get_backend())
-    model = model_placeholder(
+    model_class = MODEL_BACKBONES.get(backend)
+    model = model_class(
         stackwise_filters=MODEL_CONFIGS["ResNet101V2"]["stackwise_filters"],
         stackwise_blocks=MODEL_CONFIGS["ResNet101V2"]["stackwise_blocks"],
         stackwise_strides=MODEL_CONFIGS["ResNet101V2"]["stackwise_strides"],
@@ -126,7 +132,9 @@ def ResNet101V2(
     )
     return model
 
+
 def ResNet152V2(
+    backend,
     include_top,
     classes=None,
     input_shape=(None, None, 3),
@@ -134,8 +142,8 @@ def ResNet152V2(
     pooling=None,
     **kwargs,
 ):
-    model_placeholder = MODEL_BACKBONES.get(config.get_backend())
-    model = model_placeholder(
+    model_class = MODEL_BACKBONES.get(backend)
+    model = model_class(
         stackwise_filters=MODEL_CONFIGS["ResNet152V2"]["stackwise_filters"],
         stackwise_blocks=MODEL_CONFIGS["ResNet152V2"]["stackwise_blocks"],
         stackwise_strides=MODEL_CONFIGS["ResNet152V2"]["stackwise_strides"],
