@@ -74,7 +74,7 @@ history = tf_model.fit(train_set, epochs=20, validation_data=test_set)
 
 ### PyTorch Training Pipeline Example
 
-```
+```python
 import deepvision
 
 pt_model = deepvision.models.ResNet18V2(include_top=True,
@@ -87,7 +87,6 @@ from torchvision.datasets import CIFAR10
 from torchvision import transforms
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split
-from tqdm import tqdm
 
 optimizer = torch.optim.Adam(pt_model.parameters(), lr=1e-4)
 criterion = torch.nn.NLLLoss()
@@ -106,7 +105,7 @@ val_loader = DataLoader(test, batch_size=config['batch_size'])
 pt_model.to(device)
 total_batches = int(len(train)/config['batch_size'])
 
-for epoch in tqdm(range(config['epochs'])):
+for epoch in range(config['epochs']):
     pt_model.train()
     
     for index, (inputs, labels) in enumerate(train_loader):
@@ -120,17 +119,6 @@ for epoch in tqdm(range(config['epochs'])):
         
         print(f'Batch {index + 1}/{total_batches}: ' +
               f'loss: {loss.item():.3f}, acc: {acc:.4f}', end='\r')
-        
-    
-    pt_model.eval()
-    for batch in val_loader:
-        loss = 0
-        with torch.no_grad():
-            for (inputs, labels) in val_loader:
-                out = pt_model(inputs)
-                loss += criterion(out, labels)
-            val_loss = loss / len(val_loader)
-            print(val_loss)
 ```
 
 ### DeepVision as a Model Zoo
