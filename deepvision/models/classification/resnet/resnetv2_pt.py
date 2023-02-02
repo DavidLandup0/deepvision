@@ -60,7 +60,7 @@ class ResNetV2Block(torch.nn.Module):
             self.bn3 = torch.nn.BatchNorm2d(out_filters)
             self.conv4 = torch.nn.Conv2d(out_filters, 4 * out_filters, 1)
 
-    def forward(self, input):
+    def forward(self, inputs):
         x = self.preact_bn(input)
         x = torch.nn.ReLU()(x)
         shortcut = self.shortcut(x)

@@ -2,88 +2,114 @@ import tensorflow as tf
 from tensorflow.keras import backend
 from tensorflow.keras import layers
 
+from deepvision.layers import Identity
 from deepvision.utils.utils import parse_model_inputs
 
 
-def ResNetV2Block(
-    filters,
-    kernel_size=3,
-    stride=1,
-    dilation=1,
-    conv_shortcut=False,
-    type="basic",
-):
-    def apply(x):
-        preact = layers.BatchNormalization(epsilon=1.001e-5)(x)
-        preact = layers.Activation("relu")(preact)
+class ResNetV2Block(layers.Layer):
+    def __init__(
+        self,
+        filters,
+        kernel_size=3,
+        stride=1,
+        dilation=1,
+        conv_shortcut=False,
+        type="basic",
+    ):
+
+        self.preact_bn = layers.BatchNormalization(epsilon=1.001e-5)
 
         s = stride if dilation == 1 else 1
         if conv_shortcut:
-            shortcut = layers.Conv2D(
+            self.shortcut = layers.Conv2D(
                 4 * filters if type == "bottleneck" else filters,
                 1,
                 strides=s,
-            )(preact)
+            )
         else:
-            shortcut = layers.MaxPooling2D(1, strides=stride)(x) if s > 1 else x
+            self.shortcut = (
+                layers.MaxPooling2D(1, strides=stride) if s > 1 else Identity()
+            )
 
-        x = layers.Conv2D(
+        self.conv2 = layers.Conv2D(
             filters,
             1 if type == "bottleneck" else kernel_size,
             strides=1,
             use_bias=False,
             padding="same",
-        )(preact)
-        x = layers.BatchNormalization(epsilon=1.001e-5)(x)
-        x = layers.Activation("relu")(x)
+        )
+        self.bn2 = layers.BatchNormalization(epsilon=1.001e-5)
 
-        x = layers.Conv2D(
+        self.conv3 = layers.Conv2D(
             filters,
             kernel_size,
             strides=s,
             use_bias=False,
             padding="same",
             dilation_rate=dilation,
-        )(x)
+        )
         if type == "bottleneck":
-            x = layers.BatchNormalization(epsilon=1.001e-5)(x)
+            self.bn3 = layers.BatchNormalization(epsilon=1.001e-5)
+            self.conv4 = layers.Conv2D(4 * filters, 1)
+
+    def call(self, inputs):
+
+        x = self.preact_bn(inputs)
+        x = layers.Activation("relu")(x)
+        shortcut = self.shortcut(x)
+
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = layers.Activation("relu")(x)
+        x = self.conv3(x)
+
+        if self.type == "bottleneck":
+            x = self.bn3(x)
             x = layers.Activation("relu")(x)
-            x = layers.Conv2D(4 * filters, 1)(x)
+            x = self.conv4(x)
+
         x = layers.Add()([shortcut, x])
         return x
 
-    return apply
 
-
-def Stack(
-    filters,
-    blocks,
-    stride=2,
-    dilations=1,
-    block_type=None,
-    first_shortcut=True,
-):
-    def apply(x):
-        x = ResNetV2Block(
+class Stack(layers.Layer):
+    def __init__(
+        self,
+        filters,
+        blocks,
+        stride=2,
+        dilations=1,
+        block_type=None,
+        first_shortcut=True,
+    ):
+        self.block1 = ResNetV2Block(
             filters,
             conv_shortcut=first_shortcut,
             type=block_type,
-        )(x)
+        )
+        self.middle_blocks = []
         for i in range(2, blocks):
-            x = ResNetV2Block(
-                filters,
-                dilation=dilations,
-                type=block_type,
-            )(x)
-        x = ResNetV2Block(
+            self.middle_blocks.append(
+                ResNetV2Block(
+                    filters,
+                    dilation=dilations,
+                    type=block_type,
+                )
+            )
+
+        self.final_block = ResNetV2Block(
             filters,
             stride=stride,
             dilation=dilations,
             type=block_type,
-        )(x)
-        return x
+        )
 
-    return apply
+    def call(self, inputs):
+        x = self.block_1(inputs)
+        for block in self.middle_blocks:
+            x = block(x)
+        x = self.final_block(x)
+        return x
 
 
 class ResNetV2TF(tf.keras.Model):
