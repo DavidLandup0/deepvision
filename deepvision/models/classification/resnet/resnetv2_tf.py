@@ -14,9 +14,8 @@ def ResNetV2Block(
     type="basic",
 ):
     def apply(x):
-        use_preactivation = layers.BatchNormalization(epsilon=1.001e-5)(x)
-
-        use_preactivation = layers.Activation("relu")(use_preactivation)
+        preact = layers.BatchNormalization(epsilon=1.001e-5)(x)
+        preact = layers.Activation("relu")(preact)
 
         s = stride if dilation == 1 else 1
         if conv_shortcut:
@@ -24,7 +23,7 @@ def ResNetV2Block(
                 4 * filters if type == "bottleneck" else filters,
                 1,
                 strides=s,
-            )(use_preactivation)
+            )(preact)
         else:
             shortcut = layers.MaxPooling2D(1, strides=stride)(x) if s > 1 else x
 
@@ -34,7 +33,7 @@ def ResNetV2Block(
             strides=1,
             use_bias=False,
             padding="same",
-        )(use_preactivation)
+        )(preact)
         x = layers.BatchNormalization(epsilon=1.001e-5)(x)
         x = layers.Activation("relu")(x)
 
@@ -50,7 +49,7 @@ def ResNetV2Block(
             x = layers.BatchNormalization(epsilon=1.001e-5)(x)
             x = layers.Activation("relu")(x)
             x = layers.Conv2D(4 * filters, 1)(x)
-        x = layers.Add()([shortcut, x])
+        x = shortcut + x
         return x
 
     return apply

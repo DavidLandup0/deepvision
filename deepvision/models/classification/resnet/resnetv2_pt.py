@@ -89,7 +89,6 @@ class Stack(torch.nn.Module):
         dilations=1,
         block_type=None,
         first_shortcut=True,
-        stack_index=1,
     ):
         super().__init__()
 
@@ -134,7 +133,6 @@ class ResNetV2PT(torch.nn.Module):
         include_top,
         stackwise_dilations=None,
         input_shape=(3, None, None),
-        input_tensor=None,
         pooling=None,
         classes=None,
         block_type=None,
@@ -192,7 +190,6 @@ class ResNetV2PT(torch.nn.Module):
                     dilations=stackwise_dilations[stack_index],
                     block_type=block_type,
                     first_shortcut=block_type == "bottleneck" or stack_index > 0,
-                    stack_index=stack_index,
                 )
             )
             prev_filters = self.stackwise_filters[stack_index]
