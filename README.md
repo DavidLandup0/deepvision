@@ -39,6 +39,8 @@ pt_model = deepvision.models.ResNet50V2(include_top=True,
 
 ### TensorFlow Training Pipeline Example
 
+Any model returned as a TensorFlow model is a `tf.keras.Model`, making it fit for use out-of-the-box, with a straightforward compatability with `tf.data` and training on `tf.data.Dataset`s:
+
 ```python
 import deepvision
 import tensorflow as tf
@@ -74,6 +76,28 @@ history = tf_model.fit(train_set, epochs=20, validation_data=test_set)
 
 ### PyTorch Training Pipeline Example
 
+Any model returned as a PyTorch model is a `pl.LightningModule`, which is a `torch.nn.Module`. You may decide to use it manually, as you'd use any `torch.nn.Module`:
+
+```python
+pt_model = deepvision.models.ResNet50V2(include_top=True,
+                                     classes=10,
+                                     input_shape=(3, 224, 224),
+                                     backend='pytorch')
+                                     
+for epoch in epochs:
+    for batch in train_loader:
+        optimizer.zero_grads()
+        
+        inputs, labels = batch
+        outputs = model(inputs)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+        # ...
+```
+
+Or you may `compile()` a model, and use the PyTorch Lightning `Trainer` given a dataset:
+
 ```python
 import deepvision
 import torch
@@ -91,8 +115,8 @@ transform=transforms.Compose([transforms.ToTensor(),
 mnist_train = CIFAR10('cifar10', train=True, download=True, transform=transform)
 mnist_test = CIFAR10('cifar10', train=False, download=True, transform=transform)
 
-train_dataloader = DataLoader(mnist_train, batch_size=config['batch_size'])
-val_loader = DataLoader(mnist_test, batch_size=config['batch_size'])
+train_dataloader = DataLoader(mnist_train, batch_size=32)
+val_loader = DataLoader(mnist_test, batch_size=32)
 
 pt_model = deepvision.models.ResNet18V2(include_top=True,
                                      classes=10,
