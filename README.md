@@ -77,47 +77,35 @@ history = tf_model.fit(train_set, epochs=20, validation_data=test_set)
 ```python
 import deepvision
 import torch
-from torchvision.datasets import CIFAR10
-from torchvision import transforms
-from torch.utils.data import DataLoader
-from torch.utils.data import random_split
 
-optimizer = torch.optim.Adam(pt_model.parameters(), lr=1e-4)
-criterion = torch.nn.NLLLoss()
+from torchvision import transforms
+from torchvision.datasets import CIFAR10
+from torch.utils.data import DataLoader
+import pytorch_lightning as pl
+
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-transform = transforms.Compose(
-    [transforms.ToTensor(),
-     transforms.Resize([224, 224])])
+transform=transforms.Compose([transforms.ToTensor(),
+                              transforms.Resize([224, 224])])
 
-dataset = CIFAR10('cifar10', download=True, transform=transform)
-train, test = random_split(dataset, [40000, 10000])
+mnist_train = CIFAR10('cifar10', train=True, download=True, transform=transform)
+mnist_test = CIFAR10('cifar10', train=False, download=True, transform=transform)
 
-train_loader = DataLoader(train, batch_size=config['batch_size'])
-val_loader = DataLoader(test, batch_size=config['batch_size'])
+train_dataloader = DataLoader(mnist_train, batch_size=config['batch_size'])
+val_loader = DataLoader(mnist_test, batch_size=config['batch_size'])
 
 pt_model = deepvision.models.ResNet18V2(include_top=True,
                                      classes=10,
                                      input_shape=(3, 224, 224),
                                      backend='pytorch')
 
-pt_model.to(device)
-total_batches = int(len(train)/config['batch_size'])
+loss = torch.nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(pt_model.parameters(), 1e-4)
 
-for epoch in range(config['epochs']):
-    pt_model.train()
-    
-    for index, (inputs, labels) in enumerate(train_loader):
-        optimizer.zero_grad()
-        
-        outputs = pt_model(inputs.to(device))
-        loss = criterion(torch.log(outputs), labels.to(device))
-        acc = torch.sum(outputs.argmax(1) == labels.to(device))/config['batch_size']
-        loss.backward()
-        optimizer.step()
-        
-        print(f'Batch {index + 1}/{total_batches}: ' +
-              f'loss: {loss.item():.3f}, acc: {acc:.4f}', end='\r')
+pt_model.compile(loss=loss, optimizer=optimizer)
+
+trainer = pl.Trainer(accelerator=device)
+trainer.fit(pt_model, train_dataloader, val_loader)
 ```
 
 ### DeepVision as a Model Zoo
