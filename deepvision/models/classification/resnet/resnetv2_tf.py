@@ -16,6 +16,7 @@ class ResNetV2Block(layers.Layer):
         conv_shortcut=False,
         type="basic",
     ):
+        super().__init__()
 
         self.preact_bn = layers.BatchNormalization(epsilon=1.001e-5)
 
@@ -82,6 +83,7 @@ class Stack(layers.Layer):
         block_type=None,
         first_shortcut=True,
     ):
+        super().__init__()
         self.block1 = ResNetV2Block(
             filters,
             conv_shortcut=first_shortcut,
