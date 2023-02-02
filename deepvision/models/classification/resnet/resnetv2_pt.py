@@ -107,7 +107,7 @@ class Stack(nn.Module):
                 )
             )
         self.final_block = ResNetV2Block(
-            4 * out_filters,
+            4 * out_filters if block_type == "bottleneck" else out_filters,
             out_filters,
             stride=stride,
             dilation=dilations,
@@ -181,7 +181,9 @@ class ResNetV2PT(nn.Module):
         for stack_index in range(num_stacks):
             self.stacks.append(
                 Stack(
-                    in_filters=prev_filters if stack_index == 0 else prev_filters * 4,
+                    in_filters=prev_filters
+                    if block_type == "basic" or stack_index == 0
+                    else prev_filters * 4,
                     out_filters=self.stackwise_filters[stack_index],
                     blocks=self.stackwise_blocks[stack_index],
                     stride=self.stackwise_strides[stack_index],
