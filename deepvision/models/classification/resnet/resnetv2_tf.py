@@ -1,5 +1,4 @@
 import tensorflow as tf
-from tensorflow.keras import backend
 from tensorflow.keras import layers
 
 from deepvision.layers import Identity
@@ -23,7 +22,7 @@ class ResNetV2Block(layers.Layer):
         s = stride if dilation == 1 else 1
         if conv_shortcut:
             self.shortcut = layers.Conv2D(
-                4 * filters if type == "bottleneck" else filters,
+                4 * filters if block_type == "bottleneck" else filters,
                 1,
                 strides=s,
             )
@@ -34,7 +33,7 @@ class ResNetV2Block(layers.Layer):
 
         self.conv2 = layers.Conv2D(
             filters,
-            1 if type == "bottleneck" else kernel_size,
+            1 if block_type == "bottleneck" else kernel_size,
             strides=1,
             use_bias=False,
             padding="same",
@@ -49,7 +48,7 @@ class ResNetV2Block(layers.Layer):
             padding="same",
             dilation_rate=dilation,
         )
-        if type == "bottleneck":
+        if block_type == "bottleneck":
             self.bn3 = layers.BatchNormalization(epsilon=1.001e-5)
             self.conv4 = layers.Conv2D(4 * filters, 1)
 
@@ -64,7 +63,7 @@ class ResNetV2Block(layers.Layer):
         x = layers.Activation("relu")(x)
         x = self.conv3(x)
 
-        if self.type == "bottleneck":
+        if self.block_type == "bottleneck":
             x = self.bn3(x)
             x = layers.Activation("relu")(x)
             x = self.conv4(x)
@@ -87,7 +86,7 @@ class Stack(layers.Layer):
         self.block_1 = ResNetV2Block(
             filters,
             conv_shortcut=first_shortcut,
-            type=block_type,
+            block_type=block_type,
         )
         self.middle_blocks = []
         for i in range(2, blocks):
@@ -95,7 +94,7 @@ class Stack(layers.Layer):
                 ResNetV2Block(
                     filters,
                     dilation=dilations,
-                    type=block_type,
+                    block_type=block_type,
                 )
             )
 
@@ -103,7 +102,7 @@ class Stack(layers.Layer):
             filters,
             stride=stride,
             dilation=dilations,
-            type=block_type,
+            block_type=block_type,
         )
 
     def call(self, inputs):

@@ -1,10 +1,10 @@
-import torch
+from torch import nn
 
 from deepvision.utils.utils import parse_model_inputs
 from deepvision.utils.utils import same_padding
 
 
-class ResNetV2Block(torch.nn.Module):
+class ResNetV2Block(nn.Module):
     def __init__(
         self,
         in_filters,
@@ -19,10 +19,10 @@ class ResNetV2Block(torch.nn.Module):
         s = stride if dilation == 1 else 1
 
         self.block_type = block_type
-        self.preact_bn = torch.nn.BatchNorm2d(in_filters)
+        self.preact_bn = nn.BatchNorm2d(in_filters)
 
         if conv_shortcut:
-            self.shortcut = torch.nn.Conv2d(
+            self.shortcut = nn.Conv2d(
                 in_filters,
                 4 * out_filters if block_type == "bottleneck" else out_filters,
                 kernel_size=1,
@@ -30,12 +30,10 @@ class ResNetV2Block(torch.nn.Module):
             )
         else:
             self.shortcut = (
-                torch.nn.MaxPool2d(kernel_size=1, stride=stride)
-                if s > 1
-                else torch.nn.Identity()
+                nn.MaxPool2d(kernel_size=1, stride=stride) if s > 1 else nn.Identity()
             )
 
-        self.conv2 = torch.nn.Conv2d(
+        self.conv2 = nn.Conv2d(
             in_filters,
             out_filters,
             kernel_size=1 if block_type == "bottleneck" else kernel_size,
@@ -46,8 +44,8 @@ class ResNetV2Block(torch.nn.Module):
             ),
         )
 
-        self.bn2 = torch.nn.BatchNorm2d(out_filters)
-        self.conv3 = torch.nn.Conv2d(
+        self.bn2 = nn.BatchNorm2d(out_filters)
+        self.conv3 = nn.Conv2d(
             out_filters,
             out_filters,
             kernel_size,
@@ -57,29 +55,29 @@ class ResNetV2Block(torch.nn.Module):
             dilation=dilation,
         )
         if self.block_type == "bottleneck":
-            self.bn3 = torch.nn.BatchNorm2d(out_filters)
-            self.conv4 = torch.nn.Conv2d(out_filters, 4 * out_filters, 1)
+            self.bn3 = nn.BatchNorm2d(out_filters)
+            self.conv4 = nn.Conv2d(out_filters, 4 * out_filters, 1)
 
     def forward(self, inputs):
         x = self.preact_bn(inputs)
-        x = torch.nn.ReLU()(x)
+        x = nn.ReLU()(x)
         shortcut = self.shortcut(x)
 
         x = self.conv2(x)
         x = self.bn2(x)
-        x = torch.nn.ReLU()(x)
+        x = nn.ReLU()(x)
         x = self.conv3(x)
 
-        if self.type == "bottleneck":
+        if self.block_type == "bottleneck":
             x = self.bn3(x)
-            x = torch.nn.ReLU()(x)
+            x = nn.ReLU()(x)
             x = self.conv4(x)
 
         x = x + shortcut
         return x
 
 
-class Stack(torch.nn.Module):
+class Stack(nn.Module):
     def __init__(
         self,
         in_filters,
@@ -96,16 +94,16 @@ class Stack(torch.nn.Module):
             in_filters,
             out_filters,
             conv_shortcut=first_shortcut,
-            type=block_type,
+            block_type=block_type,
         )
-        self.middle_blocks = torch.nn.ModuleList()
+        self.middle_blocks = nn.ModuleList()
         for i in range(2, blocks):
             self.middle_blocks.append(
                 ResNetV2Block(
                     4 * out_filters,
                     out_filters,
                     dilation=dilations,
-                    type=block_type,
+                    block_type=block_type,
                 )
             )
         self.final_block = ResNetV2Block(
@@ -113,7 +111,7 @@ class Stack(torch.nn.Module):
             out_filters,
             stride=stride,
             dilation=dilations,
-            type=block_type,
+            block_type=block_type,
         )
 
     def forward(self, inputs):
@@ -124,7 +122,7 @@ class Stack(torch.nn.Module):
         return x
 
 
-class ResNetV2PT(torch.nn.Module):
+class ResNetV2PT(nn.Module):
     def __init__(
         self,
         stackwise_filters,
@@ -160,7 +158,7 @@ class ResNetV2PT(torch.nn.Module):
                 f"Received pooling={self.pooling} and include_top={self.include_top}. "
             )
 
-        self.conv1 = torch.nn.Conv2d(
+        self.conv1 = nn.Conv2d(
             input_shape[0],
             64,
             kernel_size=7,
@@ -168,11 +166,11 @@ class ResNetV2PT(torch.nn.Module):
             bias=True,
             padding=same_padding(kernel_size=7, stride=2),
         )
-        self.maxpool1 = torch.nn.MaxPool2d(
+        self.maxpool1 = nn.MaxPool2d(
             kernel_size=3, stride=2, padding=same_padding(kernel_size=3, stride=2)
         )
 
-        self.stacks = torch.nn.ModuleList()
+        self.stacks = nn.ModuleList()
 
         num_stacks = len(self.stackwise_filters)
         if self.stackwise_dilations is None:
@@ -198,13 +196,13 @@ class ResNetV2PT(torch.nn.Module):
             if block_type == "bottleneck"
             else self.stackwise_filters[-1]
         )
-        self.batchnorm = torch.nn.BatchNorm2d(final_dim)
+        self.batchnorm = nn.BatchNorm2d(final_dim)
         self.pool = (
-            torch.nn.AvgPool2d(7)
+            nn.AvgPool2d(7)
             if self.pooling == "avg" or self.pooling is None
-            else torch.nn.MaxPool2d(7)
+            else nn.MaxPool2d(7)
         )
-        self.top_dense = torch.nn.Linear(final_dim, classes)
+        self.top_dense = nn.Linear(final_dim, classes)
 
     def forward(self, input_tensor):
         inputs = parse_model_inputs("pytorch", input_tensor.shape, input_tensor)
@@ -217,12 +215,12 @@ class ResNetV2PT(torch.nn.Module):
             x = stack(x)
 
         x = self.batchnorm(x)
-        x = torch.nn.ReLU()(x)
+        x = nn.ReLU()(x)
 
         # [B, C, F, F] -> [B, avg C]
         x = self.pool(x).flatten(1)
         if self.include_top:
             x = self.top_dense(x)
-            x = torch.nn.Softmax(dim=1)(x)
+            x = nn.Softmax(dim=1)(x)
 
         return x
