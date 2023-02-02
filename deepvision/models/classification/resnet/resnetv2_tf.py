@@ -11,21 +11,12 @@ def ResNetV2Block(
     stride=1,
     dilation=1,
     conv_shortcut=False,
-    name=None,
     type="basic",
 ):
-
-    if name is None:
-        name = f"v2_block_{backend.get_uid('v2_block')}"
-
     def apply(x):
-        use_preactivation = layers.BatchNormalization(
-            epsilon=1.001e-5, name=name + "_use_preactivation_bn"
-        )(x)
+        use_preactivation = layers.BatchNormalization(epsilon=1.001e-5)(x)
 
-        use_preactivation = layers.Activation(
-            "relu", name=name + "_use_preactivation_relu"
-        )(use_preactivation)
+        use_preactivation = layers.Activation("relu")(use_preactivation)
 
         s = stride if dilation == 1 else 1
         if conv_shortcut:
@@ -33,14 +24,9 @@ def ResNetV2Block(
                 4 * filters if type == "bottleneck" else filters,
                 1,
                 strides=s,
-                name=name + "_0_conv",
             )(use_preactivation)
         else:
-            shortcut = (
-                layers.MaxPooling2D(1, strides=stride, name=name + "_0_max_pooling")(x)
-                if s > 1
-                else x
-            )
+            shortcut = layers.MaxPooling2D(1, strides=stride)(x) if s > 1 else x
 
         x = layers.Conv2D(
             filters,
@@ -48,10 +34,9 @@ def ResNetV2Block(
             strides=1,
             use_bias=False,
             padding="same",
-            name=name + "_1_conv",
         )(use_preactivation)
-        x = layers.BatchNormalization(epsilon=1.001e-5, name=name + "_1_bn")(x)
-        x = layers.Activation("relu", name=name + "_1_relu")(x)
+        x = layers.BatchNormalization(epsilon=1.001e-5)(x)
+        x = layers.Activation("relu")(x)
 
         x = layers.Conv2D(
             filters,
@@ -60,13 +45,12 @@ def ResNetV2Block(
             use_bias=False,
             padding="same",
             dilation_rate=dilation,
-            name=name + "_2_conv",
         )(x)
         if type == "bottleneck":
-            x = layers.BatchNormalization(epsilon=1.001e-5, name=name + "_2_bn")(x)
-            x = layers.Activation("relu", name=name + "_2_relu")(x)
-            x = layers.Conv2D(4 * filters, 1, name=name + "_3_conv")(x)
-        x = layers.Add(name=name + "_out")([shortcut, x])
+            x = layers.BatchNormalization(epsilon=1.001e-5)(x)
+            x = layers.Activation("relu")(x)
+            x = layers.Conv2D(4 * filters, 1)(x)
+        x = layers.Add()([shortcut, x])
         return x
 
     return apply
@@ -77,33 +61,25 @@ def Stack(
     blocks,
     stride=2,
     dilations=1,
-    name=None,
     block_type=None,
     first_shortcut=True,
-    stack_index=1,
 ):
-    if name is None:
-        name = f"v2_stack_{stack_index}"
-
     def apply(x):
         x = ResNetV2Block(
             filters,
             conv_shortcut=first_shortcut,
-            name=name + "_block1",
             type=block_type,
         )(x)
         for i in range(2, blocks):
             x = ResNetV2Block(
                 filters,
                 dilation=dilations,
-                name=name + "_block" + str(i),
                 type=block_type,
             )(x)
         x = ResNetV2Block(
             filters,
             stride=stride,
             dilation=dilations,
-            name=name + "_block" + str(blocks),
             type=block_type,
         )(x)
         return x
@@ -148,10 +124,9 @@ class ResNetV2TF(tf.keras.Model):
             strides=2,
             use_bias=True,
             padding="same",
-            name="conv1_conv",
         )(x)
 
-        x = layers.MaxPooling2D(3, strides=2, padding="same", name="pool1_pool")(x)
+        x = layers.MaxPooling2D(3, strides=2, padding="same")(x)
         num_stacks = len(stackwise_filters)
         if stackwise_dilations is None:
             stackwise_dilations = [1] * num_stacks
@@ -164,11 +139,10 @@ class ResNetV2TF(tf.keras.Model):
                 dilations=stackwise_dilations[stack_index],
                 block_type=block_type,
                 first_shortcut=block_type == "bottleneck" or stack_index > 0,
-                stack_index=stack_index,
             )(x)
 
-        x = layers.BatchNormalization(epsilon=1.001e-5, name="post_bn")(x)
-        x = layers.Activation("relu", name="post_relu")(x)
+        x = layers.BatchNormalization(epsilon=1.001e-5)(x)
+        x = layers.Activation("relu")(x)
 
         if include_top:
             x = layers.GlobalAveragePooling2D(name="avg_pool")(x)
