@@ -243,12 +243,12 @@ class ResNetV2PT(pl.LightningModule):
         inputs, targets = train_batch
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
-        self.log("loss", loss)
+        self.log("loss", loss, on_epoch=True, prog_bar=True)
         return loss
 
     def validation_step(self, val_batch, batch_idx):
         inputs, targets = val_batch
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
-        self.log("val_loss", loss)
+        self.log("val_loss", loss, on_epoch=True, prog_bar=True)
         return loss
