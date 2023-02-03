@@ -25,28 +25,21 @@ class ViTPT(nn.Module):
     ):
         super().__init__()
 
-        self.include_top = include_top
-        self.pooling = pooling
-        self.classes = classes
-
-        if self.include_top and not self.classes:
+        if include_top and not classes:
             raise ValueError(
                 "If `include_top` is True, you should specify `classes`. "
                 f"Received: classes={self.classes}"
             )
 
-        if self.include_top and self.pooling:
+        if include_top and pooling:
             raise ValueError(
                 f"`pooling` must be `None` when `include_top=True`."
                 f"Received pooling={self.pooling} and include_top={self.include_top}. "
             )
 
-        self.patching_and_embedding = PatchingAndEmbedding(
-            project_dim=project_dim,
-            patch_size=patch_size,
-            input_shape=input_shape,
-            backend="pytorch",
-        )
+        self.include_top = include_top
+        self.pooling = pooling
+        self.classes = classes
         self.transformer_layer_num = transformer_layer_num
         self.project_dim = project_dim
         self.num_heads = num_heads
@@ -54,8 +47,13 @@ class ViTPT(nn.Module):
         self.mlp_dropout = mlp_dropout
         self.attention_dropout = attention_dropout
         self.activation = activation
-        self.layer_norm = nn.LayerNorm(project_dim, eps=1e-6)
-        self.linear = nn.Linear(project_dim, classes)
+
+        self.patching_and_embedding = PatchingAndEmbedding(
+            project_dim=project_dim,
+            patch_size=patch_size,
+            input_shape=input_shape,
+            backend="pytorch",
+        )
 
         self.transformer_layers = nn.ModuleList()
         for _ in range(self.transformer_layer_num):
@@ -71,6 +69,14 @@ class ViTPT(nn.Module):
                 )
             )
 
+        self.layer_norm = nn.LayerNorm(project_dim, eps=1e-6)
+        if self.pooling == "avg":
+            self.pool = nn.AdaptiveAvgPool1d(project_dim)
+        elif self.pooling == "max":
+            self.pool = nn.AdaptiveMaxPool1d(project_dim)
+
+        self.linear = nn.Linear(project_dim, classes)
+
     def forward(self, input_tensor):
         inputs = parse_model_inputs("pytorch", input_tensor.shape, input_tensor)
         x = inputs
@@ -81,18 +87,11 @@ class ViTPT(nn.Module):
         for transformer_layer in self.transformer_layers:
             x = transformer_layer(x)
 
-        output = self.layer_norm(encoded_patches)
+        layer_norm = self.layer_norm(encoded_patches)
+        output = self.pool(layer_norm) if self.pooling is not None else layer_norm[:, 0]
 
         if self.include_top:
-            x = nn.AvgPool1d(x.shape[1])(x)
-            output = self.linear(x)
+            output = self.linear(output)
             output = nn.Softmax(dim=1)(output)
-        else:
-            if self.pooling == "token":
-                output = x[:, 0]
-            elif self.pooling == "avg":
-                output = nn.AvgPool1d(x.shape[1])(x)
-            elif self.pooling == "max":
-                output = nn.MaxPool1d(x.shape[1])(x)
 
         return output
