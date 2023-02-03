@@ -12,7 +12,7 @@ class ViTPT(pl.LightningModule):
         include_top,
         input_shape=(None, None, 3),
         input_tensor=None,
-        pooling="avg",
+        pooling=None,
         classes=None,
         patch_size=None,
         transformer_layer_num=None,
