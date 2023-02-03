@@ -1,7 +1,8 @@
 import tensorflow as tf
 from tensorflow.keras import layers
 
-from deepvision.layers import Identity
+from deepvision.layers import PatchingAndEmbedding
+from deepvision.layers import TransformerEncoder
 from deepvision.utils.utils import parse_model_inputs
 
 
@@ -13,6 +14,14 @@ class ViTTF(tf.keras.Model):
         input_tensor=None,
         pooling=None,
         classes=None,
+        patch_size=None,
+        transformer_layer_num=None,
+        project_dim=None,
+        num_heads=None,
+        mlp_dim=None,
+        mlp_dropout=None,
+        attention_dropout=None,
+        activation=None,
         **kwargs,
     ):
 
@@ -31,7 +40,20 @@ class ViTTF(tf.keras.Model):
         inputs = parse_model_inputs("tensorflow", input_shape, input_tensor)
         x = inputs
 
-        # ...
+        encoded_patches = PatchingAndEmbedding(project_dim, patch_size)(x)
+        encoded_patches = layers.Dropout(mlp_dropout)(encoded_patches)
+
+        for _ in range(transformer_layer_num):
+            encoded_patches = TransformerEncoder(
+                project_dim=project_dim,
+                num_heads=num_heads,
+                mlp_dim=mlp_dim,
+                mlp_dropout=mlp_dropout,
+                attention_dropout=attention_dropout,
+                activation=activation,
+            )(encoded_patches)
+
+        output = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
 
         if include_top:
             x = layers.GlobalAveragePooling2D(name="avg_pool")(x)
