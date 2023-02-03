@@ -1,3 +1,4 @@
+import pytorch_lightning as pl
 from torch import nn
 
 from deepvision.layers import PatchingAndEmbedding
@@ -5,7 +6,7 @@ from deepvision.layers import TransformerEncoder
 from deepvision.utils.utils import parse_model_inputs
 
 
-class ViTPT(nn.Module):
+class ViTPT(pl.LightningModule):
     def __init__(
         self,
         include_top,
@@ -95,3 +96,28 @@ class ViTPT(nn.Module):
             output = nn.Softmax(dim=1)(output)
 
         return output
+
+    def compile(self, loss, optimizer):
+        self.loss = loss
+        self.optimizer = optimizer
+
+    def configure_optimizers(self):
+        optimizer = self.optimizer
+        return optimizer
+
+    def compute_loss(self, outputs, targets):
+        return self.loss(outputs, targets)
+
+    def training_step(self, train_batch, batch_idx):
+        inputs, targets = train_batch
+        outputs = self.forward(inputs)
+        loss = self.compute_loss(outputs, targets)
+        self.log("loss", loss, on_epoch=True, prog_bar=True)
+        return loss
+
+    def validation_step(self, val_batch, batch_idx):
+        inputs, targets = val_batch
+        outputs = self.forward(inputs)
+        loss = self.compute_loss(outputs, targets)
+        self.log("val_loss", loss, on_epoch=True, prog_bar=True)
+        return loss
