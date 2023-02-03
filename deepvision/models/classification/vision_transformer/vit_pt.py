@@ -29,13 +29,13 @@ class ViTPT(pl.LightningModule):
         if include_top and not classes:
             raise ValueError(
                 "If `include_top` is True, you should specify `classes`. "
-                f"Received: classes={self.classes}"
+                f"Received: classes={classes}"
             )
 
         if include_top and pooling:
             raise ValueError(
                 f"`pooling` must be `None` when `include_top=True`."
-                f"Received pooling={self.pooling} and include_top={self.include_top}. "
+                f"Received pooling={pooling} and include_top={include_top}. "
             )
 
         self.include_top = include_top
@@ -88,7 +88,7 @@ class ViTPT(pl.LightningModule):
         for transformer_layer in self.transformer_layers:
             x = transformer_layer(x)
 
-        layer_norm = self.layer_norm(encoded_patches)
+        layer_norm = self.layer_norm(x)
         output = self.pool(layer_norm) if self.pooling is not None else layer_norm[:, 0]
 
         if self.include_top:
