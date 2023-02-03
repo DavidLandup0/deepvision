@@ -14,13 +14,13 @@ class __TransformerEncoderPT(torch.nn.Module):
     due to the residual addition in the layer.
 
     Args:
-        project_dim: the dimensionality of the projection of the encoder, and output of the `MultiHeadAttention`
+        project_dim: the dimensionality of the projection of the encoder, and output of the `MultiheadAttention`
         mlp_dim: the intermediate dimensionality of the MLP head before projecting to `project_dim`
-        num_heads: the number of heads for the `MultiHeadAttention` layer
+        num_heads: the number of heads for the `MultiheadAttention` layer
         mlp_dropout: default 0.1, the dropout rate to apply between the layers of the MLP head of the encoder
         attention_dropout: default 0.1, the dropout rate to apply in the MultiHeadAttention layer
-        activation: default 'tf.activations.gelu', the activation function to apply in the MLP head - should be a function
-        layer_norm_epsilon: default 1e-06, the epsilon for `LayerNormalization` layers
+        activation: default 'torch.nn.GELU', the activation function to apply in the MLP head - should be a function
+        layer_norm_epsilon: default 1e-06, the epsilon for `LayerNorm` layers
     """
 
     def __init__(
@@ -236,15 +236,20 @@ def TransformerEncoder(
     mlp_dim = 3072
     num_heads = 4
 
-    encoded_patches = deepvision.layers.PatchingAndEmbedding(project_dim=project_dim,
-                                                            patch_size=16,
-                                                            backend='pytorch')(img_batch)
+    tensor = torch.rand(1, 197, 1024)
     trans_encoded = deepvision.layers.TransformerEncoder(project_dim=project_dim,
                                                        num_heads=num_heads,
                                                        mlp_dim = mlp_dim,
-                                                       backend='pytorch')(encoded_patches)
+                                                       backend='pytorch')(tensor)
 
-    print(trans_encoded.shape) # (1, 197, 1024)
+    print(trans_encoded.shape) # torch.Size([1, 197, 1024])
+
+    trans_encoded = deepvision.layers.TransformerEncoder(project_dim=1024,
+                                                       mlp_dim = 3072,
+                                                       num_heads=8,
+                                                       backend='tensorflow')(tensor)
+
+    print(trans_encoded.shape) # TensorShape([1, 197, 1024])
     ```
     """
     layer_class = LAYER_BACKBONES.get(backend)
