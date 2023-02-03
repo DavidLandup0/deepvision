@@ -41,7 +41,12 @@ class ViTPT(nn.Module):
                 f"Received pooling={self.pooling} and include_top={self.include_top}. "
             )
 
-        self.patching_and_embedding = PatchingAndEmbedding(project_dim, patch_size)
+        self.patching_and_embedding = PatchingAndEmbedding(
+            project_dim=project_dim,
+            patch_size=patch_size,
+            input_shape=input_shape,
+            backend="pytorch",
+        )
         self.transformer_layer_num = transformer_layer_num
         self.project_dim = project_dim
         self.num_heads = num_heads
@@ -52,33 +57,42 @@ class ViTPT(nn.Module):
         self.layer_norm = nn.LayerNorm(project_dim, eps=1e-6)
         self.linear = nn.Linear(project_dim, classes)
 
+        self.transformer_layers = nn.ModuleList()
+        for _ in range(self.transformer_layer_num):
+            self.transformer_layers.append(
+                TransformerEncoder(
+                    project_dim=self.project_dim,
+                    num_heads=self.num_heads,
+                    mlp_dim=self.mlp_dim,
+                    mlp_dropout=self.mlp_dropout,
+                    attention_dropout=self.attention_dropout,
+                    activation=self.activation,
+                    backend="pytorch",
+                )
+            )
+
     def forward(self, input_tensor):
         inputs = parse_model_inputs("pytorch", input_tensor.shape, input_tensor)
         x = inputs
 
         encoded_patches = self.patching_and_embedding(x)
-        encoded_patches = nn.Dropout(self.mlp_dropout)(encoded_patches)
+        x = nn.Dropout(self.mlp_dropout)(encoded_patches)
 
-        for _ in range(self.transformer_layer_num):
-            encoded_patches = TransformerEncoder(
-                project_dim=self.project_dim,
-                num_heads=self.num_heads,
-                mlp_dim=self.mlp_dim,
-                mlp_dropout=self.mlp_dropout,
-                attention_dropout=self.attention_dropout,
-                activation=self.activation,
-            )(encoded_patches)
+        for transformer_layer in self.transformer_layers:
+            x = transformer_layer(x)
 
         output = self.layer_norm(encoded_patches)
 
         if self.include_top:
-            x = nn.AvgPool2d(x.shape[1])(x)
+            x = nn.AvgPool1d(x.shape[1])(x)
             output = self.linear(x)
-            output = nn.Softmax(dim=1)(x)
+            output = nn.Softmax(dim=1)(output)
         else:
-            if self.pooling == "avg":
-                output = nn.AvgPool2d(x.shape[1])(x)
+            if self.pooling == "token":
+                output = x[:, 0]
+            elif self.pooling == "avg":
+                output = nn.AvgPool1d(x.shape[1])(x)
             elif self.pooling == "max":
-                output = nn.MaxPool2d(x.shape[1])(x)
+                output = nn.MaxPool1d(x.shape[1])(x)
 
         return output

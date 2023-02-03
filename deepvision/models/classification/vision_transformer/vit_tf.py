@@ -40,10 +40,15 @@ class ViTTF(tf.keras.Model):
         inputs = parse_model_inputs("tensorflow", input_shape, input_tensor)
         x = inputs
 
-        encoded_patches = PatchingAndEmbedding(project_dim, patch_size)(x)
+        encoded_patches = PatchingAndEmbedding(
+            project_dim=project_dim,
+            patch_size=patch_size,
+            input_shape=input_shape,
+            backend="tensorflow",
+        )(x)
         encoded_patches = layers.Dropout(mlp_dropout)(encoded_patches)
 
-        for _ in range(transformer_layer_num):
+        for i in range(transformer_layer_num):
             encoded_patches = TransformerEncoder(
                 project_dim=project_dim,
                 num_heads=num_heads,
@@ -51,18 +56,24 @@ class ViTTF(tf.keras.Model):
                 mlp_dropout=mlp_dropout,
                 attention_dropout=attention_dropout,
                 activation=activation,
+                backend="tensorflow",
+                name=f"transformer_encoder_{i}",
             )(encoded_patches)
 
-        output = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
+        layer_norm = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
 
         if include_top:
-            x = layers.GlobalAveragePooling2D(name="avg_pool")(x)
+            x = layers.GlobalAveragePooling1D(name="avg_pool")(layer_norm)
             output = layers.Dense(classes, activation="softmax", name="predictions")(x)
         else:
-            if pooling == "avg":
-                output = layers.GlobalAveragePooling2D(name="avg_pool")(x)
+            if pooling == "token":
+                output = layers.Lambda(lambda rep: rep[:, 0], name="token_pool")(
+                    layer_norm
+                )
+            elif pooling == "avg":
+                output = layers.GlobalAveragePooling1D(name="avg_pool")(layer_norm)
             elif pooling == "max":
-                output = layers.GlobalMaxPooling2D(name="max_pool")(x)
+                output = layers.GlobalMaxPooling1D(name="max_pool")(layer_norm)
 
         super().__init__(
             inputs={
@@ -76,3 +87,10 @@ class ViTTF(tf.keras.Model):
         self.include_top = include_top
         self.pooling = pooling
         self.classes = classes
+        self.transformer_layer_num = transformer_layer_num
+        self.project_dim = project_dim
+        self.num_heads = num_heads
+        self.mlp_dim = mlp_dim
+        self.mlp_dropout = mlp_dropout
+        self.attention_dropout = attention_dropout
+        self.activation = activation

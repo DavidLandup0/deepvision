@@ -32,6 +32,7 @@ class __TransformerEncoderPT(torch.nn.Module):
         attention_dropout=0.1,
         activation=torch.nn.GELU,
         layer_norm_epsilon=1e-06,
+        name=None,  # Ignored but added for generalizability between backends
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -210,6 +211,7 @@ def TransformerEncoder(
     attention_dropout=0.1,
     activation=None,
     layer_norm_epsilon=1e-06,
+    name=None,
 ):
     """
     Transformer encoder block implementation as a `torch.nn.Module` or `tf.keras.Layer`.
@@ -269,6 +271,7 @@ def TransformerEncoder(
         attention_dropout,
         activation,
         layer_norm_epsilon,
+        name=name,
     )
 
     return layer
