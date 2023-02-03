@@ -4,6 +4,7 @@ from tensorflow.keras import layers
 from deepvision.layers import Identity
 from deepvision.utils.utils import parse_model_inputs
 
+
 class ViTTF(tf.keras.Model):
     def __init__(
         self,

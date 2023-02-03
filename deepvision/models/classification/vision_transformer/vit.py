@@ -1,5 +1,5 @@
-from deepvision.models.classification.vision_transformer.vit_tf import ViTTF
 from deepvision.models.classification.vision_transformer.vit_pt import ViTPT
+from deepvision.models.classification.vision_transformer.vit_tf import ViTTF
 
 MODEL_CONFIGS = {
     "ViTTiny16": {

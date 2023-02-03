@@ -3,6 +3,7 @@ from torch import nn
 from deepvision.utils.utils import parse_model_inputs
 from deepvision.utils.utils import same_padding
 
+
 class ViTPT(nn.Module):
     def __init__(
         self,
@@ -30,12 +31,9 @@ class ViTPT(nn.Module):
                 f"Received pooling={self.pooling} and include_top={self.include_top}. "
             )
 
-
-
     def forward(self, input_tensor):
         inputs = parse_model_inputs("pytorch", input_tensor.shape, input_tensor)
         x = inputs
-
 
         if self.include_top:
             x = self.top_dense(x)
