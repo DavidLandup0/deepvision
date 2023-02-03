@@ -10,7 +10,6 @@ class ViTPT(nn.Module):
         input_shape=(3, None, None),
         pooling=None,
         classes=None,
-        block_type=None,
         **kwargs,
     ):
         super().__init__()

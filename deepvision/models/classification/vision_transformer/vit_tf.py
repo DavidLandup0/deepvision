@@ -7,16 +7,11 @@ from deepvision.utils.utils import parse_model_inputs
 class ViTTF(tf.keras.Model):
     def __init__(
         self,
-        stackwise_filters,
-        stackwise_blocks,
-        stackwise_strides,
         include_top,
         input_shape=(None, None, 3),
         input_tensor=None,
-        stackwise_dilations=None,
         pooling=None,
         classes=None,
-        block_type=None,
         **kwargs,
     ):
 
