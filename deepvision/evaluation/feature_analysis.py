@@ -72,7 +72,7 @@ class FeatureAnalyzer:
                         cmap="coolwarm",
                     )
                 else:
-                    fig, ax = plt.subplots(figsize=(10, 10))
+                    fig, ax = plt.subplots(2, figsize=(10, 10))
                     for class_id, classname in enumerate(classnames):
                         ax[0].scatter(
                             features_pca[:, 0][all_classes == class_id],
