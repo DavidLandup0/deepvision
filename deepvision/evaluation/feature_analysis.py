@@ -7,18 +7,32 @@ from sklearn.manifold import TSNE
 
 
 class FeatureAnalyzer:
-    def __init__(self, model, dataset, components, backend, legend=False):
+    def __init__(
+        self, model, dataset, components, backend, limit_batches=-1, legend=False
+    ):
         self.model = model
         self.dataset = dataset
         self.components = components
         self.backend = backend
         self.legend = legend
+        self.limit_batches = limit_batches
+
+        if limit_batches > len(dataset):
+            raise ValueError(
+                f"`limit_batches` is set to a higher number than there are batches in your dataset."
+            )
 
     def process_dataset_tf(self):
         all_features = []
         all_classes = []
+        if self.limit_batches > -1:
+            dataset = self.dataset.take(self.limit_batches)
+        else:
+            dataset = self.dataset
 
-        for index, batch in enumerate(self.dataset):
+        for index, batch in enumerate(dataset):
+            if index > self.limit_batches:
+                break
             print(f"Processing batch {index}/{len(self.dataset)}", end="\r")
             images, labels = batch
 
