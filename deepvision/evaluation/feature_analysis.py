@@ -57,16 +57,18 @@ class FeatureAnalyzer:
                 if self.components == 3:
                     fig = plt.figure()
                     ax = fig.add_subplot(121, projection="3d")
+                    ax.set_title("Learned Feature PCA")
                     for class_id, classname in enumerate(classnames):
-                        ax[0].scatter(
+                        ax.scatter(
                             features_pca[:, 0][all_classes == class_id],
                             features_pca[:, 1][all_classes == class_id],
                             features_pca[:, 2][all_classes == class_id],
                             label=classname,
                             alpha=0.4,
                         )
-
-                    ax[1].scatter(
+                    ax = fig.add_subplot(122, projection="3d")
+                    ax.set_title("Learned Feature t-Stochastic Neighbor Embeddings")
+                    ax.scatter(
                         features_tsne[:, 0],
                         features_tsne[:, 1],
                         features_tsne[:, 2],
@@ -75,6 +77,8 @@ class FeatureAnalyzer:
                     )
                 else:
                     fig, ax = plt.subplots(2, figsize=(10, 10))
+                    ax[0].set_title("Learned Feature PCA")
+                    ax[1].set_title("Learned Feature t-Stochastic Neighbor Embeddings")
                     for class_id, classname in enumerate(classnames):
                         ax[0].scatter(
                             features_pca[:, 0][all_classes == class_id],
@@ -89,9 +93,9 @@ class FeatureAnalyzer:
                         c=all_classes,
                         cmap="coolwarm",
                     )
+                """                
                 if self.legend:
                     ax[0].legend()
-                    ax[1].legend()
-                ax[0].set_title("Learned Feature PCA")
-                ax[1].set_title("Learned Feature t-Stochastic Neighbor Embeddings")
+                    ax[1].legend()"""
+
                 plt.show()
