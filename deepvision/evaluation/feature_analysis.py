@@ -55,7 +55,7 @@ class FeatureAnalyzer:
                 features_tsne = tsne.fit_transform(features_pca)
 
                 if self.components == 3:
-                    fig = plt.figure()
+                    fig = plt.figure(figsize=(10, 10))
                     ax = fig.add_subplot(121, projection="3d")
                     ax.set_title("Learned Feature PCA")
                     for class_id, classname in enumerate(classnames):
