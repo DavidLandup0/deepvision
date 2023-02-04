@@ -264,5 +264,5 @@ class ResNetV2PT(pl.LightningModule):
         self.acc.reset()
 
     def validation_epoch_end(self, outputs):
-        self.log("valid_acc_epoch", self.valid_acc.compute())
-        self.valid_acc.reset()
+        self.log("val_acc_epoch", self.val_acc.compute())
+        self.val_acc.reset()
