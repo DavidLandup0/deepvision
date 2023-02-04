@@ -10,6 +10,8 @@ class FeatureAnalyzer():
         self.components = components
         self.backend = backend
 
+        self.model.to('cpu')
+
     def visualize(self):
         all_features = []
         all_classes = []
