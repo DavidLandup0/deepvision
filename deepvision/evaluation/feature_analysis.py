@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import torch
+from mpl_toolkits.mplot3d import Axes3D
 from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
 
 
 class FeatureAnalyzer:
@@ -10,8 +12,6 @@ class FeatureAnalyzer:
         self.dataset = dataset
         self.components = components
         self.backend = backend
-
-        #self.model.to("cpu")
 
     def visualize(self):
         all_features = []
@@ -44,14 +44,52 @@ class FeatureAnalyzer:
                 pca = PCA(n_components=self.components)
                 features_pca = pca.fit_transform(all_features)
 
-                plt.subplots(figsize=(10, 10))
+                tsne = TSNE(
+                    n_components=self.components,
+                    verbose=1,
+                    perplexity=75,
+                    n_iter=1000,
+                    metric="euclidean",
+                )
+                features_tsne = tsne.fit_transform(features_pca)
 
-                for class_id, classname in enumerate(classnames):
-                    plt.scatter(
-                        features_pca[:, 0][all_classes == class_id],
-                        features_pca[:, 1][all_classes == class_id],
-                        label=classname,
+                if self.components == 3:
+                    fig, ax = plt.subplots(2, projection="3d")
+                    for class_id, classname in enumerate(classnames):
+                        ax[0].scatter(
+                            features_pca[:, 0][all_classes == class_id],
+                            features_pca[:, 1][all_classes == class_id],
+                            features_pca[:, 2][all_classes == class_id],
+                            label=classname,
+                            alpha=0.4,
+                        )
+
+                    ax[1].scatter(
+                        features_tsne[:, 0],
+                        features_tsne[:, 1],
+                        features_tsne[:, 2],
+                        c=all_classes,
+                        cmap="coolwarm",
+                    )
+                else:
+                    fig, ax = plt.subplots(figsize=(10, 10))
+                    for class_id, classname in enumerate(classnames):
+                        ax[0].scatter(
+                            features_pca[:, 0][all_classes == class_id],
+                            features_pca[:, 1][all_classes == class_id],
+                            label=classname,
+                            alpha=0.4,
+                        )
+
+                    ax[1].scatter(
+                        features_tsne[:, 0],
+                        features_tsne[:, 1],
+                        c=all_classes,
+                        cmap="coolwarm",
                     )
 
-                plt.legend()
+                ax[0].legend()
+                ax[1].legend()
+                ax[0].set_title("Learned Feature PCA")
+                ax[1].set_title("Learned Feature t-Stochastic Neighbor Embeddings")
                 plt.show()
