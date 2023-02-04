@@ -120,7 +120,7 @@ class ViTPT(pl.LightningModule):
         loss = self.compute_loss(outputs, targets)
         self.log("loss", loss, on_epoch=True, prog_bar=True)
         self.acc(outputs, targets)
-        self.log("acc", self.accuracy, prog_bar=True)
+        self.log("acc", self.acc, prog_bar=True)
         return loss
 
     def validation_step(self, val_batch, batch_idx):
