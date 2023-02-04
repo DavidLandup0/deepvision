@@ -71,10 +71,13 @@ class ViTPT(pl.LightningModule):
             )
 
         self.layer_norm = nn.LayerNorm(project_dim, eps=1e-6)
+        """
         if self.pooling == "avg":
             self.pool = nn.AdaptiveAvgPool1d(project_dim)
         elif self.pooling == "max":
             self.pool = nn.AdaptiveMaxPool1d(project_dim)
+        """
+        self.pool = nn.AdaptiveAvgPool1d(project_dim)
 
         self.linear = nn.Linear(project_dim, classes)
 
@@ -89,8 +92,9 @@ class ViTPT(pl.LightningModule):
             x = transformer_layer(x)
 
         layer_norm = self.layer_norm(x)
-        #output = self.pool(layer_norm) if self.pooling is not None else layer_norm[:, 0]
-        output = nn.AdaptiveMaxPool1d(layer_norm.shape[2])(layer_norm)
+        # Global average pooling
+        output = layer_norm.mean(dim = 1)
+
 
         if self.include_top:
             output = self.linear(output)
