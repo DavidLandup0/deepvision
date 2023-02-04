@@ -7,7 +7,7 @@ from sklearn.manifold import TSNE
 
 
 class FeatureAnalyzer:
-    def __init__(self, model, dataset, components, legend=False, backend):
+    def __init__(self, model, dataset, components, backend, legend=False):
         self.model = model
         self.dataset = dataset
         self.components = components
