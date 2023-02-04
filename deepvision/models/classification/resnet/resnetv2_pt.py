@@ -149,7 +149,7 @@ class ResNetV2PT(pl.LightningModule):
         self.stackwise_strides = stackwise_strides
 
         self.accuracy = torchmetrics.Accuracy(
-            task="multiclass", num_classes=num_classes
+            task="multiclass", num_classes=classes
         )
 
         if self.include_top and not self.classes:

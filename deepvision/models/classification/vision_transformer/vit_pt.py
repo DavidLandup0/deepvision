@@ -76,7 +76,7 @@ class ViTPT(pl.LightningModule):
         self.linear = nn.Linear(project_dim, classes)
 
         self.accuracy = torchmetrics.Accuracy(
-            task="multiclass", num_classes=num_classes
+            task="multiclass", num_classes=classes
         )
 
     def forward(self, input_tensor):
