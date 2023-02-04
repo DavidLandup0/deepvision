@@ -117,7 +117,7 @@ class ViTPT(pl.LightningModule):
         inputs, targets = train_batch
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
-        self.log("loss", loss, on_epoch=True, prog_bar=True)
+        self.log("loss", loss, prog_bar=True)
         acc = self.acc(outputs, targets)
         self.log("acc", acc, on_epoch=True, prog_bar=True)
         return loss
