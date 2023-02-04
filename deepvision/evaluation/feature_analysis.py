@@ -56,7 +56,7 @@ class FeatureAnalyzer:
 
                 if self.components == 3:
                     fig = plt.figure(figsize=(10, 10))
-                    ax = fig.add_subplot(121, projection="3d")
+                    ax = fig.add_subplot(111, projection="3d")
                     ax.set_title("Learned Feature PCA")
                     for class_id, classname in enumerate(classnames):
                         ax.scatter(
@@ -66,7 +66,7 @@ class FeatureAnalyzer:
                             label=classname,
                             alpha=0.4,
                         )
-                    ax = fig.add_subplot(122, projection="3d")
+                    ax = fig.add_subplot(112, projection="3d")
                     ax.set_title("Learned Feature t-Stochastic Neighbor Embeddings")
                     ax.scatter(
                         features_tsne[:, 0],
