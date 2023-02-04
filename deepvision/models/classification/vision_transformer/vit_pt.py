@@ -1,4 +1,5 @@
 import pytorch_lightning as pl
+import torchmetrics
 from torch import nn
 
 from deepvision.layers import PatchingAndEmbedding
@@ -29,13 +30,13 @@ class ViTPT(pl.LightningModule):
         if include_top and not classes:
             raise ValueError(
                 "If `include_top` is True, you should specify `classes`. "
-                f"Received: classes={self.classes}"
+                f"Received: classes={classes}"
             )
 
         if include_top and pooling:
             raise ValueError(
                 f"`pooling` must be `None` when `include_top=True`."
-                f"Received pooling={self.pooling} and include_top={self.include_top}. "
+                f"Received pooling={pooling} and include_top={include_top}. "
             )
 
         self.include_top = include_top
@@ -71,12 +72,9 @@ class ViTPT(pl.LightningModule):
             )
 
         self.layer_norm = nn.LayerNorm(project_dim, eps=1e-6)
-        if self.pooling == "avg":
-            self.pool = nn.AdaptiveAvgPool1d(project_dim)
-        elif self.pooling == "max":
-            self.pool = nn.AdaptiveMaxPool1d(project_dim)
-
         self.linear = nn.Linear(project_dim, classes)
+
+        self.acc = torchmetrics.Accuracy(task="multiclass", num_classes=classes)
 
     def forward(self, input_tensor):
         inputs = parse_model_inputs("pytorch", input_tensor.shape, input_tensor)
@@ -88,12 +86,19 @@ class ViTPT(pl.LightningModule):
         for transformer_layer in self.transformer_layers:
             x = transformer_layer(x)
 
-        layer_norm = self.layer_norm(encoded_patches)
-        output = self.pool(layer_norm) if self.pooling is not None else layer_norm[:, 0]
+        layer_norm = self.layer_norm(x)
 
         if self.include_top:
+            output = layer_norm.mean(dim=1)
             output = self.linear(output)
             output = nn.Softmax(dim=1)(output)
+        else:
+            if self.pooling == "avg":
+                output = layer_norm.mean(dim=1)
+            elif self.pooling == "max":
+                output = layer_norm.max(dim=1)
+            elif self.pooling == "token":
+                output = layer_norm[:, 0]
 
         return output
 
@@ -112,7 +117,9 @@ class ViTPT(pl.LightningModule):
         inputs, targets = train_batch
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
-        self.log("loss", loss, on_epoch=True, prog_bar=True)
+        self.log("loss", loss, prog_bar=True)
+        acc = self.acc(outputs, targets)
+        self.log("acc", acc, on_epoch=True, prog_bar=True)
         return loss
 
     def validation_step(self, val_batch, batch_idx):
@@ -120,4 +127,6 @@ class ViTPT(pl.LightningModule):
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
         self.log("val_loss", loss, on_epoch=True, prog_bar=True)
+        val_acc = self.acc(outputs, targets)
+        self.log("val_acc", val_acc, on_epoch=True, prog_bar=True)
         return loss

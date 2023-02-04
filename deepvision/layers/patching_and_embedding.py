@@ -273,6 +273,7 @@ class __PatchingAndEmbeddingPT(torch.nn.Module):
 
         # Add learnable class token before linear projection and positional embedding
         flattened_shapes = patches_flattened.shape
+        # [1, 1, project_dim] -> [B, 1, project_dim]
         class_token_broadcast = self.class_token.expand(flattened_shapes[0], -1, -1)
         patches_flattened = torch.cat([class_token_broadcast, patches_flattened], 1)
         positions = torch.arange(start=0, end=self.num_patches + 1, step=1).to(

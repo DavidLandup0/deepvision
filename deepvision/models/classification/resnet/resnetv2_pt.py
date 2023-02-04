@@ -1,4 +1,5 @@
 import pytorch_lightning as pl
+import torchmetrics
 from torch import nn
 
 from deepvision.utils.utils import parse_model_inputs
@@ -147,6 +148,8 @@ class ResNetV2PT(pl.LightningModule):
         self.stackwise_blocks = stackwise_blocks
         self.stackwise_strides = stackwise_strides
 
+        self.acc = torchmetrics.Accuracy(task="multiclass", num_classes=classes)
+
         if self.include_top and not self.classes:
             raise ValueError(
                 "If `include_top` is True, you should specify `classes`. "
@@ -244,6 +247,8 @@ class ResNetV2PT(pl.LightningModule):
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
         self.log("loss", loss, on_epoch=True, prog_bar=True)
+        acc = self.acc(outputs, targets)
+        self.log("acc", acc, on_epoch=True, prog_bar=True)
         return loss
 
     def validation_step(self, val_batch, batch_idx):
@@ -251,4 +256,6 @@ class ResNetV2PT(pl.LightningModule):
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
         self.log("val_loss", loss, on_epoch=True, prog_bar=True)
+        val_acc = self.acc(outputs, targets)
+        self.log("val_acc", val_acc, on_epoch=True, prog_bar=True)
         return loss
