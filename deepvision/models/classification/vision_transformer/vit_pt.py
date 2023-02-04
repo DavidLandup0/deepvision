@@ -89,7 +89,8 @@ class ViTPT(pl.LightningModule):
             x = transformer_layer(x)
 
         layer_norm = self.layer_norm(x)
-        output = self.pool(layer_norm) if self.pooling is not None else layer_norm[:, 0]
+        #output = self.pool(layer_norm) if self.pooling is not None else layer_norm[:, 0]
+        output = nn.AdaptiveMaxPool1d(layer_norm.shape[1])(layer_norm)
 
         if self.include_top:
             output = self.linear(output)
