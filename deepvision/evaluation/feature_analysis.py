@@ -7,11 +7,12 @@ from sklearn.manifold import TSNE
 
 
 class FeatureAnalyzer:
-    def __init__(self, model, dataset, components, backend):
+    def __init__(self, model, dataset, components, legend=False, backend):
         self.model = model
         self.dataset = dataset
         self.components = components
         self.backend = backend
+        self.legend = legend
 
     def visualize(self):
         all_features = []
@@ -54,7 +55,8 @@ class FeatureAnalyzer:
                 features_tsne = tsne.fit_transform(features_pca)
 
                 if self.components == 3:
-                    fig, ax = plt.subplots(2, projection="3d")
+                    fig = plt.figure()
+                    ax = fig.add_subplot(2, projection="3d")
                     for class_id, classname in enumerate(classnames):
                         ax[0].scatter(
                             features_pca[:, 0][all_classes == class_id],
@@ -87,9 +89,9 @@ class FeatureAnalyzer:
                         c=all_classes,
                         cmap="coolwarm",
                     )
-
-                ax[0].legend()
-                ax[1].legend()
+                if self.legend:
+                    ax[0].legend()
+                    ax[1].legend()
                 ax[0].set_title("Learned Feature PCA")
                 ax[1].set_title("Learned Feature t-Stochastic Neighbor Embeddings")
                 plt.show()
