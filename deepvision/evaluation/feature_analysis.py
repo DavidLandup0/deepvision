@@ -31,8 +31,6 @@ class FeatureAnalyzer:
             dataset = self.dataset
 
         for index, batch in enumerate(dataset):
-            if index > self.limit_batches:
-                break
             print(f"Processing batch {index}/{len(self.dataset)}", end="\r")
             images, labels = batch
 
@@ -58,6 +56,8 @@ class FeatureAnalyzer:
 
         with torch.no_grad():
             for index, batch in enumerate(self.dataset):
+                if index > self.limit_batches:
+                    break
                 print(f"Processing batch {index}/{len(self.dataset)}", end="\r")
                 images, labels = batch
                 images = images.to(self.model.device)
