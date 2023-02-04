@@ -19,6 +19,9 @@ class FeatureAnalyzer():
             for index, batch in enumerate(self.dataset):
                 print(f'Processing batch {index}/{len(self.dataset)}', end='\r')
                 images, labels = batch
+                images.to(self.model.device)
+                labels.to(self.model.device)
+
                 features = self.model(images)
                 all_features.append(features)
                 all_classes.append(labels)
