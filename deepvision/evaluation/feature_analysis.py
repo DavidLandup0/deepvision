@@ -56,7 +56,7 @@ class FeatureAnalyzer:
 
                 if self.components == 3:
                     fig = plt.figure()
-                    ax = fig.add_subplot(2, projection="3d")
+                    ax = fig.add_subplot(121, projection="3d")
                     for class_id, classname in enumerate(classnames):
                         ax[0].scatter(
                             features_pca[:, 0][all_classes == class_id],
