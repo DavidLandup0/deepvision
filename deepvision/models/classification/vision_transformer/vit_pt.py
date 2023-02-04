@@ -92,13 +92,18 @@ class ViTPT(pl.LightningModule):
             x = transformer_layer(x)
 
         layer_norm = self.layer_norm(x)
-        # Global average pooling
-        output = layer_norm.mean(dim = 1)
-
 
         if self.include_top:
+            output = layer_norm.mean(dim=1)
             output = self.linear(output)
             output = nn.Softmax(dim=1)(output)
+        else:
+            if self.pooling == "avg":
+                output = layer_norm.mean(dim=1)
+            elif self.pooling == "max":
+                output = layer_norm.max(dim=1)
+            elif self.pooling == "token":
+                output = layer_norm[:, 0]
 
         return output
 
