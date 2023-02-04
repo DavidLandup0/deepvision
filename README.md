@@ -22,17 +22,17 @@ DeepVision is deeply integrated with TensorFlow and PyTorch. You can switch betw
 ```python
 import deepvision
 
-# TF-Based ResNet50V2 operating on `tf.Tensor`s
-tf_model = deepvision.models.ResNet50V2(include_top=True,
-                                     classes=10,
-                                     input_shape=(224, 224, 3),
-                                     backend='tensorflow')
+# TF-Based ViTB16 operating on `tf.Tensor`s
+tf_model = deepvision.models.ViTB16(include_top=True,
+                                    classes=10,
+                                    input_shape=(224, 224, 3),
+                                    backend='tensorflow')
                                      
-# PyTorch-Based ResNet50V2 operating on `torch.Tensor`s
-pt_model = deepvision.models.ResNet50V2(include_top=True,
-                                     classes=10,
-                                     input_shape=(3, 224, 224),
-                                     backend='pytorch')
+# PyTorch-Based ViTB16 operating on `torch.Tensor`s
+pt_model = deepvision.models.ViTB16(include_top=True,
+                                    classes=10,
+                                    input_shape=(3, 224, 224),
+                                    backend='pytorch')
 ```
 
 **All models will share the same API, regardless of the backend**. With DeepVision, you can rest assured that training performance between PyTorch and TensorFlow models isn't due to the specific implementation.
@@ -60,9 +60,9 @@ train_set = train_set.map(preprocess_img).batch(32).prefetch(tf.data.AUTOTUNE)
 test_set = test_set.map(preprocess_img).batch(32).prefetch(tf.data.AUTOTUNE)
 
 tf_model = deepvision.models.ResNet18V2(include_top=True,
-                                     classes=n_classes,
-                                     input_shape=(224, 224, 3),
-                                     backend='tensorflow')
+                                        classes=n_classes,
+                                        input_shape=(224, 224, 3),
+                                        backend='tensorflow')
 
 tf_model.compile(
   loss=tf.keras.losses.SparseCategoricalCrossentropy(),
@@ -79,13 +79,13 @@ Any model returned as a PyTorch model is a `pl.LightningModule`, which is a `tor
 
 ```python
 pt_model = deepvision.models.ResNet50V2(include_top=True,
-                                     classes=10,
-                                     input_shape=(3, 224, 224),
-                                     backend='pytorch')
-                                     
+                                        classes=10,
+                                        input_shape=(3, 224, 224),
+                                        backend='pytorch')
+# Optimizer, loss function, etc.
 for epoch in epochs:
     for batch in train_loader:
-        optimizer.zero_grads()
+        optimizer.zero_grad()
         
         inputs, labels = batch
         outputs = model(inputs)
@@ -118,9 +118,9 @@ train_dataloader = DataLoader(cifar_train, batch_size=32)
 val_dataloader = DataLoader(cifar_test, batch_size=32)
 
 pt_model = deepvision.models.ResNet18V2(include_top=True,
-                                     classes=10,
-                                     input_shape=(3, 224, 224),
-                                     backend='pytorch')
+                                        classes=10,
+                                        input_shape=(3, 224, 224),
+                                        backend='pytorch')
 
 loss = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(pt_model.parameters(), 1e-4)
