@@ -137,5 +137,8 @@ class FeatureAnalyzer:
                 c=all_classes,
                 cmap="coolwarm",
             )
+            if self.legend:
+                ax[0].legend()
+                ax[1].legend()
 
         plt.show()
