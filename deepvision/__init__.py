@@ -1,2 +1,2 @@
-from deepvision import models
 from deepvision import evaluation
+from deepvision import models
