@@ -1,4 +1,5 @@
 import pytorch_lightning as pl
+import torchmetrics
 from torch import nn
 
 from deepvision.utils.utils import parse_model_inputs
@@ -146,6 +147,10 @@ class ResNetV2PT(pl.LightningModule):
         self.stackwise_filters = stackwise_filters
         self.stackwise_blocks = stackwise_blocks
         self.stackwise_strides = stackwise_strides
+
+        self.accuracy = torchmetrics.Accuracy(
+            task="multiclass", num_classes=num_classes
+        )
 
         if self.include_top and not self.classes:
             raise ValueError(

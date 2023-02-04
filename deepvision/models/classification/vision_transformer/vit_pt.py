@@ -1,4 +1,5 @@
 import pytorch_lightning as pl
+import torchmetrics
 from torch import nn
 
 from deepvision.layers import PatchingAndEmbedding
@@ -71,15 +72,12 @@ class ViTPT(pl.LightningModule):
             )
 
         self.layer_norm = nn.LayerNorm(project_dim, eps=1e-6)
-        """
-        if self.pooling == "avg":
-            self.pool = nn.AdaptiveAvgPool1d(project_dim)
-        elif self.pooling == "max":
-            self.pool = nn.AdaptiveMaxPool1d(project_dim)
-        """
         self.pool = nn.AdaptiveAvgPool1d(project_dim)
-
         self.linear = nn.Linear(project_dim, classes)
+
+        self.accuracy = torchmetrics.Accuracy(
+            task="multiclass", num_classes=num_classes
+        )
 
     def forward(self, input_tensor):
         inputs = parse_model_inputs("pytorch", input_tensor.shape, input_tensor)
