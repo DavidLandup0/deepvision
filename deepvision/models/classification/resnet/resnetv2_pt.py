@@ -148,9 +148,8 @@ class ResNetV2PT(pl.LightningModule):
         self.stackwise_blocks = stackwise_blocks
         self.stackwise_strides = stackwise_strides
 
-        self.accuracy = torchmetrics.Accuracy(
-            task="multiclass", num_classes=classes
-        )
+        self.acc = torchmetrics.Accuracy(task="multiclass", num_classes=classes)
+        self.valid_acc = torchmetrics.Accuracy(task="multiclass", num_classes=classes)
 
         if self.include_top and not self.classes:
             raise ValueError(
@@ -249,8 +248,8 @@ class ResNetV2PT(pl.LightningModule):
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
         self.log("loss", loss, on_epoch=True, prog_bar=True)
-        self.accuracy(outputs, targets)
-        self.log("acc", self.accuracy, on_epoch=True, prog_bar=True)
+        self.acc(outputs, targets)
+        self.log("acc", self.accuracy, prog_bar=True)
         return loss
 
     def validation_step(self, val_batch, batch_idx):
@@ -258,6 +257,12 @@ class ResNetV2PT(pl.LightningModule):
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
         self.log("val_loss", loss, on_epoch=True, prog_bar=True)
-        self.accuracy(outputs, targets)
-        self.log("val_acc", self.accuracy, on_epoch=True, prog_bar=True)
+        self.val_acc.update(outputs, targets)
         return loss
+
+    def training_epoch_end(self, outs):
+        self.acc.reset()
+
+    def validation_epoch_end(self, outputs):
+        self.log("valid_acc_epoch", self.valid_acc.compute())
+        self.valid_acc.reset()

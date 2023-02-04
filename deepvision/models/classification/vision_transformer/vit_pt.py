@@ -72,12 +72,10 @@ class ViTPT(pl.LightningModule):
             )
 
         self.layer_norm = nn.LayerNorm(project_dim, eps=1e-6)
-        self.pool = nn.AdaptiveAvgPool1d(project_dim)
         self.linear = nn.Linear(project_dim, classes)
 
-        self.accuracy = torchmetrics.Accuracy(
-            task="multiclass", num_classes=classes
-        )
+        self.acc = torchmetrics.Accuracy(task="multiclass", num_classes=classes)
+        self.valid_acc = torchmetrics.Accuracy(task="multiclass", num_classes=classes)
 
     def forward(self, input_tensor):
         inputs = parse_model_inputs("pytorch", input_tensor.shape, input_tensor)
@@ -121,8 +119,8 @@ class ViTPT(pl.LightningModule):
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
         self.log("loss", loss, on_epoch=True, prog_bar=True)
-        self.accuracy(outputs, targets)
-        self.log("acc", self.accuracy, on_epoch=True, prog_bar=True)
+        self.acc(outputs, targets)
+        self.log("acc", self.accuracy, prog_bar=True)
         return loss
 
     def validation_step(self, val_batch, batch_idx):
@@ -130,6 +128,12 @@ class ViTPT(pl.LightningModule):
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
         self.log("val_loss", loss, on_epoch=True, prog_bar=True)
-        self.accuracy(outputs, targets)
-        self.log("val_acc", self.accuracy, on_epoch=True, prog_bar=True)
+        self.val_acc.update(outputs, targets)
         return loss
+
+    def training_epoch_end(self, outs):
+        self.acc.reset()
+
+    def validation_epoch_end(self, outputs):
+        self.log("valid_acc_epoch", self.valid_acc.compute())
+        self.valid_acc.reset()
