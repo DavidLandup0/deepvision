@@ -44,7 +44,14 @@ class FeatureAnalyzer:
             print(f"Processing batch {index}/{len(self.dataset)}", end="\r")
             images, labels = batch
 
-            features = self.model(images)["output"]
+            features = self.model(images)
+            # If the output is a `dict` with an `output`
+            # key, such as for Functional Subclassing models
+            # extract the `'output'` key, that all DeepVision models support.
+            # Else - take the `tf.Tensor` output.
+            if isinstance(features, dict):
+                features = features["output"]
+
             all_features.append(features)
             all_classes.append(labels)
 
