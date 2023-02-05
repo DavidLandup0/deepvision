@@ -50,6 +50,7 @@ class FeatureAnalyzer:
             features = self.model(images)["output"]
             all_features.append(features)
             all_classes.append(labels)
+            print(labels.shape)
 
         print(f"\nProcessing finished. Extracting features and classes...")
         all_classes_tf = tf.stack(all_classes)
