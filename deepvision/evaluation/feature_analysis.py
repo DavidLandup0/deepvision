@@ -8,19 +8,32 @@ from sklearn.manifold import TSNE
 
 class FeatureAnalyzer:
     def __init__(
-        self, model, dataset, components, backend, limit_batches=-1, legend=False
+        self,
+        model,
+        dataset,
+        components,
+        backend,
+        random_state=42,
+        limit_batches=-1,
+        legend=False,
     ):
+
         self.model = model
         self.dataset = dataset
         self.components = components
         self.backend = backend
         self.legend = legend
         self.limit_batches = limit_batches
+        self.random_state = random_state
 
         if limit_batches > len(dataset):
             raise ValueError(
                 f"`limit_batches` is set to a higher number than there are batches in your dataset."
             )
+
+        self.all_features = None
+        self.all_classes = None
+        self.classnames = None
 
     def process_dataset_tf(self):
         all_features = []
@@ -34,7 +47,7 @@ class FeatureAnalyzer:
             print(f"Processing batch {index}/{len(self.dataset)}", end="\r")
             images, labels = batch
 
-            features = self.model(images)
+            features = self.model(images)["output"]
             all_features.append(features)
             all_classes.append(labels)
 
@@ -48,7 +61,9 @@ class FeatureAnalyzer:
 
         all_features = all_features_tf.numpy()
         all_classes = all_classes_tf.numpy()
-        return all_features, all_classes, classnames
+        self.all_features = all_features
+        self.all_classes = all_classes
+        self.classnames = classnames
 
     def process_dataset_pt(self):
         all_features = []
@@ -78,22 +93,35 @@ class FeatureAnalyzer:
             all_features = all_features_torch.detach().cpu().numpy()
             all_classes = all_classes_torch.detach().cpu().numpy()
 
-            return all_features, all_classes, classnames
+            self.all_features = all_features
+            self.all_classes = all_classes
+            self.classnames = classnames
 
-    def visualize(self):
+    def extract_features(self):
         if self.backend == "pytorch":
-            all_features, all_classes, classnames = self.process_dataset_pt()
+            self.process_dataset_pt()
         else:
-            all_features, all_classes, classnames = self.process_dataset_tf()
+            self.process_dataset_tf()
+        print(
+            "Features extracted. You can now visualize them or perform analysis without rerunning the extraction."
+        )
+
+    def feature_analysis(self):
+        if self.all_classes is None or self.all_features is None:
+            raise ValueError(
+                f"Features and classes are None. Did you forget to call `extract_features()` first?"
+            )
+
         print(f"Principal component analysis...")
-        pca = PCA(n_components=self.components)
-        features_pca = pca.fit_transform(all_features)
+        pca = PCA(n_components=self.components, random=self.random_state)
+        features_pca = pca.fit_transform(self.all_features)
 
         tsne = TSNE(
             n_components=self.components,
             verbose=1,
             perplexity=75,
             n_iter=1000,
+            random=self.random_state,
             metric="euclidean",
         )
         features_tsne = tsne.fit_transform(features_pca)
@@ -102,11 +130,11 @@ class FeatureAnalyzer:
             fig = plt.figure(figsize=(10, 10))
             ax = fig.add_subplot(121, projection="3d")
             ax.set_title("Learned Feature PCA")
-            for class_id, classname in enumerate(classnames):
+            for class_id, classname in enumerate(self.classnames):
                 ax.scatter(
-                    features_pca[:, 0][all_classes == class_id],
-                    features_pca[:, 1][all_classes == class_id],
-                    features_pca[:, 2][all_classes == class_id],
+                    features_pca[:, 0][self.all_classes == class_id],
+                    features_pca[:, 1][self.all_classes == class_id],
+                    features_pca[:, 2][self.all_classes == class_id],
                     label=classname,
                     alpha=0.4,
                 )
@@ -116,17 +144,17 @@ class FeatureAnalyzer:
                 features_tsne[:, 0],
                 features_tsne[:, 1],
                 features_tsne[:, 2],
-                c=all_classes,
+                c=self.all_classes,
                 cmap="coolwarm",
             )
         else:
             fig, ax = plt.subplots(2, figsize=(10, 10))
             ax[0].set_title("Learned Feature PCA")
             ax[1].set_title("Learned Feature t-Stochastic Neighbor Embeddings")
-            for class_id, classname in enumerate(classnames):
+            for class_id, classname in enumerate(self.classnames):
                 ax[0].scatter(
-                    features_pca[:, 0][all_classes == class_id],
-                    features_pca[:, 1][all_classes == class_id],
+                    features_pca[:, 0][self.all_classes == class_id],
+                    features_pca[:, 1][self.all_classes == class_id],
                     label=classname,
                     alpha=0.4,
                 )
@@ -134,7 +162,7 @@ class FeatureAnalyzer:
             ax[1].scatter(
                 features_tsne[:, 0],
                 features_tsne[:, 1],
-                c=all_classes,
+                c=self.all_classes,
                 cmap="coolwarm",
             )
             if self.legend:
