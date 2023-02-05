@@ -151,7 +151,7 @@ tf_model = deepvision.models.ViTTiny16(include_top=True,
                                        input_shape=(224, 224, 3),
                                        backend='tensorflow')
                                        
-# Train ...
+# Train...
 
 feature_analysis = deepvision.evaluation.FeatureAnalyzer(tf_model,               # DeepVision TF Model
                                                          train_set,              # `tf.data.Dataset` returning (img, label)
@@ -165,7 +165,32 @@ feature_analysis.feature_analysis(components=2)
 
 ![image](https://user-images.githubusercontent.com/60978046/216820223-2a674edb-90ca-4a27-8701-2f9904bad0f6.png)
 
+**Note:** All TensorFlow-based DeepVision models are *Functional Subclassing* models - i.e. have a *dictionary output*, which contains `1..n` keys, and the standard output contains an `output` key that corresponds to the `tf.Tensor` output value. The `FeatureAnalyzer` accepts any TensorFlow-based model that can produce a `tf.Tensor` output *or* produces a dictionary output with an `'output':tf.Tensor` key-value pair.
+
 The `FeatureAnalyzer` class iterates over the supplied dataset, extracting the features (outputs) of the supplied model, when `extract_features()` is called. This expensive operation is called only once, and all subsequent calls, until a new `extract_features()` call, re-use the same features. The `feature_analysis()` method performs _Principal Component Analysis (PCA)_ and _t-Stochastic Neighbor Embeddings (t-SNE)_ on the extracted features, and visualizes them using Matplotlib. The `components` parameter is the `n_components` used for PCA and t-SNE transformations, and naturally has to be in the range of `[2..3]` for 2D and 3D plots respectively.
+
+```python
+import deepvision
+
+pt_model = deepvision.models.ResNet18V2(include_top=True,
+                                        classes=10,
+                                        input_shape=(3, 224, 224),
+                                        backend='pytorch')
+# Train...
+                                       
+classnames = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+feature_analysis = deepvision.evaluation.FeatureAnalyzer(pt_model, 
+                                                         train_dataloader,
+                                                         limit_batches=500,
+                                                         classnames=classnames,
+                                                         backend='pytorch')
+                                                         
+feature_analysis.extract_features()
+feature_analysis.feature_analysis(components=3, figsize=(20, 20))
+```
+
+![image](https://user-images.githubusercontent.com/60978046/216826476-65911f69-cbc4-4428-97a5-4892f6125978.png)
+
 
 ### DeepVision as a Model Zoo
 
