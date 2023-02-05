@@ -12,15 +12,14 @@ class FeatureAnalyzer:
         model,
         dataset,
         backend,
+        classnames=None,
         random_state=42,
         limit_batches=-1,
-        legend=False,
     ):
 
         self.model = model
         self.dataset = dataset
         self.backend = backend
-        self.legend = legend
         self.limit_batches = len(dataset) if limit_batches == -1 else limit_batches
         self.random_state = random_state
 
@@ -29,9 +28,9 @@ class FeatureAnalyzer:
                 f"`limit_batches` is set to a higher number than there are batches in your dataset."
             )
 
+        self.classnames = classnames
         self.all_features = None
         self.all_classes = None
-        self.classnames = None
 
     def process_dataset_tf(self):
         all_features = []
@@ -57,14 +56,16 @@ class FeatureAnalyzer:
         all_features_tf = tf.reshape(
             all_features_tf, shape=(all_classes_tf.shape[0], -1)
         )
-        # tf.unique() returns a tuple of unique values and indices
-        classnames, idx = tf.unique(all_classes_tf)
+        if self.classnames is None:
+            # tf.unique() returns a tuple of unique values and indices
+            classnames, idx = tf.unique(all_classes_tf)
+            classnames = classnames.numpy()
+            self.classnames = classnames
 
         all_features = all_features_tf.numpy()
         all_classes = all_classes_tf.numpy()
         self.all_features = all_features
         self.all_classes = all_classes
-        self.classnames = classnames.numpy()
 
     def process_dataset_pt(self):
         all_features = []
@@ -89,14 +90,15 @@ class FeatureAnalyzer:
             all_features_torch = torch.stack(all_features).reshape(
                 all_classes_torch.shape[0], -1
             )
-            classnames = torch.unique(all_classes_torch).detach().cpu().numpy()
+            if self.classnames is None:
+                classnames = torch.unique(all_classes_torch).detach().cpu().numpy()
+                self.classnames = classnames
 
             all_features = all_features_torch.detach().cpu().numpy()
             all_classes = all_classes_torch.detach().cpu().numpy()
 
             self.all_features = all_features
             self.all_classes = all_classes
-            self.classnames = classnames
 
     def extract_features(self):
         if self.backend == "pytorch":
@@ -107,7 +109,7 @@ class FeatureAnalyzer:
             "Features extracted. You can now visualize them or perform analysis without rerunning the extraction."
         )
 
-    def feature_analysis(self, components):
+    def feature_analysis(self, components, legend=True):
         if self.all_classes is None or self.all_features is None:
             raise ValueError(
                 f"Features and classes are None. Did you forget to call `extract_features()` first?"
@@ -139,17 +141,20 @@ class FeatureAnalyzer:
                     label=classname,
                     alpha=0.4,
                 )
+                if legend:
+                    ax.legend()
             ax = fig.add_subplot(122, projection="3d")
             ax.set_title("Learned Feature t-Stochastic Neighbor Embeddings")
-            ax.scatter(
-                features_tsne[:, 0],
-                features_tsne[:, 1],
-                features_tsne[:, 2],
-                c=self.all_classes,
-                cmap="coolwarm",
-            )
-            if self.legend:
-                ax.legend()
+            for class_id, classname in enumerate(self.classnames):
+                ax.scatter(
+                    features_tsne[:, 0],
+                    features_tsne[:, 1],
+                    features_tsne[:, 2],
+                    label=classname,
+                    alpha=0.4,
+                )
+                if legend:
+                    ax.legend()
         else:
             fig, ax = plt.subplots(2, figsize=(10, 10))
             ax[0].set_title("Learned Feature PCA")
@@ -162,13 +167,13 @@ class FeatureAnalyzer:
                     alpha=0.4,
                 )
 
-            ax[1].scatter(
-                features_tsne[:, 0],
-                features_tsne[:, 1],
-                c=self.all_classes,
-                cmap="coolwarm",
-            )
-            if self.legend:
+                ax[1].scatter(
+                    features_tsne[:, 0][self.all_classes == class_id],
+                    features_tsne[:, 1][self.all_classes == class_id],
+                    label=classname,
+                    alpha=0.4,
+                )
+            if legend:
                 ax[0].legend()
                 ax[1].legend()
 
