@@ -114,7 +114,7 @@ class FeatureAnalyzer:
             )
 
         print(f"Principal component analysis...")
-        pca = PCA(n_components=self.components, random=self.random_state)
+        pca = PCA(n_components=self.components, random_state=self.random_state)
         features_pca = pca.fit_transform(self.all_features)
 
         tsne = TSNE(
@@ -122,7 +122,7 @@ class FeatureAnalyzer:
             verbose=1,
             perplexity=75,
             n_iter=1000,
-            random=self.random_state,
+            random_state=self.random_state,
             metric="euclidean",
         )
         features_tsne = tsne.fit_transform(features_pca)
