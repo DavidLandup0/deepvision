@@ -57,7 +57,8 @@ class FeatureAnalyzer:
 
         all_features_tf = tf.stack(all_features)
         all_features_tf = tf.reshape(all_features_tf.shape[0], -1)
-        classnames = tf.unique(all_classes_tf).numpy()
+        # tf.unique() returns a tuple of unique values and indices
+        classnames = tf.unique(all_classes_tf)[0].numpy()
 
         all_features = all_features_tf.numpy()
         all_classes = all_classes_tf.numpy()
