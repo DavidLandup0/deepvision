@@ -106,7 +106,7 @@ class FeatureAnalyzer:
         else:
             self.process_dataset_tf()
         print(
-            "Features extracted. You can now visualize them or perform analysis without rerunning the extraction."
+            "Features extracted. You can now visualize them or perform analysis without re-running the extraction."
         )
 
     def feature_analysis(self, components, legend=True):
@@ -147,9 +147,9 @@ class FeatureAnalyzer:
             ax.set_title("Learned Feature t-Stochastic Neighbor Embeddings")
             for class_id, classname in enumerate(self.classnames):
                 ax.scatter(
-                    features_tsne[:, 0],
-                    features_tsne[:, 1],
-                    features_tsne[:, 2],
+                    features_tsne[:, 0][self.all_classes == class_id],
+                    features_tsne[:, 1][self.all_classes == class_id],
+                    features_tsne[:, 2][self.all_classes == class_id],
                     label=classname,
                     alpha=0.4,
                 )
