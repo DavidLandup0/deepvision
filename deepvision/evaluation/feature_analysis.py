@@ -109,7 +109,15 @@ class FeatureAnalyzer:
             "Features extracted. You can now visualize them or perform analysis without re-running the extraction."
         )
 
-    def feature_analysis(self, components, legend=True):
+    def feature_analysis(
+        self,
+        components,
+        figsize=(10, 10),
+        tsne_verbose=1,
+        perplexity=75,
+        n_iter=1000,
+        legend=True,
+    ):
         if self.all_classes is None or self.all_features is None:
             raise ValueError(
                 f"Features and classes are None. Did you forget to call `extract_features()` first?"
@@ -121,16 +129,16 @@ class FeatureAnalyzer:
 
         tsne = TSNE(
             n_components=components,
-            verbose=1,
-            perplexity=75,
-            n_iter=1000,
+            verbose=tsne_verbose,
+            perplexity=perplexity,
+            n_iter=n_iter,
             random_state=self.random_state,
             metric="euclidean",
         )
         features_tsne = tsne.fit_transform(features_pca)
 
         if components == 3:
-            fig = plt.figure(figsize=(10, 10))
+            fig = plt.figure(figsize=figsize)
             ax = fig.add_subplot(121, projection="3d")
             ax.set_title("Learned Feature PCA")
             for class_id, classname in enumerate(self.classnames):
@@ -156,7 +164,7 @@ class FeatureAnalyzer:
                 if legend:
                     ax.legend()
         else:
-            fig, ax = plt.subplots(2, figsize=(10, 10))
+            fig, ax = plt.subplots(2, figsize=figsize)
             ax[0].set_title("Learned Feature PCA")
             ax[1].set_title("Learned Feature t-Stochastic Neighbor Embeddings")
             for class_id, classname in enumerate(self.classnames):
