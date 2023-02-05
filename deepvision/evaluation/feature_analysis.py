@@ -148,6 +148,8 @@ class FeatureAnalyzer:
                 c=self.all_classes,
                 cmap="coolwarm",
             )
+            if self.legend:
+                ax.legend()
         else:
             fig, ax = plt.subplots(2, figsize=(10, 10))
             ax[0].set_title("Learned Feature PCA")
