@@ -131,6 +131,42 @@ trainer = pl.Trainer(accelerator=device, max_epochs=1)
 trainer.fit(pt_model, train_dataloader, val_dataloader)
 ```
 
+### DeepVision as an Evaluation Library
+
+We want DeepVision to host a suite of visualization and explainability tools, from activation maps, to learned feature analysis through clustering algorithms:
+
+- `FeatureAnalyzer` - a class used to analyze the learned features of a model, and evaluate the predictions
+- `ActivationMaps` - a class used to plot activation maps for Convolutional Neural Networks, based on the GradCam++ algorithm.
+- ...
+
+#### Learned Feature Analysis - PCA and t-SNE with `FeatureAnalyzer`
+
+Already trained a model and you want to evaluate it? Whether it's a DeepVision model, or a model from another library, as long as a model is either a `tf.keras.Model` or `torch.nn.Module` that can produce an output vector, be it the fully connected top layers or exposed feature maps - you can explore the learned feature space using DeepVision:
+
+```python
+import deepvision
+
+tf_model = deepvision.models.ViTTiny16(include_top=True,
+                                       classes=10,
+                                       input_shape=(224, 224, 3),
+                                       backend='tensorflow')
+                                       
+# Train ...
+
+feature_analysis = deepvision.evaluation.FeatureAnalyzer(tf_model,               # DeepVision TF Model
+                                                         train_set,              # `tf.data.Dataset` returning (img, label)
+                                                         limit_batches=500,      # Limit the number of batches to go over in the dataset
+                                                         classnames=class_names, # Optionally supply classnames for plotting
+                                                         backend='tensorflow')   # Specify backend
+
+feature_analysis.extract_features()
+feature_analysis.feature_analysis(components=2)
+```
+
+![image](https://user-images.githubusercontent.com/60978046/216820223-2a674edb-90ca-4a27-8701-2f9904bad0f6.png)
+
+The `FeatureAnalyzer` class iterates over the supplied dataset, extracting the features (outputs) of the supplied model, when `extract_features()` is called. This expensive operation is called only once, and all subsequent calls, until a new `extract_features()` call, re-use the same features. The `feature_analysis()` method performs _Principal Component Analysis (PCA)_ and _t-Stochastic Neighbor Embeddings (t-SNE)_ on the extracted features, and visualizes them using Matplotlib. The `components` parameter is the `n_components` used for PCA and t-SNE transformations, and naturally has to be in the range of `[2..3]` for 2D and 3D plots respectively.
+
 ### DeepVision as a Model Zoo
 
 We want DeepVision to host a model zoo across a wide variety of domains:
@@ -145,10 +181,6 @@ We want DeepVision to host a model zoo across a wide variety of domains:
 ### DeepVision as a Training Library
 
 We want DeepVision to host a suite of training frameworks, from classic supervised, to weakly-supervised and unsupervised learning.
-
-### DeepVision as an Evaluation Library
-
-We want DeepVision to host a suite of visualization and explainability tools, from activation maps, to learned feature analysis through clustering algorithms.
 
 ### DeepVision as a Utility Library
 
