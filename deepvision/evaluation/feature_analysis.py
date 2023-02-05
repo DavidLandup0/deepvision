@@ -11,7 +11,6 @@ class FeatureAnalyzer:
         self,
         model,
         dataset,
-        components,
         backend,
         random_state=42,
         limit_batches=-1,
@@ -20,10 +19,9 @@ class FeatureAnalyzer:
 
         self.model = model
         self.dataset = dataset
-        self.components = components
         self.backend = backend
         self.legend = legend
-        self.limit_batches = limit_batches
+        self.limit_batches = len(dataset) if limit_batches == -1 else limit_batches
         self.random_state = random_state
 
         if limit_batches > len(dataset):
@@ -50,22 +48,20 @@ class FeatureAnalyzer:
             features = self.model(images)["output"]
             all_features.append(features)
             all_classes.append(labels)
-            print(labels.shape)
 
         print(f"\nProcessing finished. Extracting features and classes...")
         all_classes_tf = tf.stack(all_classes)
-        all_classes_tf = tf.reshape(all_classes_tf.shape[0], -1)
+        all_classes_tf = tf.reshape(all_classes_tf, -1)
 
         all_features_tf = tf.stack(all_features)
-        all_features_tf = tf.reshape(all_features_tf.shape[0], -1)
+        all_features_tf = tf.reshape(
+            all_features_tf, shape=(all_classes_tf.shape[0], -1)
+        )
         # tf.unique() returns a tuple of unique values and indices
         classnames, idx = tf.unique(all_classes_tf)
 
         all_features = all_features_tf.numpy()
         all_classes = all_classes_tf.numpy()
-        print(all_features.shape)
-        print(all_classes.shape)
-        print(classnames.shape)
         self.all_features = all_features
         self.all_classes = all_classes
         self.classnames = classnames.numpy()
@@ -111,18 +107,18 @@ class FeatureAnalyzer:
             "Features extracted. You can now visualize them or perform analysis without rerunning the extraction."
         )
 
-    def feature_analysis(self):
+    def feature_analysis(self, components):
         if self.all_classes is None or self.all_features is None:
             raise ValueError(
                 f"Features and classes are None. Did you forget to call `extract_features()` first?"
             )
 
         print(f"Principal component analysis...")
-        pca = PCA(n_components=self.components, random_state=self.random_state)
+        pca = PCA(n_components=components, random_state=self.random_state)
         features_pca = pca.fit_transform(self.all_features)
 
         tsne = TSNE(
-            n_components=self.components,
+            n_components=components,
             verbose=1,
             perplexity=75,
             n_iter=1000,
@@ -131,7 +127,7 @@ class FeatureAnalyzer:
         )
         features_tsne = tsne.fit_transform(features_pca)
 
-        if self.components == 3:
+        if components == 3:
             fig = plt.figure(figsize=(10, 10))
             ax = fig.add_subplot(121, projection="3d")
             ax.set_title("Learned Feature PCA")
