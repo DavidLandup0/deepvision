@@ -41,12 +41,10 @@ class __MBConvTF(layers.Layer):
             padding="same",
             data_format="channels_last",
             use_bias=False,
-            name=self.name + "expand_conv",
         )
 
         self.bn1 = layers.BatchNormalization(
             momentum=self.bn_momentum,
-            name=self.name + "expand_bn",
         )
 
         self.depthwise = layers.DepthwiseConv2D(
@@ -56,16 +54,13 @@ class __MBConvTF(layers.Layer):
             use_bias=False,
         )
 
-        self.bn2 = layers.BatchNormalization(
-            momentum=self.bn_momentum, name=self.name + "bn"
-        )
+        self.bn2 = layers.BatchNormalization(momentum=self.bn_momentum)
 
         self.se_conv1 = layers.Conv2D(
             self.filters_se,
             1,
             padding="same",
             activation=self.activation,
-            name=self.name + "se_reduce",
         )
 
         self.se_conv2 = layers.Conv2D(
@@ -73,7 +68,6 @@ class __MBConvTF(layers.Layer):
             1,
             padding="same",
             activation="sigmoid",
-            name=self.name + "se_expand",
         )
 
         self.output_conv = layers.Conv2D(
@@ -83,12 +77,9 @@ class __MBConvTF(layers.Layer):
             padding="same",
             data_format="channels_last",
             use_bias=False,
-            name=self.name + "project_conv",
         )
 
-        self.bn3 = layers.BatchNormalization(
-            momentum=self.bn_momentum, name=self.name + "project_bn"
-        )
+        self.bn3 = layers.BatchNormalization(momentum=self.bn_momentum)
 
     def call(self, inputs):
         # Expansion phase
@@ -105,13 +96,13 @@ class __MBConvTF(layers.Layer):
 
         # Squeeze and excite
         if 0 < self.se_ratio <= 1:
-            se = layers.GlobalAveragePooling2D(name=self.name + "se_squeeze")(x)
-            se = layers.Reshape((1, 1, self.filters), name=self.name + "se_reshape")(se)
+            se = layers.GlobalAveragePooling2D()(x)
+            se = layers.Reshape((1, 1, self.filters))(se)
 
             se = self.se_conv1(se)
             se = self.se_conv2(se)
 
-            x = layers.multiply([x, se], name=self.name + "se_excite")
+            x = layers.multiply([x, se])
 
         # Output phase:
         x = self.output_conv(x)
@@ -125,9 +116,8 @@ class __MBConvTF(layers.Layer):
                 x = layers.Dropout(
                     self.dropout,
                     noise_shape=(None, 1, 1, 1),
-                    name=self.name + "drop",
                 )(x)
-            x = layers.add([x, inputs], name=self.name + "add")
+            x = layers.add([x, inputs])
         return x
 
     def get_config(self):
