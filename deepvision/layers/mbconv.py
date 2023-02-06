@@ -6,7 +6,7 @@ from tensorflow.keras import layers
 from deepvision.utils.utils import same_padding
 
 
-class __FusedMBConvTF(layers.Layer):
+class __MBConvTF(layers.Layer):
     def __init__(
         self,
         input_filters: int,
@@ -36,16 +36,24 @@ class __FusedMBConvTF(layers.Layer):
 
         self.conv1 = layers.Conv2D(
             filters=self.filters,
-            kernel_size=kernel_size,
+            kernel_size=1,
             strides=strides,
             padding="same",
             data_format="channels_last",
             use_bias=False,
             name=self.name + "expand_conv",
         )
+
         self.bn1 = layers.BatchNormalization(
             momentum=self.bn_momentum,
             name=self.name + "expand_bn",
+        )
+
+        self.depthwise = layers.DepthwiseConv2D(
+            kernel_size=3,
+            strides=strides,
+            padding="same",
+            use_bias=False,
         )
 
         self.bn2 = layers.BatchNormalization(
@@ -82,10 +90,6 @@ class __FusedMBConvTF(layers.Layer):
             momentum=self.bn_momentum, name=self.name + "project_bn"
         )
 
-    def build(self, input_shape):
-        if self.name is None:
-            self.name = backend.get_uid("block0")
-
     def call(self, inputs):
         # Expansion phase
         if self.expand_ratio != 1:
@@ -94,6 +98,10 @@ class __FusedMBConvTF(layers.Layer):
             x = self.activation(x)
         else:
             x = inputs
+
+        x = self.depthwise(x)
+        x = self.bn2(x)
+        x = self.activation(x)
 
         # Squeeze and excite
         if 0 < self.se_ratio <= 1:
@@ -139,7 +147,7 @@ class __FusedMBConvTF(layers.Layer):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-class __FusedMBConvPT(nn.Module):
+class __MBConvPT(nn.Module):
     def __init__(
         self,
         input_filters: int,
@@ -176,10 +184,20 @@ class __FusedMBConvPT(nn.Module):
             bias=False,
         )
         self.bn1 = nn.BatchNorm2d(self.filters, momentum=self.bn_momentum)
+
+        # Depthwise = same in_channels as groups
+        self.depthwise = nn.Conv2d(
+            in_channels=self.filters,
+            out_channels=self.filters,
+            groups=self.filters,
+            kernel_size=3,
+            stride=strides,
+            padding="same",
+            bias=False,
+        )
         self.bn2 = nn.BatchNorm2d(self.filters, momentum=self.bn_momentum)
 
         self.se_conv1 = nn.Conv2d(self.filters, self.filters_se, 1, padding="same")
-
         self.se_conv2 = nn.Conv2d(self.filters_se, self.filters, 1, padding="same")
 
         self.output_conv = nn.Conv2d(
@@ -200,6 +218,10 @@ class __FusedMBConvPT(nn.Module):
             x = self.activation()(x)
         else:
             x = inputs
+
+        x = self.depthwise(x)
+        x = self.bn2(x)
+        x = self.activation()(x)
 
         # Squeeze and excite
         if 0 < self.se_ratio <= 1:
@@ -227,12 +249,12 @@ class __FusedMBConvPT(nn.Module):
 
 
 LAYER_BACKBONES = {
-    "tensorflow": __FusedMBConvTF,
-    "pytorch": __FusedMBConvPT,
+    "tensorflow": __MBConvTF,
+    "pytorch": __MBConvPT,
 }
 
 
-def FusedMBConv(
+def MBConv(
     input_filters: int,
     output_filters: int,
     backend,
@@ -246,37 +268,33 @@ def FusedMBConv(
     **kwargs,
 ):
     """
-    Implementation of the FusedMBConv (Fused Mobile Inverted Residual Bottleneck) block.
+    Implementation of the MBConv (Mobile Inverted Residual Bottleneck) block.
 
+    MBConv blocks have been popularized by MobileNets, and re-used in most efficient architectures following them.
+    A very notable architecture that uses MBConv blocks are EfficientNets, as well as MNasNet.
 
-    FusedMBConv blocks have been popularized, and primarily used in EfficientNetV2s. They're fundamentally
-    similar to MBConv blocks, but replace the depthwise and 1x1 output convolutions with a single, fused 3x3
-    convolution block, begetting the name. FusedMBConv blocks and MBConv blocks are the basis of the EfficientNetV2
-    family, and can be used in mobile-friendly, edge-friendly or low-latency efficient networks, which use few
-    computational resources, but provide competitive performance (accuracy-wise).
+    They're fundamentally similar to FusedMBConv blocks (which are derivative work). The efficiency comes from a narrow-wide-narrow structure,
+    where the wide middle operation takes advantage of separable convolutions, which are much more efficient computationally
+    than regular convolutions, as opposed to the conventional wide-narrow/bottleneck-wide structure in blocks throughout many architectures.
 
-    The efficiency comes from a narrow-wide-narrow structure, regular convolutions, as opposed
-    to the conventional wide-narrow/bottleneck-wide structure in blocks throughout many architectures.
-
-    Given their usefulness and general applicability in production, FusedMBConv blocks are made as a public API.
+    Given their usefulness and general applicability in production, MBConv blocks are made as a public API.
 
     Acknowledgements and other implementations:
         - The TensorFlow layer was originally implemented by @AdityaKane2001 for KerasCV.
 
     References:
-        EfficientNet-EdgeTPU: Creating Accelerator-Optimized Neural Networks with AutoML - https://ai.googleblog.com/2019/08/efficientnet-edgetpu-creating.html.
-        EfficientNetV2: Smaller Models and Faster Training - https://arxiv.org/abs/2104.00298v3.
+        - MobileNetV2: Inverted Residuals and Linear Bottlenecks - https://arxiv.org/abs/1801.04381
 
     Basic usage:
 
     ```
     inputs = tf.random.normal(shape=(1, 64, 64, 32))
-    layer = deepvision.layers.FusedMBConv(input_filters=32, output_filters=32, backend='tensorflow')
+    layer = deepvision.layers.MBConv(input_filters=32, output_filters=32, backend='tensorflow')
     output = layer(inputs)
     print(output.shape) # (1, 64, 64, 32)
 
     inputs = torch.rand(1, 32, 64, 64)
-    layer = deepvision.layers.FusedMBConv(input_filters=32, output_filters=32, backend='pytorch')
+    layer = deepvision.layers.MBConv(input_filters=32, output_filters=32, backend='pytorch')
     output = layer(inputs)
     print(output.shape) # torch.Size([1, 32, 64, 64])
     ```
