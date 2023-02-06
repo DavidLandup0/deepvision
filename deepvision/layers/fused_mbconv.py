@@ -151,6 +151,7 @@ class __FusedMBConvPT(nn.Module):
         bn_momentum=0.9,
         activation=nn.SiLU(),
         dropout: float = 0.8,
+        name=None,  # Ignored but added for generalizability between backends
         **kwargs,
     ):
 
@@ -300,6 +301,7 @@ def FusedMBConv(
         bn_momentum=bn_momentum,
         activation=activation,
         dropout=dropout,
+        **kwargs,
     )
 
     return layer
