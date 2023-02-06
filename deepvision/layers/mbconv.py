@@ -43,9 +43,7 @@ class __MBConvTF(layers.Layer):
             use_bias=False,
         )
 
-        self.bn1 = layers.BatchNormalization(
-            momentum=self.bn_momentum,
-        )
+        self.bn1 = layers.BatchNormalization(momentum=self.bn_momentum)
 
         self.depthwise = layers.DepthwiseConv2D(
             kernel_size=3,
@@ -82,7 +80,7 @@ class __MBConvTF(layers.Layer):
         self.bn3 = layers.BatchNormalization(momentum=self.bn_momentum)
 
     def call(self, inputs):
-        # Expansion phase
+        # Expansion
         if self.expand_ratio != 1:
             x = self.conv1(inputs)
             x = self.bn1(x)
@@ -90,11 +88,12 @@ class __MBConvTF(layers.Layer):
         else:
             x = inputs
 
+        # Middle-stage
         x = self.depthwise(x)
         x = self.bn2(x)
         x = self.activation(x)
 
-        # Squeeze and excite
+        # Squeze-and-excite
         if 0 < self.se_ratio <= 1:
             se = layers.GlobalAveragePooling2D()(x)
             se = layers.Reshape((1, 1, self.filters))(se)
@@ -104,18 +103,17 @@ class __MBConvTF(layers.Layer):
 
             x = layers.multiply([x, se])
 
-        # Output phase:
+        # Output projection
         x = self.output_conv(x)
         x = self.bn3(x)
         if self.expand_ratio == 1:
             x = self.activation(x)
 
-        # Residual:
+        # Residual addition with dropout
         if self.strides == 1 and self.input_filters == self.output_filters:
             if self.dropout:
                 x = layers.Dropout(
                     self.dropout,
-                    noise_shape=(None, 1, 1, 1),
                 )(x)
             x = layers.add([x, inputs])
         return x
@@ -202,6 +200,7 @@ class __MBConvPT(nn.Module):
         self.bn3 = nn.BatchNorm2d(self.output_filters, momentum=self.bn_momentum)
 
     def forward(self, inputs):
+        # Expansion
         if self.expand_ratio != 1:
             x = self.conv1(inputs)
             x = self.bn1(x)
@@ -209,11 +208,12 @@ class __MBConvPT(nn.Module):
         else:
             x = inputs
 
+        # Middle stage
         x = self.depthwise(x)
         x = self.bn2(x)
         x = self.activation()(x)
 
-        # Squeeze and excite
+        # Squeeze-and-excite
         if 0 < self.se_ratio <= 1:
             se = x.mean(dim=2)
             se = se.reshape(1, 1, self.filters)
@@ -224,13 +224,13 @@ class __MBConvPT(nn.Module):
             se = nn.Sigmoid()(se)
             x = x * se
 
-        # Output phase:
+        # Output projection
         x = self.output_conv(x)
         x = self.bn3(x)
         if self.expand_ratio == 1:
             x = self.activation()(x)
 
-        # Residual:
+        # Residual addition with dropout
         if self.stride == 1 and self.input_filters == self.output_filters:
             if self.dropout:
                 x = nn.Dropout(self.dropout)(x)

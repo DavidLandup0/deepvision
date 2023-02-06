@@ -87,7 +87,7 @@ class __FusedMBConvTF(layers.Layer):
             self.name = backend.get_uid("block0")
 
     def call(self, inputs):
-        # Expansion phase
+        # Expansion
         if self.expand_ratio != 1:
             x = self.conv1(inputs)
             x = self.bn1(x)
@@ -95,7 +95,7 @@ class __FusedMBConvTF(layers.Layer):
         else:
             x = inputs
 
-        # Squeeze and excite
+        # Squeeze-and-Excite
         if 0 < self.se_ratio <= 1:
             se = layers.GlobalAveragePooling2D(name=self.name + "se_squeeze")(x)
             se = layers.Reshape((1, 1, self.filters), name=self.name + "se_reshape")(se)
@@ -105,13 +105,13 @@ class __FusedMBConvTF(layers.Layer):
 
             x = layers.multiply([x, se], name=self.name + "se_excite")
 
-        # Output phase:
+        # Output projection
         x = self.output_conv(x)
         x = self.bn3(x)
         if self.expand_ratio == 1:
             x = self.activation(x)
 
-        # Residual:
+        # Residual addition with dropout
         if self.strides == 1 and self.input_filters == self.output_filters:
             if self.dropout:
                 x = layers.Dropout(
@@ -201,7 +201,7 @@ class __FusedMBConvPT(nn.Module):
         else:
             x = inputs
 
-        # Squeeze and excite
+        # Squeeze-and-Excite
         if 0 < self.se_ratio <= 1:
             se = x.mean(dim=2)
             se = se.reshape(1, 1, self.filters)
@@ -212,13 +212,13 @@ class __FusedMBConvPT(nn.Module):
             se = nn.Sigmoid()(se)
             x = x * se
 
-        # Output phase:
+        # Output projection
         x = self.output_conv(x)
         x = self.bn3(x)
         if self.expand_ratio == 1:
             x = self.activation()(x)
 
-        # Residual:
+        # Residual addition with dropout
         if self.stride == 1 and self.input_filters == self.output_filters:
             if self.dropout:
                 x = nn.Dropout(self.dropout)(x)
