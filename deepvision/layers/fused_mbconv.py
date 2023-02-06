@@ -197,7 +197,7 @@ class __FusedMBConvPT(nn.Module):
         if self.expand_ratio != 1:
             x = self.conv1(inputs)
             x = self.bn1(x)
-            x = self.activation(x)
+            x = self.activation()(x)
         else:
             x = inputs
 
@@ -207,7 +207,7 @@ class __FusedMBConvPT(nn.Module):
             se = se.reshape(1, 1, self.filters)
 
             se = self.se_conv1(se)
-            se = self.activation(se)
+            se = self.activation()(se)
             se = self.se_conv2(se)
             se = nn.Sigmoid()(se)
             x = x * se
@@ -216,7 +216,7 @@ class __FusedMBConvPT(nn.Module):
         x = self.output_conv(x)
         x = self.bn3(x)
         if self.expand_ratio == 1:
-            x = self.activation(x)
+            x = self.activation()(x)
 
         # Residual:
         if self.stride == 1 and self.input_filters == self.output_filters:
@@ -272,16 +272,14 @@ def FusedMBConv(
 
     ```
     inputs = tf.random.normal(shape=(1, 64, 64, 32))
-
     layer = deepvision.layers.FusedMBConv(input_filters=32, output_filters=32, backend='tensorflow')
     output = layer(inputs)
     print(output.shape) # (1, 64, 64, 32)
 
     inputs = torch.rand(1, 32, 64, 64)
-
     layer = deepvision.layers.FusedMBConv(input_filters=32, output_filters=32, backend='pytorch')
     output = layer(inputs)
-    print(output.shape)
+    print(output.shape) # torch.Size([1, 32, 64, 64])
     ```
     """
     layer_class = LAYER_BACKBONES.get(backend)
