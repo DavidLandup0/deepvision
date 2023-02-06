@@ -7,30 +7,6 @@ from tensorflow.keras import layers
 
 
 class __PatchingAndEmbeddingTF(layers.Layer):
-    """
-    Originally implemented by David Landup for KerasCV.
-
-    Layer to patchify images, prepend a class token, positionally embed and
-    create a projection of patches for Vision Transformers
-
-    The layer expects a batch of input images and returns batches of patches, flattened as a sequence
-    and projected onto `project_dims`. If the height and width of the images
-    aren't divisible by the patch size, the supplied padding type is used (or 'valid' by default).
-
-    Reference:
-        An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale
-        by Alexey Dosovitskiy et al. (https://arxiv.org/abs/2010.11929)
-
-    Args:
-        project_dim: the dimensionality of the project_dim
-        patch_size: the patch size
-        padding: default 'valid', the padding to apply for patchifying images
-
-    Returns:
-        Patchified and linearly projected input images, including a prepended learnable class token
-        with shape (batch, num_patches+1, project_dim)
-    """
-
     def __init__(self, project_dim, patch_size, padding="valid", **kwargs):
         super().__init__(**kwargs)
         self.project_dim = project_dim
@@ -184,29 +160,6 @@ class __PatchingAndEmbeddingTF(layers.Layer):
 
 
 class __PatchingAndEmbeddingPT(torch.nn.Module):
-    """
-    Layer to patchify images, prepend a class token, positionally embed and
-    create a projection of patches for Vision Transformers
-
-    The layer expects a batch of input images and returns batches of patches, flattened as a sequence
-    and projected onto `project_dims`. If the height and width of the images
-    aren't divisible by the patch size, the supplied padding type is used (or 'valid' by default).
-
-    Reference:
-        An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale
-        by Alexey Dosovitskiy et al. (https://arxiv.org/abs/2010.11929)
-
-    Args:
-        project_dim: the dimensionality of the project_dim
-        input_shape: the input height and width
-        patch_size: the patch size
-        padding: default 'valid', the padding to apply for patchifying images
-
-    Returns:
-        Patchified and linearly projected input images, including a prepended learnable class token
-        with shape (batch, num_patches+1, project_dim)
-    """
-
     def __init__(self, project_dim, input_shape, patch_size, padding="valid", **kwargs):
         super().__init__(**kwargs)
         self.project_dim = project_dim
@@ -360,6 +313,12 @@ def PatchingAndEmbedding(
     Reference:
         An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale
         by Alexey Dosovitskiy et al. (https://arxiv.org/abs/2010.11929)
+
+        Acknowledgements and other implementations:
+        - The TensorFlow layer was originally implemented by David Landup for KerasCV.
+        - HuggingFace's implementations: https://github.com/huggingface/transformers/blob/main/src/transformers/models/vit/modeling_vit.py
+            and https://github.com/huggingface/transformers/blob/main/src/transformers/models/vit/modeling_tf_vit.py
+        - Ross Wightman's implementations: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/vision_transformer.py
 
     Args:
         project_dim: the dimensionality of the project_dim

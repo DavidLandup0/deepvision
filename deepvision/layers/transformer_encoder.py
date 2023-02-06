@@ -80,7 +80,7 @@ class __TransformerEncoderPT(torch.nn.Module):
         if self.activation == torch.nn.GELU:
             y = self.activation(approximate="tanh")(y)
         else:
-            y = self.activation(y)
+            y = self.activation()(y)
         y = nn.Dropout(self.mlp_dropout)(y)
         y = self.linear2(y)
         y = nn.Dropout(self.mlp_dropout)(y)
