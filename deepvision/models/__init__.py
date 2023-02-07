@@ -1,3 +1,18 @@
+from deepvision.models.classification.efficientnet.efficientnetv2 import (
+    EfficientNetV2B0,
+)
+from deepvision.models.classification.efficientnet.efficientnetv2 import (
+    EfficientNetV2B1,
+)
+from deepvision.models.classification.efficientnet.efficientnetv2 import (
+    EfficientNetV2B2,
+)
+from deepvision.models.classification.efficientnet.efficientnetv2 import (
+    EfficientNetV2B3,
+)
+from deepvision.models.classification.efficientnet.efficientnetv2 import EfficientNetV2L
+from deepvision.models.classification.efficientnet.efficientnetv2 import EfficientNetV2M
+from deepvision.models.classification.efficientnet.efficientnetv2 import EfficientNetV2S
 from deepvision.models.classification.resnet.resnetv2 import ResNet18V2
 from deepvision.models.classification.resnet.resnetv2 import ResNet34V2
 from deepvision.models.classification.resnet.resnetv2 import ResNet50V2

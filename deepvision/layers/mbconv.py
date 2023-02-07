@@ -37,16 +37,15 @@ class __MBConvTF(layers.Layer):
         self.conv1 = layers.Conv2D(
             filters=self.filters,
             kernel_size=1,
-            strides=strides,
+            strides=1,
             padding="same",
-            data_format="channels_last",
             use_bias=False,
         )
 
         self.bn1 = layers.BatchNormalization(momentum=self.bn_momentum)
 
         self.depthwise = layers.DepthwiseConv2D(
-            kernel_size=3,
+            kernel_size=kernel_size,
             strides=strides,
             padding="same",
             use_bias=False,
@@ -73,7 +72,6 @@ class __MBConvTF(layers.Layer):
             kernel_size=1 if expand_ratio != 1 else kernel_size,
             strides=1,
             padding="same",
-            data_format="channels_last",
             use_bias=False,
         )
 
@@ -93,7 +91,7 @@ class __MBConvTF(layers.Layer):
         x = self.bn2(x)
         x = self.activation(x)
 
-        # Squeze-and-excite
+        # Squeeze-and-excite
         if 0 < self.se_ratio <= 1:
             se = layers.GlobalAveragePooling2D()(x)
             se = layers.Reshape((1, 1, self.filters))(se)
@@ -106,8 +104,6 @@ class __MBConvTF(layers.Layer):
         # Output projection
         x = self.output_conv(x)
         x = self.bn3(x)
-        if self.expand_ratio == 1:
-            x = self.activation(x)
 
         # Residual addition with dropout
         if self.strides == 1 and self.input_filters == self.output_filters:
@@ -147,6 +143,7 @@ class __MBConvPT(nn.Module):
         bn_momentum=0.9,
         activation=nn.SiLU(),
         dropout: float = 0.8,
+        name=None,  # Ignored but added for generalizability between backends
         **kwargs,
     ):
 
@@ -164,10 +161,10 @@ class __MBConvPT(nn.Module):
         self.filters_se = max(1, int(input_filters * se_ratio))
 
         self.conv1 = nn.Conv2d(
-            in_channels=3,
+            in_channels=self.input_filters,
             out_channels=self.filters,
             kernel_size=kernel_size,
-            stride=strides,
+            stride=1,
             padding=same_padding(kernel_size, strides),
             bias=False,
         )
@@ -180,7 +177,7 @@ class __MBConvPT(nn.Module):
             groups=self.filters,
             kernel_size=3,
             stride=strides,
-            padding="same",
+            padding=same_padding(3, strides),
             bias=False,
         )
         self.bn2 = nn.BatchNorm2d(self.filters, momentum=self.bn_momentum)
@@ -215,8 +212,8 @@ class __MBConvPT(nn.Module):
 
         # Squeeze-and-excite
         if 0 < self.se_ratio <= 1:
-            se = x.mean(dim=2)
-            se = se.reshape(1, 1, self.filters)
+            se = nn.AvgPool2d(x.shape[2])(x)
+            se = se.reshape(self.filters, 1, 1)
 
             se = self.se_conv1(se)
             se = self.activation()(se)
@@ -227,8 +224,6 @@ class __MBConvPT(nn.Module):
         # Output projection
         x = self.output_conv(x)
         x = self.bn3(x)
-        if self.expand_ratio == 1:
-            x = self.activation()(x)
 
         # Residual addition with dropout
         if self.stride == 1 and self.input_filters == self.output_filters:
@@ -308,6 +303,7 @@ def MBConv(
         bn_momentum=bn_momentum,
         activation=activation,
         dropout=dropout,
+        **kwargs,
     )
 
     return layer

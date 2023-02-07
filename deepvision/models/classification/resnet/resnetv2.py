@@ -47,15 +47,15 @@ def ResNet18V2(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     model = model_class(
-        stackwise_filters=MODEL_CONFIGS["ResNet18V2"]["stackwise_filters"],
-        stackwise_blocks=MODEL_CONFIGS["ResNet18V2"]["stackwise_blocks"],
-        stackwise_strides=MODEL_CONFIGS["ResNet18V2"]["stackwise_strides"],
         include_top=include_top,
         input_shape=input_shape,
         input_tensor=input_tensor,
         block_type="basic",
         pooling=pooling,
         classes=classes,
+        stackwise_filters=MODEL_CONFIGS["ResNet18V2"]["stackwise_filters"],
+        stackwise_blocks=MODEL_CONFIGS["ResNet18V2"]["stackwise_blocks"],
+        stackwise_strides=MODEL_CONFIGS["ResNet18V2"]["stackwise_strides"],
         **kwargs,
     )
     return model
@@ -76,15 +76,15 @@ def ResNet34V2(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     model = model_class(
-        stackwise_filters=MODEL_CONFIGS["ResNet34V2"]["stackwise_filters"],
-        stackwise_blocks=MODEL_CONFIGS["ResNet34V2"]["stackwise_blocks"],
-        stackwise_strides=MODEL_CONFIGS["ResNet34V2"]["stackwise_strides"],
         include_top=include_top,
         input_shape=input_shape,
         input_tensor=input_tensor,
         block_type="basic",
         pooling=pooling,
         classes=classes,
+        stackwise_filters=MODEL_CONFIGS["ResNet34V2"]["stackwise_filters"],
+        stackwise_blocks=MODEL_CONFIGS["ResNet34V2"]["stackwise_blocks"],
+        stackwise_strides=MODEL_CONFIGS["ResNet34V2"]["stackwise_strides"],
         **kwargs,
     )
     return model
@@ -105,15 +105,15 @@ def ResNet50V2(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     model = model_class(
-        stackwise_filters=MODEL_CONFIGS["ResNet50V2"]["stackwise_filters"],
-        stackwise_blocks=MODEL_CONFIGS["ResNet50V2"]["stackwise_blocks"],
-        stackwise_strides=MODEL_CONFIGS["ResNet50V2"]["stackwise_strides"],
         include_top=include_top,
         input_shape=input_shape,
         input_tensor=input_tensor,
         block_type="bottleneck",
         pooling=pooling,
         classes=classes,
+        stackwise_filters=MODEL_CONFIGS["ResNet50V2"]["stackwise_filters"],
+        stackwise_blocks=MODEL_CONFIGS["ResNet50V2"]["stackwise_blocks"],
+        stackwise_strides=MODEL_CONFIGS["ResNet50V2"]["stackwise_strides"],
         **kwargs,
     )
     return model
@@ -134,15 +134,15 @@ def ResNet101V2(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     model = model_class(
-        stackwise_filters=MODEL_CONFIGS["ResNet101V2"]["stackwise_filters"],
-        stackwise_blocks=MODEL_CONFIGS["ResNet101V2"]["stackwise_blocks"],
-        stackwise_strides=MODEL_CONFIGS["ResNet101V2"]["stackwise_strides"],
         include_top=include_top,
         input_shape=input_shape,
         input_tensor=input_tensor,
         block_type="bottleneck",
         pooling=pooling,
         classes=classes,
+        stackwise_filters=MODEL_CONFIGS["ResNet101V2"]["stackwise_filters"],
+        stackwise_blocks=MODEL_CONFIGS["ResNet101V2"]["stackwise_blocks"],
+        stackwise_strides=MODEL_CONFIGS["ResNet101V2"]["stackwise_strides"],
         **kwargs,
     )
     return model
@@ -163,15 +163,15 @@ def ResNet152V2(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     model = model_class(
-        stackwise_filters=MODEL_CONFIGS["ResNet152V2"]["stackwise_filters"],
-        stackwise_blocks=MODEL_CONFIGS["ResNet152V2"]["stackwise_blocks"],
-        stackwise_strides=MODEL_CONFIGS["ResNet152V2"]["stackwise_strides"],
         include_top=include_top,
         input_shape=input_shape,
         input_tensor=input_tensor,
         block_type="bottleneck",
         pooling=pooling,
         classes=classes,
+        stackwise_filters=MODEL_CONFIGS["ResNet152V2"]["stackwise_filters"],
+        stackwise_blocks=MODEL_CONFIGS["ResNet152V2"]["stackwise_blocks"],
+        stackwise_strides=MODEL_CONFIGS["ResNet152V2"]["stackwise_strides"],
         **kwargs,
     )
     return model
