@@ -130,14 +130,18 @@ def EfficientNetV2B0(
         pooling=pooling,
         width_coefficient=1.0,
         depth_coefficient=1.0,
-        blockwise_kernel_sizes=MODEL_CONFIGS["EfficientNetV2B0"]["block_kernel_sizes"],
-        blockwise_num_repeat=MODEL_CONFIGS["EfficientNetV2B0"]["block_num_repeat"],
-        blockwise_input_filters=MODEL_CONFIGS["EfficientNetV2B0"]["block_in_filters"],
-        blockwise_output_filters=MODEL_CONFIGS["EfficientNetV2B0"]["block_out_filters"],
-        blockwise_expand_ratios=MODEL_CONFIGS["EfficientNetV2B0"]["block_exp_ratios"],
-        blockwise_se_ratios=MODEL_CONFIGS["EfficientNetV2B0"]["block_se_ratios"],
-        blockwise_strides=MODEL_CONFIGS["EfficientNetV2B0"]["block_strides"],
-        blockwise_conv_type=MODEL_CONFIGS["EfficientNetV2B0"]["block_conv_type"],
+        blockwise_kernel_sizes=MODEL_CONFIGS["EfficientNetV2Base"][
+            "block_kernel_sizes"
+        ],
+        blockwise_num_repeat=MODEL_CONFIGS["EfficientNetV2Base"]["block_num_repeat"],
+        blockwise_input_filters=MODEL_CONFIGS["EfficientNetV2Base"]["block_in_filters"],
+        blockwise_output_filters=MODEL_CONFIGS["EfficientNetV2Base"][
+            "block_out_filters"
+        ],
+        blockwise_expand_ratios=MODEL_CONFIGS["EfficientNetV2Base"]["block_exp_ratios"],
+        blockwise_se_ratios=MODEL_CONFIGS["EfficientNetV2Base"]["block_se_ratios"],
+        blockwise_strides=MODEL_CONFIGS["EfficientNetV2Base"]["block_strides"],
+        blockwise_conv_type=MODEL_CONFIGS["EfficientNetV2Base"]["block_conv_type"],
     )
     return model
 
