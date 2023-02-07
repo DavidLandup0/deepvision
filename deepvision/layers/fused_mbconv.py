@@ -190,7 +190,7 @@ class __FusedMBConvPT(nn.Module):
         # Squeeze-and-Excite
         if 0 < self.se_ratio <= 1:
             se = nn.AvgPool2d(x.shape[2])(x)
-            se = se.reshape(self.filters, 1, 1)
+            se = se.reshape(x.shape[0], self.filters, 1, 1)
 
             se = self.se_conv1(se)
             se = self.activation()(se)
