@@ -223,11 +223,16 @@ class ResNetV2PT(pl.LightningModule):
         x = self.batchnorm(x)
         x = nn.ReLU()(x)
 
-        # [B, C, F, F] -> [B, avg C]
-        x = self.pool(x).flatten(1)
         if self.include_top:
+            # [B, C, F, F] -> [B, avg C]
+            x = self.pool(x).flatten(1)
             x = self.top_dense(x)
             x = nn.Softmax(dim=1)(x)
+        else:
+            if self.pooling == "avg":
+                x = nn.AvgPool2d(x.shape[2])(x).flatten(1)
+            elif self.pooling == "max":
+                x = nn.MaxPool2d(x.shape[2])(x).flatten(1)
 
         return x
 

@@ -39,25 +39,19 @@ class __FusedMBConvTF(layers.Layer):
             kernel_size=kernel_size,
             strides=strides,
             padding="same",
-            data_format="channels_last",
             use_bias=False,
-            name=self.name + "expand_conv",
         )
         self.bn1 = layers.BatchNormalization(
             momentum=self.bn_momentum,
-            name=self.name + "expand_bn",
         )
 
-        self.bn2 = layers.BatchNormalization(
-            momentum=self.bn_momentum, name=self.name + "bn"
-        )
+        self.bn2 = layers.BatchNormalization(momentum=self.bn_momentum)
 
         self.se_conv1 = layers.Conv2D(
             self.filters_se,
             1,
             padding="same",
             activation=self.activation,
-            name=self.name + "se_reduce",
         )
 
         self.se_conv2 = layers.Conv2D(
@@ -65,7 +59,6 @@ class __FusedMBConvTF(layers.Layer):
             1,
             padding="same",
             activation="sigmoid",
-            name=self.name + "se_expand",
         )
 
         self.output_conv = layers.Conv2D(
@@ -73,18 +66,10 @@ class __FusedMBConvTF(layers.Layer):
             kernel_size=1 if expand_ratio != 1 else kernel_size,
             strides=1,
             padding="same",
-            data_format="channels_last",
             use_bias=False,
-            name=self.name + "project_conv",
         )
 
-        self.bn3 = layers.BatchNormalization(
-            momentum=self.bn_momentum, name=self.name + "project_bn"
-        )
-
-    def build(self, input_shape):
-        if self.name is None:
-            self.name = backend.get_uid("block0")
+        self.bn3 = layers.BatchNormalization(momentum=self.bn_momentum)
 
     def call(self, inputs):
         # Expansion
@@ -97,13 +82,13 @@ class __FusedMBConvTF(layers.Layer):
 
         # Squeeze-and-Excite
         if 0 < self.se_ratio <= 1:
-            se = layers.GlobalAveragePooling2D(name=self.name + "se_squeeze")(x)
-            se = layers.Reshape((1, 1, self.filters), name=self.name + "se_reshape")(se)
+            se = layers.GlobalAveragePooling2D()(x)
+            se = layers.Reshape((1, 1, self.filters))(se)
 
             se = self.se_conv1(se)
             se = self.se_conv2(se)
 
-            x = layers.multiply([x, se], name=self.name + "se_excite")
+            x = layers.multiply([x, se])
 
         # Output projection
         x = self.output_conv(x)
@@ -169,7 +154,7 @@ class __FusedMBConvPT(nn.Module):
         self.filters_se = max(1, int(input_filters * se_ratio))
 
         self.conv1 = nn.Conv2d(
-            in_channels=3,
+            in_channels=self.input_filters,
             out_channels=self.filters,
             kernel_size=kernel_size,
             stride=strides,
@@ -204,8 +189,8 @@ class __FusedMBConvPT(nn.Module):
 
         # Squeeze-and-Excite
         if 0 < self.se_ratio <= 1:
-            se = x.mean(dim=2)
-            se = se.reshape(1, 1, self.filters)
+            se = nn.AvgPool2d(x.shape[2])(x)
+            se = se.reshape(self.filters, 1, 1)
 
             se = self.se_conv1(se)
             se = self.activation()(se)

@@ -161,7 +161,7 @@ class __MBConvPT(nn.Module):
         self.filters_se = max(1, int(input_filters * se_ratio))
 
         self.conv1 = nn.Conv2d(
-            in_channels=3,
+            in_channels=self.input_filters,
             out_channels=self.filters,
             kernel_size=kernel_size,
             stride=1,
@@ -177,7 +177,7 @@ class __MBConvPT(nn.Module):
             groups=self.filters,
             kernel_size=3,
             stride=strides,
-            padding="same",
+            padding=same_padding(3, strides),
             bias=False,
         )
         self.bn2 = nn.BatchNorm2d(self.filters, momentum=self.bn_momentum)
@@ -212,8 +212,8 @@ class __MBConvPT(nn.Module):
 
         # Squeeze-and-excite
         if 0 < self.se_ratio <= 1:
-            se = x.mean(dim=2)
-            se = se.reshape(1, 1, self.filters)
+            se = nn.AvgPool2d(x.shape[2])(x)
+            se = se.reshape(self.filters, 1, 1)
 
             se = self.se_conv1(se)
             se = self.activation()(se)
