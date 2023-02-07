@@ -7,37 +7,22 @@ from deepvision.layers import FusedMBConv
 from deepvision.layers import MBConv
 from deepvision.utils.utils import parse_model_inputs
 
-"""
-Originally implemented by @AdityaKane2001
-"""
 
-
-def round_filters(filters, width_coefficient, min_depth, depth_divisor):
-    filters *= width_coefficient
-    minimum_depth = min_depth or depth_divisor
-    new_filters = max(
-        minimum_depth,
-        int(filters + depth_divisor / 2) // depth_divisor * depth_divisor,
+def _make_divisible(filter_num, width_coefficient, depth_divisor, min_depth):
+    """
+    Adapted from the official MobileNetV2 implementation to accommodate for the width coefficient:
+    https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py
+    """
+    filter_num = filter_num * width_coefficient
+    if min_depth is None:
+        min_depth = depth_divisor
+    new_v = max(
+        min_depth, int(filter_num + depth_divisor / 2) // depth_divisor * depth_divisor
     )
-    return int(new_filters)
-
-"""
-From the official MobileNetV2 implementation: https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py
-"""
-
-def _make_divisible(filter_num, depth_divisor, min_depth):
-  if min_depth is None:
-    min_value = depth_divisor
-  new_v = max(min_depth, int(filter_num + depth_divisor / 2) // depth_divisor * depth_divisor)
-  # Make sure that round down does not go down by more than 10%.
-  if new_v < 0.9 * filter_num:
-    new_v += depth_divisor
-  return int(new_v)
-
-
-def round_repeats(repeats, depth_coefficient):
-    """Round number of repeats based on depth multiplier."""
-    return int(math.ceil(depth_coefficient * repeats))
+    # Make sure that round down does not go down by more than 10%.
+    if new_v < 0.9 * filter_num:
+        new_v += depth_divisor
+    return int(new_v)
 
 
 class EfficientNetV2TF(tf.keras.Model):
@@ -82,8 +67,8 @@ class EfficientNetV2TF(tf.keras.Model):
         inputs = parse_model_inputs("tensorflow", input_shape, input_tensor)
         x = inputs
 
-        stem_filters = round_filters(
-            filters=blockwise_input_filters[0],
+        stem_filters = _make_divisible(
+            filter_num=blockwise_input_filters[0],
             width_coefficient=width_coefficient,
             min_depth=min_depth,
             depth_divisor=depth_divisor,
@@ -100,31 +85,32 @@ class EfficientNetV2TF(tf.keras.Model):
 
         block_num = sum(blockwise_num_repeat)
         for block_index in range(len(blockwise_num_repeat)):
-            input_filters = round_filters(
+            # Scale the input/output filters by the
+            # width coefficient, and make them divisible again
+            # as there's no guarantee that they'll be integers after scaling
+            input_filters = _make_divisible(
                 blockwise_input_filters[block_index],
                 width_coefficient,
                 min_depth,
                 depth_divisor,
             )
 
-            output_filters = round_filters(
+            output_filters = _make_divisible(
                 blockwise_output_filters[block_index],
                 width_coefficient,
                 min_depth,
                 depth_divisor,
             )
-            repeats = round_repeats(
-                repeats=blockwise_num_repeat[block_index],
-                depth_coefficient=depth_coefficient,
+            # Num repeats * depth_coefficient -> then round them up to an integer
+            repeats = int(
+                math.ceil(depth_coefficient * blockwise_num_repeat[block_index])
             )
-
+            # For each repeat in the list of repeats, add a block (MBConv or FusedMBConv)
             for repeat in range(repeats):
                 if blockwise_conv_type[block_index] == "mbconv":
                     conv_type = MBConv
-                    name = f"MBConv_Block{block_index+1}_{repeat+1}"
                 else:
                     conv_type = FusedMBConv
-                    name = f"FusedMBConv_Block{block_index+1}_{repeat+1}"
 
                 conv_block = conv_type(
                     input_filters=output_filters if repeat > 0 else input_filters,
@@ -137,12 +123,12 @@ class EfficientNetV2TF(tf.keras.Model):
                     bn_momentum=bn_momentum,
                     dropout=drop_connect_rate * block_index / block_num,
                     backend="tensorflow",
-                    name=name,
+                    name=f"block{block_index+1}_{repeat+1}",
                 )
                 x = conv_block(x)
 
-        top_filters = round_filters(
-            filters=1280,
+        top_filters = _make_divisible(
+            filter_num=1280,
             width_coefficient=width_coefficient,
             min_depth=min_depth,
             depth_divisor=depth_divisor,
