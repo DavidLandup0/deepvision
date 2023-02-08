@@ -45,7 +45,7 @@ class __MBConvTF(layers.Layer):
         self.bn1 = layers.BatchNormalization(momentum=self.bn_momentum)
 
         self.depthwise = layers.DepthwiseConv2D(
-            kernel_size=kernel_size,
+            kernel_size=3,
             strides=strides,
             padding="same",
             use_bias=False,
@@ -160,15 +160,16 @@ class __MBConvPT(nn.Module):
         self.filters = self.input_filters * self.expand_ratio
         self.filters_se = max(1, int(input_filters * se_ratio))
 
-        self.conv1 = nn.Conv2d(
-            in_channels=self.input_filters,
-            out_channels=self.filters,
-            kernel_size=kernel_size,
-            stride=1,
-            padding=same_padding(kernel_size, strides),
-            bias=False,
-        )
-        self.bn1 = nn.BatchNorm2d(self.filters, momentum=self.bn_momentum)
+        if self.expand_ratio != 1:
+            self.conv1 = nn.Conv2d(
+                in_channels=self.input_filters,
+                out_channels=self.filters,
+                kernel_size=1,
+                stride=1,
+                padding="same",
+                bias=False,
+            )
+            self.bn1 = nn.BatchNorm2d(self.filters, momentum=self.bn_momentum)
 
         # Depthwise = same in_channels as groups
         self.depthwise = nn.Conv2d(
@@ -182,8 +183,9 @@ class __MBConvPT(nn.Module):
         )
         self.bn2 = nn.BatchNorm2d(self.filters, momentum=self.bn_momentum)
 
-        self.se_conv1 = nn.Conv2d(self.filters, self.filters_se, 1, padding="same")
-        self.se_conv2 = nn.Conv2d(self.filters_se, self.filters, 1, padding="same")
+        if 0 < self.se_ratio <= 1:
+            self.se_conv1 = nn.Conv2d(self.filters, self.filters_se, 1, padding="same")
+            self.se_conv2 = nn.Conv2d(self.filters_se, self.filters, 1, padding="same")
 
         self.output_conv = nn.Conv2d(
             in_channels=self.filters,
@@ -213,7 +215,8 @@ class __MBConvPT(nn.Module):
         # Squeeze-and-excite
         if 0 < self.se_ratio <= 1:
             se = nn.AvgPool2d(x.shape[2])(x)
-            se = se.reshape(x.shape[0], self.filters, 1, 1)
+            # No need to reshape, output is already [B, C, 1, 1]
+            # se = se.reshape(x.shape[0], self.filters, 1, 1)
 
             se = self.se_conv1(se)
             se = self.activation()(se)
