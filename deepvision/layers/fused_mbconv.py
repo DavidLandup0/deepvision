@@ -99,10 +99,8 @@ class __FusedMBConvTF(layers.Layer):
             if self.dropout:
                 x = layers.Dropout(
                     self.dropout,
-                    noise_shape=(None, 1, 1, 1),
-                    name=self.name + "drop",
                 )(x)
-            x = layers.add([x, inputs], name=self.name + "add")
+            x = layers.add([x, inputs])
         return x
 
     def get_config(self):
@@ -151,15 +149,16 @@ class __FusedMBConvPT(nn.Module):
         self.filters = self.input_filters * self.expand_ratio
         self.filters_se = max(1, int(input_filters * se_ratio))
 
-        self.conv1 = nn.Conv2d(
-            in_channels=self.input_filters,
-            out_channels=self.filters,
-            kernel_size=kernel_size,
-            stride=strides,
-            padding=same_padding(kernel_size, strides),
-            bias=False,
-        )
-        self.bn1 = nn.BatchNorm2d(self.filters, momentum=self.bn_momentum)
+        if self.expand_ratio != 1:
+            self.conv1 = nn.Conv2d(
+                in_channels=self.input_filters,
+                out_channels=self.filters,
+                kernel_size=kernel_size,
+                stride=strides,
+                padding=same_padding(kernel_size, strides),
+                bias=False,
+            )
+            self.bn1 = nn.BatchNorm2d(self.filters, momentum=self.bn_momentum)
 
         if 0 < self.se_ratio <= 1:
             self.se_conv1 = nn.Conv2d(self.filters, self.filters_se, 1, padding="same")
