@@ -47,7 +47,7 @@ MODEL_CONFIGS = {
         ],
     },
     "EfficientNetV2M": {
-        "block_kernel_sizes": [3, 3, 3, 3, 3, 3],
+        "block_kernel_sizes": [3, 3, 3, 3, 3, 3, 3],
         "block_num_repeat": [3, 5, 5, 7, 14, 18, 5],
         "block_in_filters": [24, 24, 48, 80, 160, 176, 304],
         "block_out_filters": [24, 48, 80, 160, 176, 304, 512],
@@ -61,10 +61,11 @@ MODEL_CONFIGS = {
             "mbconv",
             "mbconv",
             "mbconv",
+            "mbconv",
         ],
     },
     "EfficientNetV2L": {
-        "block_kernel_sizes": [3, 3, 3, 3, 3, 3],
+        "block_kernel_sizes": [3, 3, 3, 3, 3, 3, 3],
         "block_num_repeat": [4, 7, 7, 10, 19, 25, 7],
         "block_in_filters": [32, 32, 64, 96, 192, 224, 384],
         "block_out_filters": [
