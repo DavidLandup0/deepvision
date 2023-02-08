@@ -45,8 +45,6 @@ class __FusedMBConvTF(layers.Layer):
             momentum=self.bn_momentum,
         )
 
-        self.bn2 = layers.BatchNormalization(momentum=self.bn_momentum)
-
         self.se_conv1 = layers.Conv2D(
             self.filters_se,
             1,
@@ -69,7 +67,7 @@ class __FusedMBConvTF(layers.Layer):
             use_bias=False,
         )
 
-        self.bn3 = layers.BatchNormalization(momentum=self.bn_momentum)
+        self.bn_out = layers.BatchNormalization(momentum=self.bn_momentum)
 
     def call(self, inputs):
         # Expansion
@@ -92,7 +90,7 @@ class __FusedMBConvTF(layers.Layer):
 
         # Output projection
         x = self.output_conv(x)
-        x = self.bn3(x)
+        x = self.bn_out(x)
         if self.expand_ratio == 1:
             x = self.activation(x)
 
@@ -162,11 +160,10 @@ class __FusedMBConvPT(nn.Module):
             bias=False,
         )
         self.bn1 = nn.BatchNorm2d(self.filters, momentum=self.bn_momentum)
-        self.bn2 = nn.BatchNorm2d(self.filters, momentum=self.bn_momentum)
 
-        self.se_conv1 = nn.Conv2d(self.filters, self.filters_se, 1, padding="same")
-
-        self.se_conv2 = nn.Conv2d(self.filters_se, self.filters, 1, padding="same")
+        if 0 < self.se_ratio <= 1:
+            self.se_conv1 = nn.Conv2d(self.filters, self.filters_se, 1, padding="same")
+            self.se_conv2 = nn.Conv2d(self.filters_se, self.filters, 1, padding="same")
 
         self.output_conv = nn.Conv2d(
             in_channels=self.filters,
@@ -177,7 +174,7 @@ class __FusedMBConvPT(nn.Module):
             bias=False,
         )
 
-        self.bn3 = nn.BatchNorm2d(self.output_filters, momentum=self.bn_momentum)
+        self.bn_out = nn.BatchNorm2d(self.output_filters, momentum=self.bn_momentum)
 
     def forward(self, inputs):
         if self.expand_ratio != 1:
@@ -190,7 +187,8 @@ class __FusedMBConvPT(nn.Module):
         # Squeeze-and-Excite
         if 0 < self.se_ratio <= 1:
             se = nn.AvgPool2d(x.shape[2])(x)
-            se = se.reshape(x.shape[0], self.filters, 1, 1)
+            # No need to reshape, output is already [B, C, 1, 1]
+            # se = se.reshape(x.shape[0], self.filters, 1, 1)
 
             se = self.se_conv1(se)
             se = self.activation()(se)
@@ -200,7 +198,7 @@ class __FusedMBConvPT(nn.Module):
 
         # Output projection
         x = self.output_conv(x)
-        x = self.bn3(x)
+        x = self.bn_out(x)
         if self.expand_ratio == 1:
             x = self.activation()(x)
 
