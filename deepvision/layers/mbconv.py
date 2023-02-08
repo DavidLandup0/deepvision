@@ -165,7 +165,7 @@ class __MBConvPT(nn.Module):
             out_channels=self.filters,
             kernel_size=1,
             stride=1,
-            padding=same_padding(kernel_size, strides),
+            padding="same",
             bias=False,
         )
         self.bn1 = nn.BatchNorm2d(self.filters, momentum=self.bn_momentum)
