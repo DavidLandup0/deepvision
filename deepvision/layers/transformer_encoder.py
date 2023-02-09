@@ -258,7 +258,7 @@ def TransformerEncoder(
                                                          num_heads=8,
                                                          backend='pytorch')(tensor)
     print(trans_encoded.shape) # torch.Size([1, 197, 1024])
-    
+
     tensor = tf.random.normal([1, 197, 1024])
     trans_encoded = deepvision.layers.TransformerEncoder(project_dim=1024,
                                                          mlp_dim=3072,
