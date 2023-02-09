@@ -253,18 +253,17 @@ def TransformerEncoder(
     num_heads = 4
 
     tensor = torch.rand(1, 197, 1024)
-    trans_encoded = deepvision.layers.TransformerEncoder(project_dim=project_dim,
-                                                       num_heads=num_heads,
-                                                       mlp_dim = mlp_dim,
-                                                       backend='pytorch')(tensor)
-
-    print(trans_encoded.shape) # torch.Size([1, 197, 1024])
-
     trans_encoded = deepvision.layers.TransformerEncoder(project_dim=1024,
-                                                       mlp_dim = 3072,
-                                                       num_heads=8,
-                                                       backend='tensorflow')(tensor)
-
+                                                         mlp_dim=3072,
+                                                         num_heads=8,
+                                                         backend='pytorch')(tensor)
+    print(trans_encoded.shape) # torch.Size([1, 197, 1024])
+    
+    tensor = tf.random.normal([1, 197, 1024])
+    trans_encoded = deepvision.layers.TransformerEncoder(project_dim=1024,
+                                                         mlp_dim=3072,
+                                                         num_heads=8,
+                                                         backend='tensorflow')(tensor)
     print(trans_encoded.shape) # TensorShape([1, 197, 1024])
     ```
     """
