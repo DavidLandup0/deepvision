@@ -13,8 +13,9 @@ DeepVision:
 - ❤️ KerasCV and how readable and well-structured it is.
 - ❤️ `timm` and how up-to-date it is.
 - ❤️ HuggingFace and how diverse it is.
+- ❤️ Kornia and how practical it is.
 
-To that end, the library takes cues, API and structure inspiration from these libraries. A huge kudos goes to every contributor in their respective repositories. At the same time, DeepVision provides the *same API* across the board, so you no longer have to switch between APIs and styles.
+To that end, DeepVision takes cues, API and structure inspiration from these libraries. A huge kudos and acknowledgement goes to every contributor in their respective repositories. At the same time, DeepVision provides the *same API* across the board, so you no longer have to switch between APIs and styles.
 
 > Different teams and projects use different tech stacks, and nobody likes switching from their preferred library for a new project. Furthermore, different libraries implement models in different ways. Whether it's code conventions, code structure or model flavors. When it comes to foundational models like ResNets, some libraries default to flavors such as ResNet 1.5, some default to ResNet-B, etc.
 
