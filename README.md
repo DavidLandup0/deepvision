@@ -247,15 +247,65 @@ Currently, these models are supported (parameter counts are *equal* between back
 | ResNet101V2  | 44,675,560 |       |           |
 | ResNet152V2  | 60,380,648 |       |           |
 
+### DeepVision as a Components Provider
+
+Models and architectures are built on top of each other. VGGNets begat ResNets, which begat a plethora of other architectures, with incremental improvements, small changes and new ideas building on top of already accepted ideas to bring about new advances. To make architectures more approachable, as well as easily buildable, more readable and to make experimentation and building new architectures simpler - we want to expose as many internal building blocks as possible, as part of the general DeepVision API. If an architecture uses a certain block repeatedly, it's likely going to be exposed as part of the public API.
+
+**Most importantly, all blocks share the same API, and are agnostic to the backend, with an identical implementation.**
+
+You can prototype and debug in PyTorch, and then move onto TensorFlow or vice versa to build a model. For instance, a generic `TransformerEncoder` deals with the same arguments, in the same order, and performs the same operation on both backends:
+
+```python
+tensor = torch.rand(1, 197, 1024)
+trans_encoded = deepvision.layers.TransformerEncoder(project_dim=1024,
+                                                     mlp_dim=3072,
+                                                     num_heads=8,
+                                                     backend='pytorch')(tensor)
+print(trans_encoded.shape) # torch.Size([1, 197, 1024])
+
+tensor = tf.random.normal([1, 197, 1024])
+trans_encoded = deepvision.layers.TransformerEncoder(project_dim=1024,
+                                                     mlp_dim=3072,
+                                                     num_heads=8,
+                                                     backend='tensorflow')(tensor)
+print(trans_encoded.shape) # TensorShape([1, 197, 1024])
+```
+
+Similarly, you can create something funky with the building blocks! Say, pass an image through an `MBConv` block (MobileNet and EfficientNet style), and through a `PatchingAndEmbedding`/`TransformerEncoder` (ViT style) duo, and add the results together:
+
+```python
+inputs = torch.rand(1, 3, 224, 224)
+
+x = deepvision.layers.MBConv(input_filters=3, 
+                             output_filters=32, 
+                             backend='pytorch')(inputs)
+
+y = deepvision.layers.PatchingAndEmbedding(project_dim=32,
+                                           patch_size=16,
+                                           input_shape=(3, 224, 224),
+                                           backend='pytorch')(inputs)
+
+y = deepvision.layers.TransformerEncoder(project_dim=32,
+                                         num_heads=8,
+                                         mlp_dim = 64,
+                                         backend='pytorch')(y)
+y = y.mean(1)
+y = y.reshape(y.shape[0], y.shape[1], 1, 1)
+
+add = x+y
+
+print(add.shape) # torch.Size([1, 32, 224, 224])
+```
+
+Would this make sense in an architecture? Maybe. Maybe not. Your imagination is your limit.
 
 ### DeepVision as a Training Library
 
-We want DeepVision to host a suite of training frameworks, from classic supervised, to weakly-supervised and unsupervised learning.
+We want DeepVision to host a suite of training frameworks, from classic supervised, to weakly-supervised and unsupervised learning. These frameworks would serve as a high-level API that you can optionally use, while still focusing on non-proprietary classes and architectures _you're used to_, such as pure `tf.keras.Model`s and `torch.nn.Module`s.
 
 ### DeepVision as a Utility Library
 
 We want DeepVision to host easy backend-agnostic image operations (resizing, colorspace conversion, etc) and data augmentation layers, losses and metrics.
-
 
 ## Citing DeepVision
 
