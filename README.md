@@ -173,7 +173,7 @@ feature_analysis.feature_analysis(components=2)
 
 **Note:** All TensorFlow-based DeepVision models are *Functional Subclassing* models - i.e. have a *dictionary output*, which contains `1..n` keys, and the standard output contains an `output` key that corresponds to the `tf.Tensor` output value. The `FeatureAnalyzer` accepts any TensorFlow-based model that can produce a `tf.Tensor` output *or* produces a dictionary output with an `'output':tf.Tensor` key-value pair.
 
-The `FeatureAnalyzer` class iterates over the supplied dataset, extracting the features (outputs) of the supplied model, when `extract_features()` is called. This expensive operation is called only once, and all subsequent calls, until a new `extract_features()` call, re-use the same features. The `feature_analysis()` method performs _Principal Component Analysis (PCA)_ and _t-Stochastic Neighbor Embeddings (t-SNE)_ on the extracted features, and visualizes them using Matplotlib. The `components` parameter is the `n_components` used for PCA and t-SNE transformations, and naturally has to be in the range of `[2..3]` for 2D and 3D plots respectively.
+The `FeatureAnalyzer` class iterates over the supplied dataset, extracting the features (outputs) of the supplied model, when `extract_features()` is called. This expensive operation is called only once, and all subsequent calls, until a new `extract_features()` call, re-use the same features. The `feature_analysis()` method performs _Principal Component Analysis (PCA)_ and _t-distributed Stochastic Neighbor Embeddings (t-SNE)_ on the extracted features, and visualizes them using Matplotlib. The `components` parameter is the `n_components` used for PCA and t-SNE transformations, and naturally has to be in the range of `[2..3]` for 2D and 3D plots respectively.
 
 ```python
 import deepvision
@@ -209,13 +209,52 @@ We want DeepVision to host a model zoo across a wide variety of domains:
 - 3D Reconstruction
 - Image Restoration
 
+
+Currently, these models are supported (parameter counts are *equal* between backends):
+
+- EfficientNetV2 Family
+
+| Architecture     | Parameters  | FLOPs | Size (MB) |
+|------------------|-------------|-------|-----------|
+| EfficientNetV2B0 | 7,200,312   |       |           |
+| EfficientNetV2B1 | 8,212,124   |       |           |
+| EfficientNetV2B2 | 10,178,374  |       |           |
+| EfficientNetV2B3 | 14,486,374  |       |           |
+| EfficientNetV2S  | 21,612,360  |       |           |
+| EfficientNetV2M  | 54,431,388  |       |           |
+| EfficientNetV2L  | 119,027,848 |       |           |
+
+- Vision Transformer (ViT) Family
+
+| Architecture | Parameters  | FLOPs | Size (MB) |
+|--------------|-------------|-------|-----------|
+| ViTTiny16    | 5,717,416   |       |           |
+| ViTS16       | 22,050,664  |       |           |
+| ViTB16       | 86,567,656  |       |           |
+| ViTL16       | 304,326,632 |       |           |
+| ViTTiny32    | 6,131,560   |       |           |
+| ViTS32       | 22,878,952  |       |           |
+| ViTB32       | 88,224,232  |       |           |
+| ViTL32       | 306,535,400 |       |           |
+
+- ResNetV2 Family
+
+| Architecture | Parameters | FLOPs | Size (MB) |
+|--------------|------------|-------|-----------|
+| ResNet18V2   | 11,696,488 |       |           |
+| ResNet34V2   | 21,812,072 |       |           |
+| ResNet50V2   | 25,613,800 |       |           |
+| ResNet101V2  | 44,675,560 |       |           |
+| ResNet152V2  | 60,380,648 |       |           |
+
+
 ### DeepVision as a Training Library
 
 We want DeepVision to host a suite of training frameworks, from classic supervised, to weakly-supervised and unsupervised learning.
 
 ### DeepVision as a Utility Library
 
-Image operations (resizing, colorspace conversion, etc) and data augmentation.
+We want DeepVision to host easy backend-agnostic image operations (resizing, colorspace conversion, etc) and data augmentation layers, losses and metrics.
 
 
 ## Citing DeepVision
