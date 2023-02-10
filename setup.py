@@ -1,0 +1,28 @@
+from setuptools import setup
+
+setup(
+    name="DeepVision",
+    version="0.1.0",
+    description="PyTorch and TensorFlow/Keras image models - Vision Transformer (ViT), ResNetV2, EfficientNetV2, (planned...) DeepLabV3+, ConvNeXtV2, YOLO, NeRF, etc.",
+    url="https://github.com/DavidLandup0/deepvision",
+    author="David Landup",
+    author_email="david.landup.0@gmail.com",
+    license="Apache License 2.0",
+    packages=["deepvision"],
+    install_requires=[
+        "matplotlib",
+        "pytorch_lightning",
+        "scikit_learn",
+        "tensorflow",
+        "torch",
+        "torchmetrics",
+    ],
+    classifiers=[
+        "Development Status :: 1 - Planning",
+        "Intended Audience :: Science/Research",
+        "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python :: 3.9",
+        "Topic :: Scientific/Engineering",
+        "Topic :: Software Development",
+    ],
+)
