@@ -350,7 +350,7 @@ def tf_to_pt(layer, dummy_input):
     if layer.expand_ratio != 1:
         # conv1 and bn1
         pytorch_mbconv.conv1.weight.data = torch.nn.Parameter(
-            torch.from_numpy(tf.transpose(layer.conv1.kernel, (3, 2, 1, 0)).numpy())
+            torch.from_numpy(tf.transpose(layer.conv1.kernel, (3, 2, 0, 1)).numpy())
         )
         pytorch_mbconv.bn1.weight.data = torch.nn.Parameter(
             torch.from_numpy(layer.bn1.gamma.numpy())
@@ -387,19 +387,19 @@ def tf_to_pt(layer, dummy_input):
 
     if 0 < layer.se_ratio <= 1:
         pytorch_mbconv.se_conv1.weight.data = torch.nn.Parameter(
-            torch.from_numpy(tf.transpose(layer.se_conv1.kernel, (3, 2, 1, 0)).numpy())
+            torch.from_numpy(tf.transpose(layer.se_conv1.kernel, (3, 2, 0, 1)).numpy())
         )
         pytorch_mbconv.se_conv1.bias.data = torch.nn.Parameter(
             torch.from_numpy(layer.se_conv1.bias.numpy())
         )
         pytorch_mbconv.se_conv2.weight.data = torch.nn.Parameter(
-            torch.from_numpy(tf.transpose(layer.se_conv2.kernel, (3, 2, 1, 0)).numpy())
+            torch.from_numpy(tf.transpose(layer.se_conv2.kernel, (3, 2, 0, 1)).numpy())
         )
         pytorch_mbconv.se_conv2.bias.data = torch.nn.Parameter(
             torch.from_numpy(layer.se_conv2.bias.numpy())
         )
     pytorch_mbconv.output_conv.weight.data = torch.nn.Parameter(
-        torch.from_numpy(tf.transpose(layer.output_conv.kernel, (3, 2, 1, 0)).numpy())
+        torch.from_numpy(tf.transpose(layer.output_conv.kernel, (3, 2, 0, 1)).numpy())
     )
 
     pytorch_mbconv.bn3.weight.data = torch.nn.Parameter(
