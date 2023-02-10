@@ -15,7 +15,6 @@
 import tensorflow as tf
 import torch
 import torch.nn as nn
-from keras import backend
 from tensorflow.keras import layers
 
 from deepvision.utils.utils import same_padding
