@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import tensorflow as tf
+import torch
 import torch.nn as nn
 from keras import backend
 from tensorflow.keras import layers
@@ -155,7 +156,7 @@ class __MBConvPT(nn.Module):
         strides=1,
         se_ratio=0.0,
         bn_momentum=0.9,
-        activation=nn.SiLU(),
+        activation=nn.SiLU,
         dropout: float = 0.8,
         name=None,  # Ignored but added for generalizability between backends
         **kwargs,
@@ -324,3 +325,98 @@ def MBConv(
     )
 
     return layer
+
+
+def tf_to_pt(layer, dummy_input):
+    if not isinstance(layer, __MBConvTF):
+        raise ValueError(f"Layer type not supported, received: {type(layer)}")
+
+    # Pass dummy input through to
+    # get variables under `layer.variables`
+    layer(dummy_input)
+
+    pytorch_mbconv = __MBConvPT(
+        input_filters=layer.input_filters,
+        output_filters=layer.output_filters,
+        expand_ratio=layer.expand_ratio,
+        kernel_size=layer.kernel_size,
+        strides=layer.strides,
+        se_ratio=layer.se_ratio,
+        bn_momentum=layer.bn_momentum,
+        activation=torch.nn.SiLU,
+        dropout=layer.dropout,
+    )
+
+    if layer.expand_ratio != 1:
+        # conv1 and bn1
+        pytorch_mbconv.conv1.weight.data = torch.nn.Parameter(
+            torch.from_numpy(tf.transpose(layer.conv1.kernel, (3, 2, 1, 0)).numpy())
+        )
+        pytorch_mbconv.bn1.weight.data = torch.nn.Parameter(
+            torch.from_numpy(layer.bn1.gamma.numpy())
+        )
+        pytorch_mbconv.bn1.bias.data = torch.nn.Parameter(
+            torch.from_numpy(layer.bn1.beta.numpy())
+        )
+        pytorch_mbconv.bn1.running_mean.data = torch.nn.Parameter(
+            torch.from_numpy(layer.bn1.moving_mean.numpy())
+        )
+        pytorch_mbconv.bn1.running_var.data = torch.nn.Parameter(
+            torch.from_numpy(layer.bn1.moving_variance.numpy())
+        )
+
+    # Depthwise
+    pytorch_mbconv.depthwise.weight.data = torch.nn.Parameter(
+        torch.from_numpy(
+            tf.transpose(layer.depthwise.depthwise_kernel, (2, 3, 0, 1)).numpy()
+        )
+    )
+
+    pytorch_mbconv.bn2.weight.data = torch.nn.Parameter(
+        torch.from_numpy(layer.bn2.gamma.numpy())
+    )
+    pytorch_mbconv.bn2.bias.data = torch.nn.Parameter(
+        torch.from_numpy(layer.bn2.beta.numpy())
+    )
+    pytorch_mbconv.bn2.running_mean.data = torch.nn.Parameter(
+        torch.from_numpy(layer.bn2.moving_mean.numpy())
+    )
+    pytorch_mbconv.bn2.running_var.data = torch.nn.Parameter(
+        torch.from_numpy(layer.bn2.moving_variance.numpy())
+    )
+
+    if 0 < layer.se_ratio <= 1:
+        pytorch_mbconv.se_conv1.weight.data = torch.nn.Parameter(
+            torch.from_numpy(tf.transpose(layer.se_conv1.kernel, (3, 2, 1, 0)).numpy())
+        )
+        pytorch_mbconv.se_conv1.bias.data = torch.nn.Parameter(
+            torch.from_numpy(layer.se_conv1.bias.numpy())
+        )
+        pytorch_mbconv.se_conv2.weight.data = torch.nn.Parameter(
+            torch.from_numpy(tf.transpose(layer.se_conv2.kernel, (3, 2, 1, 0)).numpy())
+        )
+        pytorch_mbconv.se_conv2.bias.data = torch.nn.Parameter(
+            torch.from_numpy(layer.se_conv2.bias.numpy())
+        )
+    pytorch_mbconv.output_conv.weight.data = torch.nn.Parameter(
+        torch.from_numpy(tf.transpose(layer.output_conv.kernel, (3, 2, 1, 0)).numpy())
+    )
+
+    pytorch_mbconv.bn3.weight.data = torch.nn.Parameter(
+        torch.from_numpy(layer.bn3.gamma.numpy())
+    )
+    pytorch_mbconv.bn3.bias.data = torch.nn.Parameter(
+        torch.from_numpy(layer.bn3.beta.numpy())
+    )
+    pytorch_mbconv.bn3.running_mean.data = torch.nn.Parameter(
+        torch.from_numpy(layer.bn3.moving_mean.numpy())
+    )
+    pytorch_mbconv.bn3.running_var.data = torch.nn.Parameter(
+        torch.from_numpy(layer.bn3.moving_variance.numpy())
+    )
+
+    return pytorch_mbconv
+
+
+def pt_to_tf(layer):
+    pass
