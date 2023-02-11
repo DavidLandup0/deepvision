@@ -135,10 +135,11 @@ def load(filepath, origin, target, dummy_input, freeze_bn=True):
         )
         if freeze_bn:
             # Freeze all BatchNorm2d layers
-            for module, param in zip(target_model.modules(), target_model.parameters()):
+            for module in target_model.modules():
                 if isinstance(module, torch.nn.BatchNorm2d):
-                    param.requires_grad = False
                     module.eval()
+                    module.weight.requires_grad = False
+                    module.bias.requires_grad = False
 
         return target_model
 
