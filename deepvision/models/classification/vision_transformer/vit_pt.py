@@ -92,8 +92,8 @@ class ViTPT(pl.LightningModule):
 
         self.layer_norm = nn.LayerNorm(project_dim, eps=1e-6)
         self.linear = nn.Linear(project_dim, classes)
-
-        self.acc = torchmetrics.Accuracy(task="multiclass", num_classes=classes)
+        if self.include_top and self.classes:
+            self.acc = torchmetrics.Accuracy(task="multiclass", num_classes=classes)
 
     def forward(self, input_tensor):
         inputs = parse_model_inputs("pytorch", input_tensor.shape, input_tensor)
