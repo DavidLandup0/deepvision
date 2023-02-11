@@ -19,7 +19,7 @@ from deepvision.models.classification.efficientnet.efficientnetv2_tf import (
 MODEL_BACKBONES = {"tensorflow": EfficientNetV2TF, "pytorch": EfficientNetV2PT}
 
 
-def load(filepath, origin, target, freeze_bn=True):
+def load(filepath, origin, target, dummy_input, freeze_bn=True):
     """
     Basic usage:
 
@@ -54,7 +54,7 @@ def load(filepath, origin, target, freeze_bn=True):
         target_model = EfficientNetV2PT(
             include_top=model_config["include_top"],
             classes=model_config["classes"],
-            input_shape=model_config["model_input_shape"],
+            input_shape=tf.transpose(tf.squeeze(dummy_input), (2, 0, 1)).shape,
             pooling=model_config["pooling"],
             width_coefficient=model_config["width_coefficient"],
             depth_coefficient=model_config["depth_coefficient"],

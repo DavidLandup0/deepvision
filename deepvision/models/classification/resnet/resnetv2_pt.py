@@ -227,7 +227,8 @@ class ResNetV2PT(pl.LightningModule):
             if self.pooling == "avg" or self.pooling is None
             else nn.MaxPool2d(7)
         )
-        self.top_dense = nn.Linear(final_dim, classes)
+        if self.include_top:
+            self.top_dense = nn.Linear(final_dim, classes)
 
     def forward(self, input_tensor):
         inputs = parse_model_inputs("pytorch", input_tensor.shape, input_tensor)
@@ -270,18 +271,18 @@ class ResNetV2PT(pl.LightningModule):
         inputs, targets = train_batch
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
-        self.log("loss", loss, prog_bar=True)
+        self.log("loss", loss, on_step=True, on_epoch=True, prog_bar=True,)
         if self.include_top:
             acc = self.acc(outputs, targets)
-            self.log("acc", acc, prog_bar=True)
+            self.log("acc", acc, on_step=True, on_epoch=True, prog_bar=True,)
         return loss
 
     def validation_step(self, val_batch, batch_idx):
         inputs, targets = val_batch
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
-        self.log("val_loss", loss, prog_bar=True)
+        self.log("val_loss", loss, on_step=True, on_epoch=True, prog_bar=True,)
         if self.include_top:
             val_acc = self.acc(outputs, targets)
-            self.log("val_acc", val_acc, prog_bar=True)
+            self.log("val_acc", val_acc, on_step=True, on_epoch=True, prog_bar=True,)
         return loss
