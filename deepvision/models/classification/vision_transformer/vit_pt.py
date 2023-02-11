@@ -54,9 +54,7 @@ class ViTPT(pl.LightningModule):
             )
 
         if not self.include_top and self.pooling is None:
-            raise ValueError(
-                f"`pooling` must be specified when `include_top=False`."
-            )
+            raise ValueError(f"`pooling` must be specified when `include_top=False`.")
 
         self.include_top = include_top
         self.pooling = pooling

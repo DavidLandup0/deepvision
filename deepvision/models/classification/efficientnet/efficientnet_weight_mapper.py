@@ -101,10 +101,13 @@ def load(filepath, origin, target, freeze_bn=True):
 
         target_model.top_conv.weight.data = torch.nn.Parameter(
             torch.from_numpy(
-                tf.transpose(model.layers[-5 if model_config['include_top'] else -4].kernel, (3, 2, 0, 1)).numpy()
+                tf.transpose(
+                    model.layers[-5 if model_config["include_top"] else -4].kernel,
+                    (3, 2, 0, 1),
+                ).numpy()
             )
         )
-        if model_config['include_top']:
+        if model_config["include_top"]:
             # Copy top BatchNorm
             target_model.top_bn.weight.data = torch.nn.Parameter(
                 torch.from_numpy(model.layers[-4].gamma.numpy())

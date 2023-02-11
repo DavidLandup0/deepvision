@@ -51,11 +51,8 @@ class ViTTF(tf.keras.Model):
                 f"Received pooling={pooling} and include_top={include_top}. "
             )
 
-
         if not include_top and pooling is None:
-            raise ValueError(
-                f"`pooling` must be specified when `include_top=False`."
-            )
+            raise ValueError(f"`pooling` must be specified when `include_top=False`.")
 
         inputs = parse_model_inputs("tensorflow", input_shape, input_tensor)
         x = inputs
