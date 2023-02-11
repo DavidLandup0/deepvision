@@ -19,23 +19,6 @@ from deepvision.models.classification.efficientnet.efficientnetv2_tf import (
 MODEL_BACKBONES = {"tensorflow": EfficientNetV2TF, "pytorch": EfficientNetV2PT}
 
 
-def _make_divisible(filter_num, width_coefficient, depth_divisor, min_depth):
-    """
-    Adapted from the official MobileNetV2 implementation to accommodate for the width coefficient:
-    https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py
-    """
-    filter_num = filter_num * width_coefficient
-    if min_depth is None:
-        min_depth = depth_divisor
-    new_v = max(
-        min_depth, int(filter_num + depth_divisor / 2) // depth_divisor * depth_divisor
-    )
-    # Make sure that round down does not go down by more than 10%.
-    if new_v < 0.9 * filter_num:
-        new_v += depth_divisor
-    return int(new_v)
-
-
 def load(filepath, origin, target, dummy_input):
     if origin == "tensorflow":
         # Temporarily need to supply this as custom_objects() due to a bug while
@@ -108,6 +91,7 @@ def load(filepath, origin, target, dummy_input):
         target_model.top_bn.running_var.data = torch.nn.Parameter(
             torch.from_numpy(model.layers[-4].moving_variance.numpy())
         )
+
         # Copy head
         target_model.top_dense.weight.data = torch.nn.Parameter(
             torch.from_numpy(model.layers[-1].kernel.numpy().transpose(1, 0))
@@ -115,6 +99,11 @@ def load(filepath, origin, target, dummy_input):
         target_model.top_dense.bias.data = torch.nn.Parameter(
             torch.from_numpy(model.layers[-1].bias.numpy())
         )
+        # Freeze all BatchNorm2d layers
+        for module, param in zip(target_model.modules(), target_model.parameters()):
+            if isinstance(module, torch.nn.BatchNorm2d):
+                param.requires_grad = False
+
         return target_model
 
     elif origin == "pytorch":
