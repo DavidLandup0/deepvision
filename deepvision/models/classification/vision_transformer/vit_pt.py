@@ -53,6 +53,11 @@ class ViTPT(pl.LightningModule):
                 f"Received pooling={pooling} and include_top={include_top}. "
             )
 
+        if not self.include_top and self.pooling is None:
+            raise ValueError(
+                f"`pooling` must be specified when `include_top=False`."
+            )
+
         self.include_top = include_top
         self.pooling = pooling
         self.classes = classes
@@ -132,15 +137,17 @@ class ViTPT(pl.LightningModule):
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
         self.log("loss", loss, prog_bar=True)
-        acc = self.acc(outputs, targets)
-        self.log("acc", acc, on_epoch=True, prog_bar=True)
+        if self.include_top:
+            acc = self.acc(outputs, targets)
+            self.log("acc", acc, prog_bar=True)
         return loss
 
     def validation_step(self, val_batch, batch_idx):
         inputs, targets = val_batch
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
-        self.log("val_loss", loss, on_epoch=True, prog_bar=True)
-        val_acc = self.acc(outputs, targets)
-        self.log("val_acc", val_acc, on_epoch=True, prog_bar=True)
+        self.log("val_loss", loss, prog_bar=True)
+        if self.include_top:
+            val_acc = self.acc(outputs, targets)
+            self.log("val_acc", val_acc, prog_bar=True)
         return loss

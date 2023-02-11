@@ -79,6 +79,11 @@ class EfficientNetV2TF(tf.keras.Model):
                 f"Received pooling={pooling} and include_top={include_top}. "
             )
 
+        if not include_top and pooling is None:
+            raise ValueError(
+                f"`pooling` must be specified when `include_top=False`."
+            )
+
         inputs = parse_model_inputs("tensorflow", input_shape, input_tensor)
         x = inputs
 
@@ -199,6 +204,7 @@ class EfficientNetV2TF(tf.keras.Model):
         self.blockwise_se_ratios = blockwise_se_ratios
         self.blockwise_strides = blockwise_strides
         self.blockwise_conv_type = blockwise_conv_type
+        self.model_input_shape = input_shape
 
     def get_config(self):
         config = super().get_config()
@@ -223,6 +229,7 @@ class EfficientNetV2TF(tf.keras.Model):
                 "blockwise_se_ratios": self.blockwise_se_ratios,
                 "blockwise_strides": self.blockwise_strides,
                 "blockwise_conv_type": self.blockwise_conv_type,
+                "model_input_shape": self.model_input_shape,
             }
         )
         return config
@@ -231,7 +238,10 @@ class EfficientNetV2TF(tf.keras.Model):
     def from_config(cls, config, custom_objects=None):
         activation = config.pop("activation")
         activation = tf.keras.activations.deserialize(activation)
+        # Remove unnecessary elemens for instantiation. Why are these
+        # in the config at all?
         config.pop("layers")
         config.pop("input_layers")
         config.pop("output_layers")
+        config.pop("model_input_shape")
         return cls(activation=activation, **config)

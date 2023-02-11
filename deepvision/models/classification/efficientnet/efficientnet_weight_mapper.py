@@ -19,16 +19,8 @@ from deepvision.models.classification.efficientnet.efficientnetv2_tf import (
 MODEL_BACKBONES = {"tensorflow": EfficientNetV2TF, "pytorch": EfficientNetV2PT}
 
 
-def load(filepath, origin, target, dummy_input, freeze_bn=True):
+def load(filepath, origin, target, freeze_bn=True):
     """
-    :param filepath:
-    :param origin:
-    :param target:
-    :param dummy_input:
-    :param freeze_bn:
-    :return:
-
-
     Basic usage:
 
     ```
@@ -62,7 +54,7 @@ def load(filepath, origin, target, dummy_input, freeze_bn=True):
         target_model = EfficientNetV2PT(
             include_top=model_config["include_top"],
             classes=model_config["classes"],
-            input_shape=tf.transpose(tf.squeeze(dummy_input), (2, 0, 1)).shape,
+            input_shape=model_config["model_input_shape"],
             pooling=model_config["pooling"],
             width_coefficient=model_config["width_coefficient"],
             depth_coefficient=model_config["depth_coefficient"],
@@ -109,30 +101,31 @@ def load(filepath, origin, target, dummy_input, freeze_bn=True):
 
         target_model.top_conv.weight.data = torch.nn.Parameter(
             torch.from_numpy(
-                tf.transpose(model.layers[-5].kernel, (3, 2, 0, 1)).numpy()
+                tf.transpose(model.layers[-5 if model_config['include_top'] else -4].kernel, (3, 2, 0, 1)).numpy()
             )
         )
-        # Copy top BatchNorm
-        target_model.top_bn.weight.data = torch.nn.Parameter(
-            torch.from_numpy(model.layers[-4].gamma.numpy())
-        )
-        target_model.top_bn.bias.data = torch.nn.Parameter(
-            torch.from_numpy(model.layers[-4].beta.numpy())
-        )
-        target_model.top_bn.running_mean.data = torch.nn.Parameter(
-            torch.from_numpy(model.layers[-4].moving_mean.numpy())
-        )
-        target_model.top_bn.running_var.data = torch.nn.Parameter(
-            torch.from_numpy(model.layers[-4].moving_variance.numpy())
-        )
+        if model_config['include_top']:
+            # Copy top BatchNorm
+            target_model.top_bn.weight.data = torch.nn.Parameter(
+                torch.from_numpy(model.layers[-4].gamma.numpy())
+            )
+            target_model.top_bn.bias.data = torch.nn.Parameter(
+                torch.from_numpy(model.layers[-4].beta.numpy())
+            )
+            target_model.top_bn.running_mean.data = torch.nn.Parameter(
+                torch.from_numpy(model.layers[-4].moving_mean.numpy())
+            )
+            target_model.top_bn.running_var.data = torch.nn.Parameter(
+                torch.from_numpy(model.layers[-4].moving_variance.numpy())
+            )
 
-        # Copy head
-        target_model.top_dense.weight.data = torch.nn.Parameter(
-            torch.from_numpy(model.layers[-1].kernel.numpy().transpose(1, 0))
-        )
-        target_model.top_dense.bias.data = torch.nn.Parameter(
-            torch.from_numpy(model.layers[-1].bias.numpy())
-        )
+            # Copy head
+            target_model.top_dense.weight.data = torch.nn.Parameter(
+                torch.from_numpy(model.layers[-1].kernel.numpy().transpose(1, 0))
+            )
+            target_model.top_dense.bias.data = torch.nn.Parameter(
+                torch.from_numpy(model.layers[-1].bias.numpy())
+            )
         if freeze_bn:
             # Freeze all BatchNorm2d layers
             for module in target_model.modules():
