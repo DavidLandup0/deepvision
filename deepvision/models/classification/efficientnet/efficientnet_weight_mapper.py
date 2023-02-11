@@ -101,9 +101,11 @@ def load(filepath, origin, target, dummy_input, freeze_bn=True):
 
         for pt_block, tf_block in zip(target_model.blocks, tf_blocks):
             if isinstance(tf_block, __FusedMBConvTF):
-                pt_block = fused_mbconv.tf_to_pt(tf_block)
+                converted_block = fused_mbconv.tf_to_pt(tf_block)
+                pt_block.load_state_dict(converted_block.state_dict())
             if isinstance(tf_block, __MBConvTF):
-                pt_block = mbconv.tf_to_pt(tf_block)
+                converted_block = mbconv.tf_to_pt(tf_block)
+                pt_block.load_state_dict(converted_block.state_dict())
 
         target_model.top_conv.weight.data = torch.nn.Parameter(
             torch.from_numpy(
