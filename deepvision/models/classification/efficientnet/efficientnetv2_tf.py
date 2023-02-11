@@ -39,6 +39,7 @@ def _make_divisible(filter_num, width_coefficient, depth_divisor, min_depth):
     return int(new_v)
 
 
+@tf.keras.utils.register_keras_serializable(package="deepvision")
 class EfficientNetV2TF(tf.keras.Model):
     def __init__(
         self,
@@ -93,8 +94,9 @@ class EfficientNetV2TF(tf.keras.Model):
             strides=2,
             padding="same",
             use_bias=False,
+            name="stem_conv",
         )(x)
-        x = layers.BatchNormalization(momentum=bn_momentum)(x)
+        x = layers.BatchNormalization(momentum=bn_momentum, name="stem_bn")(x)
         x = layers.Activation(activation)(x)
 
         block_num = sum(blockwise_num_repeat)
@@ -197,3 +199,39 @@ class EfficientNetV2TF(tf.keras.Model):
         self.blockwise_se_ratios = blockwise_se_ratios
         self.blockwise_strides = blockwise_strides
         self.blockwise_conv_type = blockwise_conv_type
+
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "include_top": self.include_top,
+                "width_coefficient": self.width_coefficient,
+                "depth_coefficient": self.depth_coefficient,
+                "pooling": self.pooling,
+                "classes": self.classes,
+                "dropout_rate": self.dropout_rate,
+                "drop_connect_rate": self.drop_connect_rate,
+                "depth_divisor": self.depth_divisor,
+                "min_depth": self.min_depth,
+                "bn_momentum": self.bn_momentum,
+                "activation": self.activation,
+                "blockwise_kernel_sizes": self.blockwise_kernel_sizes,
+                "blockwise_num_repeat": self.blockwise_num_repeat,
+                "blockwise_input_filters": self.blockwise_input_filters,
+                "blockwise_output_filters": self.blockwise_output_filters,
+                "blockwise_expand_ratios": self.blockwise_expand_ratios,
+                "blockwise_se_ratios": self.blockwise_se_ratios,
+                "blockwise_strides": self.blockwise_strides,
+                "blockwise_conv_type": self.blockwise_conv_type,
+            }
+        )
+        return config
+
+    @classmethod
+    def from_config(cls, config, custom_objects=None):
+        activation = config.pop("activation")
+        activation = tf.keras.activations.deserialize(activation)
+        config.pop("layers")
+        config.pop("input_layers")
+        config.pop("output_layers")
+        return cls(activation=activation, **config)

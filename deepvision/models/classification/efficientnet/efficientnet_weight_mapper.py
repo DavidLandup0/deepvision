@@ -1,8 +1,14 @@
+import math
+
 import tensorflow as tf
 import torch
 
-from deepvision.layers.fused_mbconv import FusedMBConv
-from deepvision.layers.mbconv import MBConv
+from deepvision.layers import fused_mbconv
+from deepvision.layers import mbconv
+from deepvision.layers.fused_mbconv import __FusedMBConvPT
+from deepvision.layers.fused_mbconv import __FusedMBConvTF
+from deepvision.layers.mbconv import __MBConvPT
+from deepvision.layers.mbconv import __MBConvTF
 from deepvision.models.classification.efficientnet.efficientnetv2_pt import (
     EfficientNetV2PT,
 )
@@ -12,22 +18,106 @@ from deepvision.models.classification.efficientnet.efficientnetv2_tf import (
 
 MODEL_BACKBONES = {"tensorflow": EfficientNetV2TF, "pytorch": EfficientNetV2PT}
 
-# Filter inputs, torchmetrics, activations
 
-def load(filepath, origin, target, kwargs=None):
+def _make_divisible(filter_num, width_coefficient, depth_divisor, min_depth):
+    """
+    Adapted from the official MobileNetV2 implementation to accommodate for the width coefficient:
+    https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py
+    """
+    filter_num = filter_num * width_coefficient
+    if min_depth is None:
+        min_depth = depth_divisor
+    new_v = max(
+        min_depth, int(filter_num + depth_divisor / 2) // depth_divisor * depth_divisor
+    )
+    # Make sure that round down does not go down by more than 10%.
+    if new_v < 0.9 * filter_num:
+        new_v += depth_divisor
+    return int(new_v)
+
+
+def load(filepath, origin, target, dummy_input):
     if origin == "tensorflow":
-        model = tf.keras.models.load_model(filepath)
-        for layer in model.layers:
-            print(layer.name)
-            print(type(layer))
-            for var in layer.variables:
-                print(" ", var.shape)
+        # Temporarily need to supply this as custom_objects() due to a bug while
+        # saving Functional Subclassing models
+        model = tf.keras.models.load_model(
+            filepath, custom_objects={"EfficientNetV2TF": EfficientNetV2TF}
+        )
+        model_config = model.get_config()
+        target_model = EfficientNetV2PT(
+            include_top=model_config["include_top"],
+            classes=model_config["classes"],
+            input_shape=tf.transpose(tf.squeeze(dummy_input), (2, 0, 1)).shape,
+            pooling=model_config["pooling"],
+            width_coefficient=model_config["width_coefficient"],
+            depth_coefficient=model_config["depth_coefficient"],
+            blockwise_kernel_sizes=model_config["blockwise_kernel_sizes"],
+            blockwise_num_repeat=model_config["blockwise_num_repeat"],
+            blockwise_input_filters=model_config["blockwise_input_filters"],
+            blockwise_output_filters=model_config["blockwise_output_filters"],
+            blockwise_expand_ratios=model_config["blockwise_expand_ratios"],
+            blockwise_se_ratios=model_config["blockwise_se_ratios"],
+            blockwise_strides=model_config["blockwise_strides"],
+            blockwise_conv_type=model_config["blockwise_conv_type"],
+        )
+        # Copy stem
+        target_model.stem_conv.weight.data = torch.nn.Parameter(
+            torch.from_numpy(tf.transpose(model.layers[1].kernel, (3, 2, 0, 1)).numpy())
+        )
+        # Copy BatchNorm
+        target_model.stem_bn.weight.data = torch.nn.Parameter(
+            torch.from_numpy(model.layers[2].gamma.numpy())
+        )
+        target_model.stem_bn.bias.data = torch.nn.Parameter(
+            torch.from_numpy(model.layers[2].beta.numpy())
+        )
+        target_model.stem_bn.running_mean.data = torch.nn.Parameter(
+            torch.from_numpy(model.layers[2].moving_mean.numpy())
+        )
+        target_model.stem_bn.running_var.data = torch.nn.Parameter(
+            torch.from_numpy(model.layers[2].moving_variance.numpy())
+        )
+
+        tf_blocks = [
+            block
+            for block in model.layers
+            if isinstance(block, __FusedMBConvTF) or isinstance(block, __MBConvTF)
+        ]
+
+        for pt_block, tf_block in zip(target_model.blocks, tf_blocks):
+            if isinstance(tf_block, __FusedMBConvTF):
+                pt_block = fused_mbconv.tf_to_pt(tf_block)
+            if isinstance(tf_block, __MBConvTF):
+                pt_block = mbconv.tf_to_pt(tf_block)
+
+        target_model.top_conv.weight.data = torch.nn.Parameter(
+            torch.from_numpy(
+                tf.transpose(model.layers[-5].kernel, (3, 2, 0, 1)).numpy()
+            )
+        )
+        # Copy top BatchNorm
+        target_model.top_bn.weight.data = torch.nn.Parameter(
+            torch.from_numpy(model.layers[-4].gamma.numpy())
+        )
+        target_model.top_bn.bias.data = torch.nn.Parameter(
+            torch.from_numpy(model.layers[-4].beta.numpy())
+        )
+        target_model.top_bn.running_mean.data = torch.nn.Parameter(
+            torch.from_numpy(model.layers[-4].moving_mean.numpy())
+        )
+        target_model.top_bn.running_var.data = torch.nn.Parameter(
+            torch.from_numpy(model.layers[-4].moving_variance.numpy())
+        )
+        # Copy head
+        target_model.top_dense.weight.data = torch.nn.Parameter(
+            torch.from_numpy(model.layers[-1].kernel.numpy().transpose(1, 0))
+        )
+        target_model.top_dense.bias.data = torch.nn.Parameter(
+            torch.from_numpy(model.layers[-1].bias.numpy())
+        )
+        return target_model
 
     elif origin == "pytorch":
-        if kwargs is None:
-            raise ValueError(
-                f"kwargs are required to be passed for PyTorch model instantiation."
-            )
         model = MODEL_BACKBONES.get(origin)
         model = model(**kwargs)
         model.load_state_dict(torch.load(filepath))

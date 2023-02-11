@@ -20,6 +20,7 @@ from tensorflow.keras import layers
 from deepvision.utils.utils import same_padding
 
 
+@tf.keras.utils.register_keras_serializable(package="deepvision")
 class __FusedMBConvTF(layers.Layer):
     def __init__(
         self,
@@ -132,6 +133,12 @@ class __FusedMBConvTF(layers.Layer):
 
         base_config = super().get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+    @classmethod
+    def from_config(cls, config, custom_objects=None):
+        activation = config.pop("activation")
+        activation = tf.keras.activations.deserialize(activation)
+        return cls(activation=activation, **config)
 
 
 class __FusedMBConvPT(nn.Module):
@@ -303,7 +310,7 @@ def FusedMBConv(
     return layer
 
 
-def tf_to_pt(layer, dummy_input):
+def tf_to_pt(layer, dummy_input=None):
     """
     Params:
     layer: TensorFlow layer to convert weights from.
@@ -317,6 +324,8 @@ def tf_to_pt(layer, dummy_input):
 
     # Pass dummy input through to
     # get variables under `layer.variables`
+    if dummy_input is None:
+        dummy_input = tf.random.normal([1, 224, 224, layer.input_filters])
     layer(dummy_input)
 
     pytorch_mbconv = __FusedMBConvPT(
