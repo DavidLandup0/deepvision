@@ -19,7 +19,7 @@ from deepvision.models.classification.efficientnet.efficientnetv2_tf import (
 MODEL_BACKBONES = {"tensorflow": EfficientNetV2TF, "pytorch": EfficientNetV2PT}
 
 
-def load(filepath, origin, target, dummy_input):
+def load(filepath, origin, target, dummy_input, freeze_bn=True):
     if origin == "tensorflow":
         # Temporarily need to supply this as custom_objects() due to a bug while
         # saving Functional Subclassing models
@@ -99,10 +99,12 @@ def load(filepath, origin, target, dummy_input):
         target_model.top_dense.bias.data = torch.nn.Parameter(
             torch.from_numpy(model.layers[-1].bias.numpy())
         )
-        # Freeze all BatchNorm2d layers
-        for module, param in zip(target_model.modules(), target_model.parameters()):
-            if isinstance(module, torch.nn.BatchNorm2d):
-                param.requires_grad = False
+        if freeze_bn:
+            # Freeze all BatchNorm2d layers
+            for module, param in zip(target_model.modules(), target_model.parameters()):
+                if isinstance(module, torch.nn.BatchNorm2d):
+                    param.requires_grad = False
+                    module.eval()
 
         return target_model
 
