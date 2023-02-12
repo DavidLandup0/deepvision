@@ -24,16 +24,12 @@ def load(filepath, origin, target, dummy_input, freeze_bn=True):
     Basic usage:
 
     ```
-    dummy_input = np.random.rand(1, 224, 224, 3)
-    dummy_input_tf = tf.convert_to_tensor(dummy_input)
-    dummy_input_torch = torch.from_numpy(dummy_input).permute(0, 3, 1, 2).float()
+    tf_model = deepvision.models.EfficientNetV2B0(include_top=False,
+                                              pooling='avg',
+                                              input_shape=(224, 224, 3),
+                                              backend='tensorflow')
 
-    tf_model = deepvision.models.EfficientNetV2B0(include_top=True,
-                                     classes=10,
-                                     input_shape=(224, 224, 3),
-                                     backend='tensorflow')
-
-    tf_model(dummy_input_tf) # {'output': <tf.Tensor: shape=(1, 10), dtype=float32, numpy=array([[0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]], dtype=float32)>}
+    tf_model.save('effnet.h5')
 
     from deepvision.models.classification.efficientnet import efficientnet_weight_mapper
     pt_model = efficientnet_weight_mapper.load(filepath='effnet.h5',
@@ -41,7 +37,10 @@ def load(filepath, origin, target, dummy_input, freeze_bn=True):
                                     target='pytorch',
                                     dummy_input=dummy_input_tf)
 
-    pt_model(dummy_input_torch) # tensor([[0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000, 0.1000]], grad_fn=<SoftmaxBackward0>)
+    print(tf_model(dummy_input_tf)['output'].numpy())
+    print(pt_model(dummy_input_torch).detach().cpu().numpy())
+    # True
+    np.allclose(tf_model(dummy_input_tf)['output'].numpy(), pt_model(dummy_input_torch).detach().cpu().numpy())
     ```
     """
     if origin == "tensorflow":
