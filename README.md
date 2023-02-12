@@ -137,7 +137,98 @@ trainer = pl.Trainer(accelerator=device, max_epochs=1)
 trainer.fit(pt_model, train_dataloader, val_dataloader)
 ```
 
-### DeepVision as an Evaluation Library
+## Automatic PyTorch-TensorFlow Weight Conversion with DeepVision
+
+As models between PyTorch and TensorFlow implementations are equal and to encourage cross-framework collaboration - DeepVision provides you with the option of *porting weights* between the frameworks. This means that *Person 1* can train a model with a *TensorFlow pipeline*, and *Person 2* can then take that checkpoint and fine-tune it with a *PyTorch pipeline*, **and vice-versa**.
+
+While still in beta, the feature will come for each model, and currently works for EfficientNets:
+
+#### TensorFlow-to-PyTorch Automatic Weight Conversion
+
+```
+dummy_input_tf = tf.ones([1, 224, 224, 3])
+dummy_input_torch = torch.ones(1, 3, 224, 224)
+
+tf_model = deepvision.models.EfficientNetV2B0(include_top=False,
+                                          pooling='avg',
+                                          input_shape=(224, 224, 3),
+                                          backend='tensorflow')
+
+tf_model.save('effnet.h5')
+
+from deepvision.models.classification.efficientnet import efficientnet_weight_mapper
+pt_model = efficientnet_weight_mapper.load_tf_to_pt(filepath='effnet.h5', dummy_input=dummy_input_tf)
+
+print(tf_model(dummy_input_tf)['output'].numpy())
+print(pt_model(dummy_input_torch).detach().cpu().numpy())
+# True
+np.allclose(tf_model(dummy_input_tf)['output'].numpy(), pt_model(dummy_input_torch).detach().cpu().numpy())
+```
+
+#### PyTorch-to-TensorFlow Automatic Weight Conversion
+
+```
+pt_model = deepvision.models.EfficientNetV2B0(include_top=False,
+                                          pooling='avg',
+                                          input_shape=(3, 224, 224),
+                                          backend='pytorch')
+torch.save(pt_model.state_dict(), 'effnet.pt')
+
+from deepvision.models.classification.efficientnet import efficientnet_weight_mapper
+
+kwargs = {'include_top': False, 'pooling':'avg', 'input_shape':(3, 224, 224)}
+tf_model = efficientnet_weight_mapper.load_pt_to_tf(filepath='effnet.pt',
+                                architecture='EfficientNetV2B0',
+                                kwargs=kwargs,
+                                dummy_input=dummy_input_torch)
+
+
+pt_model.eval()
+print(pt_model(dummy_input_torch).detach().cpu().numpy())
+print(tf_model(dummy_input_tf)['output'].numpy())
+# True
+np.allclose(tf_model(dummy_input_tf)['output'].numpy(), pt_model(dummy_input_torch).detach().cpu().numpy())
+```
+
+#### Component-Level Weight Conversion
+
+Each distinct block that offers a public API, such as the commonly used `MBConv` and `FusedMBConv` blocks also offer weight porting between them:
+
+```
+dummy_input_tf = tf.ones([1, 224, 224, 3])
+dummy_input_torch = torch.ones(1, 3, 224, 224)
+
+layer = deepvision.layers.FusedMBConv(3, 32, expand_ratio=2, se_ratio=0.25, backend='tensorflow')
+layer(dummy_input_tf);
+
+pt_layer = deepvision.layers.fused_mbconv.tf_to_pt(layer)
+pt_layer.eval();
+
+layer(dummy_input_tf).numpy()[0][0][0]
+"""
+array([ 0.07588673, -0.00770299, -0.03178375, -0.06809437, -0.02139765,
+        0.06691956,  0.05638139, -0.00669611, -0.01785627,  0.08565219,
+       -0.11967321,  0.01648926, -0.01665686, -0.07395031, -0.05677428,
+       -0.13836852,  0.10357075,  0.00552578, -0.02682608,  0.10316402,
+       -0.05773047,  0.08470275,  0.02989118, -0.11372866,  0.07361417,
+        0.04321364, -0.06806802,  0.06685358,  0.10110974,  0.03804607,
+        0.04943493, -0.03414273], dtype=float32)
+"""
+
+# Reshape so the outputs are easily comparable
+pt_layer(dummy_input_torch).detach().cpu().numpy().transpose(0, 2, 3, 1)[0][0][0]
+"""
+array([ 0.07595398, -0.00769612, -0.03179125, -0.06815705, -0.021454  ,
+        0.06697321,  0.05642046, -0.00668627, -0.01784784,  0.08573981,
+       -0.11977906,  0.01648908, -0.01665735, -0.07405862, -0.05680554,
+       -0.13849407,  0.10368796,  0.00552754, -0.02683712,  0.10324436,
+       -0.0578215 ,  0.08479469,  0.0299269 , -0.11383523,  0.07365884,
+        0.04328319, -0.06810313,  0.06690993,  0.10120884,  0.03805522,
+        0.04951007, -0.03417065], dtype=float32)
+"""
+```
+
+## DeepVision as an Evaluation Library
 
 We want DeepVision to host a suite of visualization and explainability tools, from activation maps, to learned feature analysis through clustering algorithms:
 
@@ -145,7 +236,7 @@ We want DeepVision to host a suite of visualization and explainability tools, fr
 - `ActivationMaps` - a class used to plot activation maps for Convolutional Neural Networks, based on the GradCam++ algorithm.
 - ...
 
-#### Learned Feature Analysis - PCA and t-SNE with `FeatureAnalyzer`
+### Learned Feature Analysis - PCA and t-SNE with `FeatureAnalyzer`
 
 Already trained a model and you want to evaluate it? Whether it's a DeepVision model, or a model from another library, as long as a model is either a `tf.keras.Model` or `torch.nn.Module` that can produce an output vector, be it the fully connected top layers or exposed feature maps - you can explore the learned feature space using DeepVision:
 
@@ -198,7 +289,7 @@ feature_analysis.feature_analysis(components=3, figsize=(20, 20))
 ![image](https://user-images.githubusercontent.com/60978046/216826476-65911f69-cbc4-4428-97a5-4892f6125978.png)
 
 
-### DeepVision as a Model Zoo
+## DeepVision as a Model Zoo
 
 We want DeepVision to host a model zoo across a wide variety of domains:
 
@@ -247,7 +338,7 @@ Currently, these models are supported (parameter counts are *equal* between back
 | ResNet101V2  | 44,675,560 |       |           |
 | ResNet152V2  | 60,380,648 |       |           |
 
-### DeepVision as a Components Provider
+## DeepVision as a Components Provider
 
 Models and architectures are built on top of each other. VGGNets begat ResNets, which begat a plethora of other architectures, with incremental improvements, small changes and new ideas building on top of already accepted ideas to bring about new advances. To make architectures more approachable, as well as easily buildable, more readable and to make experimentation and building new architectures simpler - we want to expose as many internal building blocks as possible, as part of the general DeepVision API. If an architecture uses a certain block repeatedly, it's likely going to be exposed as part of the public API.
 
@@ -299,11 +390,11 @@ print(add.shape) # torch.Size([1, 32, 224, 224])
 
 Would this make sense in an architecture? Maybe. Maybe not. Your imagination is your limit.
 
-### DeepVision as a Training Library
+## DeepVision as a Training Library
 
 We want DeepVision to host a suite of training frameworks, from classic supervised, to weakly-supervised and unsupervised learning. These frameworks would serve as a high-level API that you can optionally use, while still focusing on non-proprietary classes and architectures _you're used to_, such as pure `tf.keras.Model`s and `torch.nn.Module`s.
 
-### DeepVision as a Utility Library
+## DeepVision as a Utility Library
 
 We want DeepVision to host easy backend-agnostic image operations (resizing, colorspace conversion, etc) and data augmentation layers, losses and metrics.
 
