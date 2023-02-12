@@ -163,7 +163,8 @@ class ResNetV2PT(pl.LightningModule):
         self.stackwise_blocks = stackwise_blocks
         self.stackwise_strides = stackwise_strides
 
-        self.acc = torchmetrics.Accuracy(task="multiclass", num_classes=classes)
+        if self.include_top and self.classes:
+            self.acc = torchmetrics.Accuracy(task="multiclass", num_classes=classes)
 
         if self.include_top and not self.classes:
             raise ValueError(
@@ -176,6 +177,9 @@ class ResNetV2PT(pl.LightningModule):
                 f"`pooling` must be `None` when `include_top=True`."
                 f"Received pooling={self.pooling} and include_top={self.include_top}. "
             )
+
+        if not self.include_top and self.pooling is None:
+            raise ValueError(f"`pooling` must be specified when `include_top=False`.")
 
         self.conv1 = nn.Conv2d(
             input_shape[0],
@@ -223,7 +227,8 @@ class ResNetV2PT(pl.LightningModule):
             if self.pooling == "avg" or self.pooling is None
             else nn.MaxPool2d(7)
         )
-        self.top_dense = nn.Linear(final_dim, classes)
+        if self.include_top:
+            self.top_dense = nn.Linear(final_dim, classes)
 
     def forward(self, input_tensor):
         inputs = parse_model_inputs("pytorch", input_tensor.shape, input_tensor)
@@ -266,16 +271,42 @@ class ResNetV2PT(pl.LightningModule):
         inputs, targets = train_batch
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
-        self.log("loss", loss, on_epoch=True, prog_bar=True)
-        acc = self.acc(outputs, targets)
-        self.log("acc", acc, on_epoch=True, prog_bar=True)
+        self.log(
+            "loss",
+            loss,
+            on_step=True,
+            on_epoch=True,
+            prog_bar=True,
+        )
+        if self.include_top:
+            acc = self.acc(outputs, targets)
+            self.log(
+                "acc",
+                acc,
+                on_step=True,
+                on_epoch=True,
+                prog_bar=True,
+            )
         return loss
 
     def validation_step(self, val_batch, batch_idx):
         inputs, targets = val_batch
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
-        self.log("val_loss", loss, on_epoch=True, prog_bar=True)
-        val_acc = self.acc(outputs, targets)
-        self.log("val_acc", val_acc, on_epoch=True, prog_bar=True)
+        self.log(
+            "val_loss",
+            loss,
+            on_step=True,
+            on_epoch=True,
+            prog_bar=True,
+        )
+        if self.include_top:
+            val_acc = self.acc(outputs, targets)
+            self.log(
+                "val_acc",
+                val_acc,
+                on_step=True,
+                on_epoch=True,
+                prog_bar=True,
+            )
         return loss

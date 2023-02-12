@@ -72,6 +72,7 @@ class EfficientNetV2PT(pl.LightningModule):
         self.include_top = include_top
         self.width_coefficient = width_coefficient
         self.depth_coefficient = depth_coefficient
+        self.model_input_shape = input_shape
         self.pooling = pooling
         self.classes = classes
         self.dropout_rate = dropout_rate
@@ -89,7 +90,8 @@ class EfficientNetV2PT(pl.LightningModule):
         self.blockwise_strides = blockwise_strides
         self.blockwise_conv_type = blockwise_conv_type
 
-        self.acc = torchmetrics.Accuracy(task="multiclass", num_classes=classes)
+        if include_top and classes:
+            self.acc = torchmetrics.Accuracy(task="multiclass", num_classes=classes)
 
         if self.include_top and not self.classes:
             raise ValueError(
@@ -102,6 +104,10 @@ class EfficientNetV2PT(pl.LightningModule):
                 f"`pooling` must be `None` when `include_top=True`."
                 f"Received pooling={self.pooling} and include_top={self.include_top}. "
             )
+
+        if not self.include_top and self.pooling is None:
+            raise ValueError(f"`pooling` must be specified when `include_top=False`.")
+
         stem_out_channels = _make_divisible(
             filter_num=self.blockwise_input_filters[0],
             width_coefficient=self.width_coefficient,
@@ -181,7 +187,8 @@ class EfficientNetV2PT(pl.LightningModule):
             top_channels,
             momentum=bn_momentum,
         )
-        self.top_dense = nn.Linear(top_channels, classes)
+        if self.include_top:
+            self.top_dense = nn.Linear(top_channels, classes)
 
     def forward(self, input_tensor):
         inputs = parse_model_inputs("pytorch", input_tensor.shape, input_tensor)
@@ -225,16 +232,67 @@ class EfficientNetV2PT(pl.LightningModule):
         inputs, targets = train_batch
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
-        self.log("loss", loss, on_epoch=True, prog_bar=True)
-        acc = self.acc(outputs, targets)
-        self.log("acc", acc, on_epoch=True, prog_bar=True)
+        self.log(
+            "loss",
+            loss,
+            on_step=True,
+            on_epoch=True,
+            prog_bar=True,
+        )
+        if self.include_top:
+            acc = self.acc(outputs, targets)
+            self.log(
+                "acc",
+                acc,
+                on_step=True,
+                on_epoch=True,
+                prog_bar=True,
+            )
         return loss
 
     def validation_step(self, val_batch, batch_idx):
         inputs, targets = val_batch
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
-        self.log("val_loss", loss, on_epoch=True, prog_bar=True)
-        val_acc = self.acc(outputs, targets)
-        self.log("val_acc", val_acc, on_epoch=True, prog_bar=True)
+        self.log(
+            "val_loss",
+            loss,
+            on_step=True,
+            on_epoch=True,
+            prog_bar=True,
+        )
+        if self.include_top:
+            val_acc = self.acc(outputs, targets)
+            self.log(
+                "val_acc",
+                val_acc,
+                on_step=True,
+                on_epoch=True,
+                prog_bar=True,
+            )
         return loss
+
+    def get_config(self):
+        config = {
+            "include_top": self.include_top,
+            "width_coefficient": self.width_coefficient,
+            "depth_coefficient": self.depth_coefficient,
+            "pooling": self.pooling,
+            "classes": self.classes,
+            "dropout_rate": self.dropout_rate,
+            "drop_connect_rate": self.drop_connect_rate,
+            "depth_divisor": self.depth_divisor,
+            "min_depth": self.min_depth,
+            "bn_momentum": self.bn_momentum,
+            "activation": self.activation,
+            "blockwise_kernel_sizes": self.blockwise_kernel_sizes,
+            "blockwise_num_repeat": self.blockwise_num_repeat,
+            "blockwise_input_filters": self.blockwise_input_filters,
+            "blockwise_output_filters": self.blockwise_output_filters,
+            "blockwise_expand_ratios": self.blockwise_expand_ratios,
+            "blockwise_se_ratios": self.blockwise_se_ratios,
+            "blockwise_strides": self.blockwise_strides,
+            "blockwise_conv_type": self.blockwise_conv_type,
+        }
+
+        return config

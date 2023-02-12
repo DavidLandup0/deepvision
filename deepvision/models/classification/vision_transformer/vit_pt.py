@@ -53,6 +53,9 @@ class ViTPT(pl.LightningModule):
                 f"Received pooling={pooling} and include_top={include_top}. "
             )
 
+        if not self.include_top and self.pooling is None:
+            raise ValueError(f"`pooling` must be specified when `include_top=False`.")
+
         self.include_top = include_top
         self.pooling = pooling
         self.classes = classes
@@ -86,9 +89,10 @@ class ViTPT(pl.LightningModule):
             )
 
         self.layer_norm = nn.LayerNorm(project_dim, eps=1e-6)
-        self.linear = nn.Linear(project_dim, classes)
-
-        self.acc = torchmetrics.Accuracy(task="multiclass", num_classes=classes)
+        if self.include_top:
+            self.linear = nn.Linear(project_dim, classes)
+        if self.include_top and self.classes:
+            self.acc = torchmetrics.Accuracy(task="multiclass", num_classes=classes)
 
     def forward(self, input_tensor):
         inputs = parse_model_inputs("pytorch", input_tensor.shape, input_tensor)
@@ -131,16 +135,42 @@ class ViTPT(pl.LightningModule):
         inputs, targets = train_batch
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
-        self.log("loss", loss, prog_bar=True)
-        acc = self.acc(outputs, targets)
-        self.log("acc", acc, on_epoch=True, prog_bar=True)
+        self.log(
+            "loss",
+            loss,
+            on_step=True,
+            on_epoch=True,
+            prog_bar=True,
+        )
+        if self.include_top:
+            acc = self.acc(outputs, targets)
+            self.log(
+                "acc",
+                acc,
+                on_step=True,
+                on_epoch=True,
+                prog_bar=True,
+            )
         return loss
 
     def validation_step(self, val_batch, batch_idx):
         inputs, targets = val_batch
         outputs = self.forward(inputs)
         loss = self.compute_loss(outputs, targets)
-        self.log("val_loss", loss, on_epoch=True, prog_bar=True)
-        val_acc = self.acc(outputs, targets)
-        self.log("val_acc", val_acc, on_epoch=True, prog_bar=True)
+        self.log(
+            "val_loss",
+            loss,
+            on_step=True,
+            on_epoch=True,
+            prog_bar=True,
+        )
+        if self.include_top:
+            val_acc = self.acc(outputs, targets)
+            self.log(
+                "val_acc",
+                val_acc,
+                on_step=True,
+                on_epoch=True,
+                prog_bar=True,
+            )
         return loss

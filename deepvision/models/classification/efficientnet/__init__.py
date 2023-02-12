@@ -1,0 +1,1 @@
+from deepvision.models.classification.efficientnet import efficientnet_weight_mapper
