@@ -145,7 +145,7 @@ While still in beta, the feature will come for each model, and currently works f
 
 #### TensorFlow-to-PyTorch Automatic Weight Conversion
 
-```
+```python
 dummy_input_tf = tf.ones([1, 224, 224, 3])
 dummy_input_torch = torch.ones(1, 3, 224, 224)
 
@@ -167,7 +167,7 @@ np.allclose(tf_model(dummy_input_tf)['output'].numpy(), pt_model(dummy_input_tor
 
 #### PyTorch-to-TensorFlow Automatic Weight Conversion
 
-```
+```python
 pt_model = deepvision.models.EfficientNetV2B0(include_top=False,
                                           pooling='avg',
                                           input_shape=(3, 224, 224),
@@ -194,7 +194,7 @@ np.allclose(tf_model(dummy_input_tf)['output'].numpy(), pt_model(dummy_input_tor
 
 Each distinct block that offers a public API, such as the commonly used `MBConv` and `FusedMBConv` blocks also offer weight porting between them:
 
-```
+```python
 dummy_input_tf = tf.ones([1, 224, 224, 3])
 dummy_input_torch = torch.ones(1, 3, 224, 224)
 
@@ -276,11 +276,11 @@ pt_model = deepvision.models.ResNet18V2(include_top=True,
 # Train...
                                        
 classnames = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
-feature_analysis = deepvision.evaluation.FeatureAnalyzer(pt_model, 
-                                                         train_dataloader,
-                                                         limit_batches=500,
-                                                         classnames=classnames,
-                                                         backend='pytorch')
+feature_analysis = deepvision.evaluation.FeatureAnalyzer(pt_model,              # DeepVision PT Model
+                                                         train_dataloader,      # `torch.utils.Dataloader` returning (img, label)
+                                                         limit_batches=500,     # Limit the number of batches to go over in the dataset 
+                                                         classnames=classnames, # Optionally supply classnames for plotting
+                                                         backend='pytorch')    # Specify backend
                                                          
 feature_analysis.extract_features()
 feature_analysis.feature_analysis(components=3, figsize=(20, 20))
@@ -299,7 +299,6 @@ We want DeepVision to host a model zoo across a wide variety of domains:
 - Object Tracking and MOT
 - 3D Reconstruction
 - Image Restoration
-
 
 Currently, these models are supported (parameter counts are *equal* between backends):
 
