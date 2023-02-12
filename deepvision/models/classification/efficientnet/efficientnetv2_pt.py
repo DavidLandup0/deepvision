@@ -271,3 +271,28 @@ class EfficientNetV2PT(pl.LightningModule):
                 prog_bar=True,
             )
         return loss
+
+    def get_config(self):
+        config = {
+            "include_top": self.include_top,
+            "width_coefficient": self.width_coefficient,
+            "depth_coefficient": self.depth_coefficient,
+            "pooling": self.pooling,
+            "classes": self.classes,
+            "dropout_rate": self.dropout_rate,
+            "drop_connect_rate": self.drop_connect_rate,
+            "depth_divisor": self.depth_divisor,
+            "min_depth": self.min_depth,
+            "bn_momentum": self.bn_momentum,
+            "activation": self.activation,
+            "blockwise_kernel_sizes": self.blockwise_kernel_sizes,
+            "blockwise_num_repeat": self.blockwise_num_repeat,
+            "blockwise_input_filters": self.blockwise_input_filters,
+            "blockwise_output_filters": self.blockwise_output_filters,
+            "blockwise_expand_ratios": self.blockwise_expand_ratios,
+            "blockwise_se_ratios": self.blockwise_se_ratios,
+            "blockwise_strides": self.blockwise_strides,
+            "blockwise_conv_type": self.blockwise_conv_type,
+        }
+
+        return config
