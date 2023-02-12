@@ -1,5 +1,9 @@
 # DeepVision
 
+```
+! pip install deepvision-toolkit
+```
+
 ### Introduction
 
 DeepVision is a (yet another) computer vision library, aimed at bringing Deep Learning to the hands of the masses. Why another library?
