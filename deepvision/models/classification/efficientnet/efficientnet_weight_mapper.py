@@ -57,6 +57,11 @@ def load(
     Basic usage:
 
     ```
+    ### TensorFlow to PyTorch
+
+    dummy_input_tf = tf.ones([1, 224, 224, 3])
+    dummy_input_torch = torch.ones(1, 3, 224, 224)
+
     tf_model = deepvision.models.EfficientNetV2B0(include_top=False,
                                               pooling='avg',
                                               input_shape=(224, 224, 3),
@@ -72,6 +77,33 @@ def load(
 
     print(tf_model(dummy_input_tf)['output'].numpy())
     print(pt_model(dummy_input_torch).detach().cpu().numpy())
+    # True
+    np.allclose(tf_model(dummy_input_tf)['output'].numpy(), pt_model(dummy_input_torch).detach().cpu().numpy())
+
+    ### PyTorch to TensorFlow
+    dummy_input_tf = tf.ones([1, 224, 224, 3])
+    dummy_input_torch = torch.ones(1, 3, 224, 224)
+
+    pt_model = deepvision.models.EfficientNetV2B0(include_top=False,
+                                              pooling='avg',
+                                              input_shape=(3, 224, 224),
+                                              backend='pytorch')
+    torch.save(pt_model.state_dict(), 'effnet.pt')
+
+    from deepvision.models.classification.efficientnet import efficientnet_weight_mapper
+
+    kwargs = {'include_top': False, 'pooling':'avg', 'input_shape':(3, 224, 224)}
+    tf_model = efficientnet_weight_mapper.load(filepath='effnet.pt',
+                                    origin='pytorch',
+                                    target='tensorflow',
+                                    architecture='EfficientNetV2B0',
+                                    kwargs=kwargs,
+                                    dummy_input=dummy_input_torch)
+
+
+    pt_model.eval()
+    print(pt_model(dummy_input_torch).detach().cpu().numpy())
+    print(tf_model(dummy_input_tf)['output'].numpy())
     # True
     np.allclose(tf_model(dummy_input_tf)['output'].numpy(), pt_model(dummy_input_torch).detach().cpu().numpy())
     ```
@@ -242,9 +274,7 @@ def load(
                 converted_block = mbconv.pt_to_tf(pt_block)
                 tf_block.set_weights(converted_block.weights)
 
-        target_model.layers[
-            -5 if model_config["include_top"] else -4
-        ].kernel.kernel.assign(
+        target_model.layers[-5 if model_config["include_top"] else -4].kernel.assign(
             tf.convert_to_tensor(
                 model.top_conv.weight.data.permute(2, 3, 1, 0).detach().cpu().numpy()
             )
