@@ -434,7 +434,7 @@ def tf_to_pt(layer, dummy_input=None):
     return pytorch_mbconv
 
 
-def pt_to_tf(layer, dummy_input):
+def pt_to_tf(layer, dummy_input=None):
     """
     Params:
     layer: PyTorch layer to convert weights from.
@@ -460,6 +460,9 @@ def pt_to_tf(layer, dummy_input):
 
     # Pass dummy input through to
     # get variables under `layer.variables`
+    if dummy_input is None:
+        dummy_input = torch.rand(1, layer.input_filters, 224, 224)
+
     tf_dummy_input = tf.convert_to_tensor(
         dummy_input.detach().cpu().numpy().transpose(0, 2, 3, 1)
     )

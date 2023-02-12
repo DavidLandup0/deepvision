@@ -204,86 +204,93 @@ def load(
             blockwise_conv_type=model_config["blockwise_conv_type"],
         )
 
-        print(target_model.summary())
-
         # Copy stem
-        target_model.stem_conv.kernel = torch.nn.Parameter(
-            torch.from_numpy(tf.transpose(model.layers[1].kernel, (3, 2, 0, 1)).numpy())
+        target_model.layers[1].kernel.assign(
+            tf.convert_to_tensor(
+                model.stem_conv.weight.data.permute(2, 3, 1, 0).detach().cpu().numpy()
+            )
         )
+
         # Copy BatchNorm
-        target_model.stem_bn.weight.data = torch.nn.Parameter(
-            torch.from_numpy(model.layers[2].gamma.numpy())
+        target_model.layers[2].gamma.assign(
+            tf.convert_to_tensor(model.stem_bn.weight.data.detach().cpu().numpy())
         )
-        target_model.stem_bn.bias.data = torch.nn.Parameter(
-            torch.from_numpy(model.layers[2].beta.numpy())
+
+        target_model.layers[2].beta.assign(
+            tf.convert_to_tensor(model.stem_bn.bias.data.detach().cpu().numpy())
         )
-        target_model.stem_bn.running_mean.data = torch.nn.Parameter(
-            torch.from_numpy(model.layers[2].moving_mean.numpy())
+
+        target_model.layers[2].moving_mean.assign(
+            tf.convert_to_tensor(model.stem_bn.running_mean.data.detach().cpu().numpy())
         )
-        target_model.stem_bn.running_var.data = torch.nn.Parameter(
-            torch.from_numpy(model.layers[2].moving_variance.numpy())
+
+        target_model.layers[2].moving_variance.assign(
+            tf.convert_to_tensor(model.stem_bn.running_var.data.detach().cpu().numpy())
         )
 
         tf_blocks = [
             block
-            for block in model.layers
+            for block in target_model.layers
             if isinstance(block, __FusedMBConvTF) or isinstance(block, __MBConvTF)
         ]
 
-        for pt_block, tf_block in zip(target_model.blocks, tf_blocks):
-            if isinstance(tf_block, __FusedMBConvTF):
-                converted_block = fused_mbconv.tf_to_pt(tf_block)
-                pt_block.load_state_dict(converted_block.state_dict())
-            if isinstance(tf_block, __MBConvTF):
-                converted_block = mbconv.tf_to_pt(tf_block)
-                pt_block.load_state_dict(converted_block.state_dict())
+        for tf_block, pt_block in zip(tf_blocks, model.blocks):
+            if isinstance(pt_block, __FusedMBConvPT):
+                converted_block = fused_mbconv.pt_to_tf(pt_block)
+                tf_block.set_weights(converted_block.weights)
+            if isinstance(pt_block, __MBConvPT):
+                converted_block = mbconv.pt_to_tf(pt_block)
+                tf_block.set_weights(converted_block.weights)
 
-        target_model.top_conv.weight.data = torch.nn.Parameter(
-            torch.from_numpy(
-                tf.transpose(
-                    model.layers[-5 if model_config["include_top"] else -4].kernel,
-                    (3, 2, 0, 1),
-                ).numpy()
+        target_model.layers[
+            -5 if model_config["include_top"] else -4
+        ].kernel.kernel.assign(
+            tf.convert_to_tensor(
+                model.top_conv.weight.data.permute(2, 3, 1, 0).detach().cpu().numpy()
             )
         )
+
         if model_config["include_top"]:
             # Copy top BatchNorm
-            target_model.top_bn.weight.data = torch.nn.Parameter(
-                torch.from_numpy(model.layers[-4].gamma.numpy())
+            target_model.layers[-4].gamma.assign(
+                tf.convert_to_tensor(model.top_bn.weight.data.detach().cpu().numpy())
             )
-            target_model.top_bn.bias.data = torch.nn.Parameter(
-                torch.from_numpy(model.layers[-4].beta.numpy())
+
+            target_model.layers[-4].beta.assign(
+                tf.convert_to_tensor(model.top_bn.bias.data.detach().cpu().numpy())
             )
-            target_model.top_bn.running_mean.data = torch.nn.Parameter(
-                torch.from_numpy(model.layers[-4].moving_mean.numpy())
+
+            target_model.layers[-4].moving_mean.assign(
+                tf.convert_to_tensor(
+                    model.top_bn.running_mean.data.detach().cpu().numpy()
+                )
             )
-            target_model.top_bn.running_var.data = torch.nn.Parameter(
-                torch.from_numpy(model.layers[-4].moving_variance.numpy())
+
+            target_model.layers[-4].moving_variance.assign(
+                tf.convert_to_tensor(
+                    model.top_bn.running_var.data.detach().cpu().numpy()
+                )
             )
 
             # Copy head
-            target_model.top_dense.weight.data = torch.nn.Parameter(
-                torch.from_numpy(model.layers[-1].kernel.numpy().transpose(1, 0))
+            target_model.layers[-1].kernel.assign(
+                tf.convert_to_tensor(
+                    model.top_dense.weight.data.permute(1, 0).detach().cpu().numpy()
+                )
             )
-            target_model.top_dense.bias.data = torch.nn.Parameter(
-                torch.from_numpy(model.layers[-1].bias.numpy())
+
+            target_model.layers[-1].bias.assign(
+                tf.convert_to_tensor(model.top_dense.bias.data.detach().cpu().numpy())
             )
+
         if freeze_bn:
             # Freeze all BatchNorm2d layers
-            for module in target_model.modules():
-                if isinstance(module, torch.nn.BatchNorm2d):
-                    module.eval()
-                    module.weight.requires_grad = False
-                    module.bias.requires_grad = False
+            for layer in target_model.layers:
+                if isinstance(layer, tf.keras.layers.BatchNormalization):
+                    layer.trainable = False
 
         return target_model
 
-        for layer in model.children():
-            if isinstance(layer, torch.nn.modules.container.ModuleList):
-                for element in layer:
-                    print(type(element))
-            else:
-                print(type(layer))
     else:
         raise ValueError(
             f"Backend not supported: {origin}. Supported backbones are {MODEL_BACKBONES.keys()}"
