@@ -46,18 +46,14 @@ MODEL_BACKBONES = {"tensorflow": EfficientNetV2TF, "pytorch": EfficientNetV2PT}
 
 def load_tf_to_pt(
     filepath,
-    origin,
-    target,
     dummy_input,
     kwargs=None,
-    architecture=None,
     freeze_bn=True,
 ):
     """
     Basic usage:
 
     ```
-
     dummy_input_tf = tf.ones([1, 224, 224, 3])
     dummy_input_torch = torch.ones(1, 3, 224, 224)
 
@@ -69,10 +65,7 @@ def load_tf_to_pt(
     tf_model.save('effnet.h5')
 
     from deepvision.models.classification.efficientnet import efficientnet_weight_mapper
-    pt_model = efficientnet_weight_mapper.load(filepath='effnet.h5',
-                                    origin='tensorflow',
-                                    target='pytorch',
-                                    dummy_input=dummy_input_tf)
+    pt_model = efficientnet_weight_mapper.load_tf_to_pt(filepath='effnet.h5', dummy_input=dummy_input_tf)
 
     print(tf_model(dummy_input_tf)['output'].numpy())
     print(pt_model(dummy_input_torch).detach().cpu().numpy())
@@ -177,8 +170,6 @@ def load_tf_to_pt(
 
 def load_pt_to_tf(
     filepath,
-    origin,
-    target,
     dummy_input,
     kwargs=None,
     architecture=None,
@@ -201,9 +192,7 @@ def load_pt_to_tf(
     from deepvision.models.classification.efficientnet import efficientnet_weight_mapper
 
     kwargs = {'include_top': False, 'pooling':'avg', 'input_shape':(3, 224, 224)}
-    tf_model = efficientnet_weight_mapper.load(filepath='effnet.pt',
-                                    origin='pytorch',
-                                    target='tensorflow',
+    tf_model = efficientnet_weight_mapper.load_pt_to_tf(filepath='effnet.pt',
                                     architecture='EfficientNetV2B0',
                                     kwargs=kwargs,
                                     dummy_input=dummy_input_torch)
@@ -221,7 +210,7 @@ def load_pt_to_tf(
         raise ValueError(
             f"'kwargs' cannot be None, and are required for PyTorch model construction."
         )
-    if kwargs is None:
+    if architecture is None:
         raise ValueError(
             f"'architecture' cannot be None, and is required for PyTorch model construction."
         )
