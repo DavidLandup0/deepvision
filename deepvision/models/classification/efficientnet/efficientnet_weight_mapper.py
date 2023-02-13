@@ -249,105 +249,107 @@ def load_pt_to_tf(
         raise ValueError(
             f"'architecture' cannot be None, and is required for PyTorch model construction."
         )
+    with torch.no_grad():
+        model = MODEL_ARCHITECTURES.get(architecture)
+        model = model(backend="pytorch", **kwargs)
+        model.load_state_dict(torch.load(filepath))
 
-    model = MODEL_ARCHITECTURES.get(architecture)
-    model = model(backend="pytorch", **kwargs)
-    model.load_state_dict(torch.load(filepath))
-
-    model_config = model.get_config()
-    target_model = EfficientNetV2TF(
-        include_top=model_config["include_top"],
-        classes=model_config["classes"],
-        input_shape=dummy_input.squeeze(0).permute(1, 2, 0).shape,
-        pooling=model_config["pooling"],
-        width_coefficient=model_config["width_coefficient"],
-        depth_coefficient=model_config["depth_coefficient"],
-        blockwise_kernel_sizes=model_config["blockwise_kernel_sizes"],
-        blockwise_num_repeat=model_config["blockwise_num_repeat"],
-        blockwise_input_filters=model_config["blockwise_input_filters"],
-        blockwise_output_filters=model_config["blockwise_output_filters"],
-        blockwise_expand_ratios=model_config["blockwise_expand_ratios"],
-        blockwise_se_ratios=model_config["blockwise_se_ratios"],
-        blockwise_strides=model_config["blockwise_strides"],
-        blockwise_conv_type=model_config["blockwise_conv_type"],
-    )
-    dummy_input = tf.convert_to_tensor(
-        dummy_input.permute(0, 2, 3, 1).detach().cpu().numpy()
-    )
-    target_model(dummy_input)
-
-    # Copy stem
-    target_model.layers[1].kernel.assign(
-        tf.convert_to_tensor(
-            model.stem_conv.weight.data.permute(2, 3, 1, 0).detach().cpu().numpy()
+        model_config = model.get_config()
+        target_model = EfficientNetV2TF(
+            include_top=model_config["include_top"],
+            classes=model_config["classes"],
+            input_shape=dummy_input.squeeze(0).permute(1, 2, 0).shape,
+            pooling=model_config["pooling"],
+            width_coefficient=model_config["width_coefficient"],
+            depth_coefficient=model_config["depth_coefficient"],
+            blockwise_kernel_sizes=model_config["blockwise_kernel_sizes"],
+            blockwise_num_repeat=model_config["blockwise_num_repeat"],
+            blockwise_input_filters=model_config["blockwise_input_filters"],
+            blockwise_output_filters=model_config["blockwise_output_filters"],
+            blockwise_expand_ratios=model_config["blockwise_expand_ratios"],
+            blockwise_se_ratios=model_config["blockwise_se_ratios"],
+            blockwise_strides=model_config["blockwise_strides"],
+            blockwise_conv_type=model_config["blockwise_conv_type"],
         )
-    )
-
-    # Copy BatchNorm
-    target_model.layers[2].gamma.assign(
-        tf.convert_to_tensor(model.stem_bn.weight.data.detach().cpu().numpy())
-    )
-
-    target_model.layers[2].beta.assign(
-        tf.convert_to_tensor(model.stem_bn.bias.data.detach().cpu().numpy())
-    )
-
-    target_model.layers[2].moving_mean.assign(
-        tf.convert_to_tensor(model.stem_bn.running_mean.data.detach().cpu().numpy())
-    )
-
-    target_model.layers[2].moving_variance.assign(
-        tf.convert_to_tensor(model.stem_bn.running_var.data.detach().cpu().numpy())
-    )
-
-    tf_blocks = [
-        block
-        for block in target_model.layers
-        if isinstance(block, __FusedMBConvTF) or isinstance(block, __MBConvTF)
-    ]
-
-    for tf_block, pt_block in zip(tf_blocks, model.blocks):
-        if isinstance(pt_block, __FusedMBConvPT):
-            converted_block = fused_mbconv.pt_to_tf(pt_block)
-            tf_block.set_weights(converted_block.weights)
-        if isinstance(pt_block, __MBConvPT):
-            converted_block = mbconv.pt_to_tf(pt_block)
-            tf_block.set_weights(converted_block.weights)
-
-    target_model.layers[-5 if model_config["include_top"] else -4].kernel.assign(
-        tf.convert_to_tensor(
-            model.top_conv.weight.data.permute(2, 3, 1, 0).detach().cpu().numpy()
+        dummy_input = tf.convert_to_tensor(
+            dummy_input.permute(0, 2, 3, 1).detach().cpu().numpy()
         )
-    )
+        # Run dummy_input through the model to initialize
+        # model.variables
+        target_model(dummy_input)
 
-    if model_config["include_top"]:
-        # Copy top BatchNorm
-        target_model.layers[-4].gamma.assign(
-            tf.convert_to_tensor(model.top_bn.weight.data.detach().cpu().numpy())
-        )
-
-        target_model.layers[-4].beta.assign(
-            tf.convert_to_tensor(model.top_bn.bias.data.detach().cpu().numpy())
-        )
-
-        target_model.layers[-4].moving_mean.assign(
-            tf.convert_to_tensor(model.top_bn.running_mean.data.detach().cpu().numpy())
-        )
-
-        target_model.layers[-4].moving_variance.assign(
-            tf.convert_to_tensor(model.top_bn.running_var.data.detach().cpu().numpy())
-        )
-
-        # Copy head
-        target_model.layers[-1].kernel.assign(
+        # Copy stem
+        target_model.layers[1].kernel.assign(
             tf.convert_to_tensor(
-                model.top_dense.weight.data.permute(1, 0).detach().cpu().numpy()
+                model.stem_conv.weight.data.permute(2, 3, 1, 0).detach().cpu().numpy()
             )
         )
 
-        target_model.layers[-1].bias.assign(
-            tf.convert_to_tensor(model.top_dense.bias.data.detach().cpu().numpy())
+        # Copy BatchNorm
+        target_model.layers[2].gamma.assign(
+            tf.convert_to_tensor(model.stem_bn.weight.data.detach().cpu().numpy())
         )
+
+        target_model.layers[2].beta.assign(
+            tf.convert_to_tensor(model.stem_bn.bias.data.detach().cpu().numpy())
+        )
+
+        target_model.layers[2].moving_mean.assign(
+            tf.convert_to_tensor(model.stem_bn.running_mean.data.detach().cpu().numpy())
+        )
+
+        target_model.layers[2].moving_variance.assign(
+            tf.convert_to_tensor(model.stem_bn.running_var.data.detach().cpu().numpy())
+        )
+
+        tf_blocks = [
+            block
+            for block in target_model.layers
+            if isinstance(block, __FusedMBConvTF) or isinstance(block, __MBConvTF)
+        ]
+
+        for tf_block, pt_block in zip(tf_blocks, model.blocks):
+            if isinstance(pt_block, __FusedMBConvPT):
+                converted_block = fused_mbconv.pt_to_tf(pt_block)
+                tf_block.set_weights(converted_block.weights)
+            if isinstance(pt_block, __MBConvPT):
+                converted_block = mbconv.pt_to_tf(pt_block)
+                tf_block.set_weights(converted_block.weights)
+
+        target_model.layers[-5 if model_config["include_top"] else -4].kernel.assign(
+            tf.convert_to_tensor(
+                model.top_conv.weight.data.permute(2, 3, 1, 0).detach().cpu().numpy()
+            )
+        )
+
+        if model_config["include_top"]:
+            # Copy top BatchNorm
+            target_model.layers[-4].gamma.assign(
+                tf.convert_to_tensor(model.top_bn.weight.data.detach().cpu().numpy())
+            )
+
+            target_model.layers[-4].beta.assign(
+                tf.convert_to_tensor(model.top_bn.bias.data.detach().cpu().numpy())
+            )
+
+            target_model.layers[-4].moving_mean.assign(
+                tf.convert_to_tensor(model.top_bn.running_mean.data.detach().cpu().numpy())
+            )
+
+            target_model.layers[-4].moving_variance.assign(
+                tf.convert_to_tensor(model.top_bn.running_var.data.detach().cpu().numpy())
+            )
+
+            # Copy head
+            target_model.layers[-1].kernel.assign(
+                tf.convert_to_tensor(
+                    model.top_dense.weight.data.permute(1, 0).detach().cpu().numpy()
+                )
+            )
+
+            target_model.layers[-1].bias.assign(
+                tf.convert_to_tensor(model.top_dense.bias.data.detach().cpu().numpy())
+            )
 
     if freeze_bn:
         # Freeze all BatchNorm2d layers
