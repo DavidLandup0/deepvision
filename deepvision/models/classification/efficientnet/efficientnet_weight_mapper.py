@@ -181,10 +181,10 @@ def load_tf_to_pt(
     original_filepath = os.path.splitext(filepath)[0]
     torch.save(f"converted_{original_filepath}.pt")
 
-    model.load_state_dict(
+    target_model.load_state_dict(
         torch.load("converted_{original_filepath}.pt"), map_location="cpu"
     )
-    model.to(device)
+    target_model.to(device)
 
     if freeze_bn:
         # Freeze all BatchNorm2d layers
