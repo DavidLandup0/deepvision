@@ -234,7 +234,7 @@ class EfficientNetV2PT(pl.LightningModule):
         loss = self.compute_loss(outputs, targets)
         self.log(
             "loss",
-            loss,
+            loss.item(),
             on_step=True,
             on_epoch=True,
             prog_bar=True,
@@ -256,7 +256,7 @@ class EfficientNetV2PT(pl.LightningModule):
         loss = self.compute_loss(outputs, targets)
         self.log(
             "val_loss",
-            loss,
+            loss.item(),
             on_step=True,
             on_epoch=True,
             prog_bar=True,
