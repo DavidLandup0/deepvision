@@ -171,6 +171,9 @@ def load_tf_to_pt(
             target_model.top_dense.bias.data = torch.nn.Parameter(
                 torch.from_numpy(model.layers[-1].bias.numpy())
             )
+        # No further need for it
+        # so gc can collect it and free memory
+        model = None
 
         """
         As noted in: https://discuss.pytorch.org/t/out-of-memory-error-when-resume-training-even-though-my-gpu-is-empty/30757/5
@@ -271,25 +274,25 @@ def load_pt_to_tf(
     # Copy stem
     target_model.layers[1].kernel.assign(
         tf.convert_to_tensor(
-            model.stem_conv.weight.permute(2, 3, 1, 0).detach().cpu().numpy()
+            model.stem_conv.weight.data.permute(2, 3, 1, 0).detach().cpu().numpy()
         )
     )
 
     # Copy BatchNorm
     target_model.layers[2].gamma.assign(
-        tf.convert_to_tensor(model.stem_bn.weight.detach().cpu().numpy())
+        tf.convert_to_tensor(model.stem_bn.weight.data.detach().cpu().numpy())
     )
 
     target_model.layers[2].beta.assign(
-        tf.convert_to_tensor(model.stem_bn.bias.detach().cpu().numpy())
+        tf.convert_to_tensor(model.stem_bn.bias.data.detach().cpu().numpy())
     )
 
     target_model.layers[2].moving_mean.assign(
-        tf.convert_to_tensor(model.stem_bn.running_mean.detach().cpu().numpy())
+        tf.convert_to_tensor(model.stem_bn.running_mean.data.detach().cpu().numpy())
     )
 
     target_model.layers[2].moving_variance.assign(
-        tf.convert_to_tensor(model.stem_bn.running_var.detach().cpu().numpy())
+        tf.convert_to_tensor(model.stem_bn.running_var.data.detach().cpu().numpy())
     )
 
     tf_blocks = [
@@ -308,37 +311,37 @@ def load_pt_to_tf(
 
     target_model.layers[-5 if model_config["include_top"] else -4].kernel.assign(
         tf.convert_to_tensor(
-            model.top_conv.weight.permute(2, 3, 1, 0).detach().cpu().numpy()
+            model.top_conv.weight.data.permute(2, 3, 1, 0).detach().cpu().numpy()
         )
     )
 
     if model_config["include_top"]:
         # Copy top BatchNorm
         target_model.layers[-4].gamma.assign(
-            tf.convert_to_tensor(model.top_bn.weight.detach().cpu().numpy())
+            tf.convert_to_tensor(model.top_bn.weight.data.detach().cpu().numpy())
         )
 
         target_model.layers[-4].beta.assign(
-            tf.convert_to_tensor(model.top_bn.bias.detach().cpu().numpy())
+            tf.convert_to_tensor(model.top_bn.bias.data.detach().cpu().numpy())
         )
 
         target_model.layers[-4].moving_mean.assign(
-            tf.convert_to_tensor(model.top_bn.running_mean.detach().cpu().numpy())
+            tf.convert_to_tensor(model.top_bn.running_mean.data.detach().cpu().numpy())
         )
 
         target_model.layers[-4].moving_variance.assign(
-            tf.convert_to_tensor(model.top_bn.running_var.detach().cpu().numpy())
+            tf.convert_to_tensor(model.top_bn.running_var.data.detach().cpu().numpy())
         )
 
         # Copy head
         target_model.layers[-1].kernel.assign(
             tf.convert_to_tensor(
-                model.top_dense.weight.permute(1, 0).detach().cpu().numpy()
+                model.top_dense.weight.data.permute(1, 0).detach().cpu().numpy()
             )
         )
 
         target_model.layers[-1].bias.assign(
-            tf.convert_to_tensor(model.top_dense.bias.detach().cpu().numpy())
+            tf.convert_to_tensor(model.top_dense.bias.data.detach().cpu().numpy())
         )
 
     if freeze_bn:
