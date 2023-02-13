@@ -271,6 +271,10 @@ def load_pt_to_tf(
         blockwise_strides=model_config["blockwise_strides"],
         blockwise_conv_type=model_config["blockwise_conv_type"],
     )
+    dummy_input = tf.convert_to_tensor(
+        dummy_input.permute(0, 2, 3, 1).detach().cpu().numpy()
+    )
+    target_model(dummy_input)
 
     # Copy stem
     target_model.layers[1].kernel.assign(
