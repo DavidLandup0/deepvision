@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="deepvision-toolkit",
-    version="0.1.2",
+    version="0.1.3",
     description="PyTorch and TensorFlow/Keras image models with automatic weight conversions and equal API/implementations - Vision Transformer (ViT), ResNetV2, EfficientNetV2, (planned...) DeepLabV3+, ConvNeXtV2, YOLO, NeRF, etc.",
     url="https://github.com/DavidLandup0/deepvision",
     author="David Landup",
