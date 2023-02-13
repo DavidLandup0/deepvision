@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 import tensorflow as tf
 import torch
 
@@ -169,6 +171,21 @@ def load_tf_to_pt(
         target_model.top_dense.bias.data = torch.nn.Parameter(
             torch.from_numpy(model.layers[-1].bias.numpy())
         )
+
+    """
+    As noted in: https://discuss.pytorch.org/t/out-of-memory-error-when-resume-training-even-though-my-gpu-is-empty/30757/5
+    Sometimes, on some devices, PyTorch-based networks throw a CUDA OOM when loaded directly on the GPU. To avoid this,
+    we now *save* the model and load it back, mapping to the CPU and then pushing back to the original model device.
+    """
+    device = model.device
+    original_filepath = os.path.splitext(filepath)[0]
+    torch.save(f"converted_{original_filepath}.pt")
+
+    model.load_state_dict(
+        torch.load("converted_{original_filepath}.pt"), map_location="cpu"
+    )
+    model.to(device)
+
     if freeze_bn:
         # Freeze all BatchNorm2d layers
         for module in target_model.modules():
