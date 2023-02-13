@@ -45,10 +45,6 @@ from deepvision.models.classification.efficientnet.efficientnetv2_tf import (
     EfficientNetV2TF,
 )
 
-gpus = tf.config.experimental.list_physical_devices('GPU')
-for gpu in gpus:
-  tf.config.experimental.set_memory_growth(gpu, True)
-
 MODEL_ARCHITECTURES = {
     "EfficientNetV2B0": EfficientNetV2B0,
     "EfficientNetV2B1": EfficientNetV2B1,
@@ -175,9 +171,6 @@ def load_tf_to_pt(
             target_model.top_dense.bias.data = torch.nn.Parameter(
                 torch.from_numpy(model.layers[-1].bias.numpy())
             )
-        # No further need for it
-        # so gc can collect it and free memory
-        model = None
 
         """
         As noted in: https://discuss.pytorch.org/t/out-of-memory-error-when-resume-training-even-though-my-gpu-is-empty/30757/5
@@ -186,7 +179,7 @@ def load_tf_to_pt(
         """
         device = target_model.device
         original_filepath = os.path.splitext(filepath)[0]
-        target_model.to('cpu')
+        target_model.to("cpu")
         torch.save(target_model.state_dict(), f"converted_{original_filepath}.pt")
 
         target_model.load_state_dict(
