@@ -1,7 +1,7 @@
 # DeepVision
 
-```
-! pip install deepvision-toolkit
+```console
+$ pip install deepvision-toolkit
 ```
 
 ### Introduction
@@ -145,7 +145,9 @@ trainer.fit(pt_model, train_dataloader, val_dataloader)
 
 As models between PyTorch and TensorFlow implementations are equal and to encourage cross-framework collaboration - DeepVision provides you with the option of *porting weights* between the frameworks. This means that *Person 1* can train a model with a *TensorFlow pipeline*, and *Person 2* can then take that checkpoint and fine-tune it with a *PyTorch pipeline*, **and vice-versa**.
 
-While still in beta, the feature will come for each model, and currently works for EfficientNets:
+While still in beta, the feature will come for each model, and currently works for EfficientNets. 
+
+> For end-to-end examples, take a look at the [_"Automatic Weight Conversion with DeepVision"_](https://colab.research.google.com/drive/1_nUpqsjg8sOW5eylyedGsGQZjNmHA6GY#scrollTo=fcyT9KNwclfB)
 
 #### TensorFlow-to-PyTorch Automatic Weight Conversion
 
@@ -291,6 +293,8 @@ feature_analysis.feature_analysis(components=3, figsize=(20, 20))
 ```
 
 ![image](https://user-images.githubusercontent.com/60978046/216826476-65911f69-cbc4-4428-97a5-4892f6125978.png)
+
+> For more, take a look at the (_"DeepVision Training and Feature Analysis"_)[https://colab.research.google.com/drive/1j8g0Urtko6pbRDKmU02cKnkyANGA0qdH#scrollTo=K5nW6HjgaKwZ] notebook.
 
 
 ## DeepVision as a Model Zoo
