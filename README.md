@@ -4,6 +4,16 @@
 $ pip install deepvision-toolkit
 ```
 
+✔️ TensorFlow **and** PyTorch implementations
+✔️ Pure `tf.keras.Model` and `torch.nn.Module`s, as well as PyTorch Lightning modules ready for training pipelines
+✔️ Automatic weight conversion between DeepVision models (train and fine-tune `.h5` and `.pt` checkpoints interchangeably in either framework)
+✔️ Explainability and analysis modules
+✔️ TensorFlow/PyTorch duality on multiple levels (model-level and component-level are backend agnostic and weights are transferable on model-level and component-level)
+✔️ Identical, readable implementations, with the **same API**, code structure and style
+✔️ Layered API with exposed building blocks (`TransformerEncoder`, `MBConv`, etc.)
+✔️ Image classification, (object detection, semantic/instance/panoptic segmentation, NeRFs, etc. coming soon)
+✔️ Mixed-precision, TPU and XLA training support
+
 ### Introduction
 
 DeepVision is a (yet another) computer vision library, aimed at bringing Deep Learning to the hands of the masses. Why another library?
