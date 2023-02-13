@@ -179,7 +179,7 @@ def load_tf_to_pt(
     """
     device = target_model.device
     original_filepath = os.path.splitext(filepath)[0]
-    torch.save(f"converted_{original_filepath}.pt")
+    torch.save(target_model.state_dict(), f"converted_{original_filepath}.pt")
 
     target_model.load_state_dict(
         torch.load("converted_{original_filepath}.pt"), map_location="cpu"
