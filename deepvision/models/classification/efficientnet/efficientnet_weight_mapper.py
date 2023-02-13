@@ -333,11 +333,15 @@ def load_pt_to_tf(
             )
 
             target_model.layers[-4].moving_mean.assign(
-                tf.convert_to_tensor(model.top_bn.running_mean.data.detach().cpu().numpy())
+                tf.convert_to_tensor(
+                    model.top_bn.running_mean.data.detach().cpu().numpy()
+                )
             )
 
             target_model.layers[-4].moving_variance.assign(
-                tf.convert_to_tensor(model.top_bn.running_var.data.detach().cpu().numpy())
+                tf.convert_to_tensor(
+                    model.top_bn.running_var.data.detach().cpu().numpy()
+                )
             )
 
             # Copy head
