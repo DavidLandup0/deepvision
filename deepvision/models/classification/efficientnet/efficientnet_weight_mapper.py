@@ -92,6 +92,9 @@ def load_tf_to_pt(
         model = tf.keras.models.load_model(
             filepath, custom_objects={"EfficientNetV2TF": EfficientNetV2TF}
         )
+        # Crate model.variables
+        model(dummy_input)
+
         model_config = model.get_config()
         target_model = EfficientNetV2PT(
             include_top=model_config["include_top"],
