@@ -86,115 +86,115 @@ def load_tf_to_pt(
     # True
     np.allclose(tf_model(dummy_input_tf)['output'].numpy(), pt_model(dummy_input_torch).detach().cpu().numpy())
     """
-
-    # Temporarily need to supply this as custom_objects() due to a bug while
-    # saving Functional Subclassing models
-    model = tf.keras.models.load_model(
-        filepath, custom_objects={"EfficientNetV2TF": EfficientNetV2TF}
-    )
-    model_config = model.get_config()
-    target_model = EfficientNetV2PT(
-        include_top=model_config["include_top"],
-        classes=model_config["classes"],
-        input_shape=tf.transpose(tf.squeeze(dummy_input), (2, 0, 1)).shape,
-        pooling=model_config["pooling"],
-        width_coefficient=model_config["width_coefficient"],
-        depth_coefficient=model_config["depth_coefficient"],
-        blockwise_kernel_sizes=model_config["blockwise_kernel_sizes"],
-        blockwise_num_repeat=model_config["blockwise_num_repeat"],
-        blockwise_input_filters=model_config["blockwise_input_filters"],
-        blockwise_output_filters=model_config["blockwise_output_filters"],
-        blockwise_expand_ratios=model_config["blockwise_expand_ratios"],
-        blockwise_se_ratios=model_config["blockwise_se_ratios"],
-        blockwise_strides=model_config["blockwise_strides"],
-        blockwise_conv_type=model_config["blockwise_conv_type"],
-    )
-    # Copy stem
-    target_model.stem_conv.weight.data = torch.nn.Parameter(
-        torch.from_numpy(tf.transpose(model.layers[1].kernel, (3, 2, 0, 1)).numpy())
-    )
-    # Copy BatchNorm
-    target_model.stem_bn.weight.data = torch.nn.Parameter(
-        torch.from_numpy(model.layers[2].gamma.numpy())
-    )
-    target_model.stem_bn.bias.data = torch.nn.Parameter(
-        torch.from_numpy(model.layers[2].beta.numpy())
-    )
-    target_model.stem_bn.running_mean.data = torch.nn.Parameter(
-        torch.from_numpy(model.layers[2].moving_mean.numpy())
-    )
-    target_model.stem_bn.running_var.data = torch.nn.Parameter(
-        torch.from_numpy(model.layers[2].moving_variance.numpy())
-    )
-
-    tf_blocks = [
-        block
-        for block in model.layers
-        if isinstance(block, __FusedMBConvTF) or isinstance(block, __MBConvTF)
-    ]
-
-    for pt_block, tf_block in zip(target_model.blocks, tf_blocks):
-        if isinstance(tf_block, __FusedMBConvTF):
-            converted_block = fused_mbconv.tf_to_pt(tf_block)
-            pt_block.load_state_dict(converted_block.state_dict())
-        if isinstance(tf_block, __MBConvTF):
-            converted_block = mbconv.tf_to_pt(tf_block)
-            pt_block.load_state_dict(converted_block.state_dict())
-
-    target_model.top_conv.weight.data = torch.nn.Parameter(
-        torch.from_numpy(
-            tf.transpose(
-                model.layers[-5 if model_config["include_top"] else -4].kernel,
-                (3, 2, 0, 1),
-            ).numpy()
+    with torch.no_grad():
+        # Temporarily need to supply this as custom_objects() due to a bug while
+        # saving Functional Subclassing models
+        model = tf.keras.models.load_model(
+            filepath, custom_objects={"EfficientNetV2TF": EfficientNetV2TF}
         )
-    )
-    if model_config["include_top"]:
-        # Copy top BatchNorm
-        target_model.top_bn.weight.data = torch.nn.Parameter(
-            torch.from_numpy(model.layers[-4].gamma.numpy())
+        model_config = model.get_config()
+        target_model = EfficientNetV2PT(
+            include_top=model_config["include_top"],
+            classes=model_config["classes"],
+            input_shape=tf.transpose(tf.squeeze(dummy_input), (2, 0, 1)).shape,
+            pooling=model_config["pooling"],
+            width_coefficient=model_config["width_coefficient"],
+            depth_coefficient=model_config["depth_coefficient"],
+            blockwise_kernel_sizes=model_config["blockwise_kernel_sizes"],
+            blockwise_num_repeat=model_config["blockwise_num_repeat"],
+            blockwise_input_filters=model_config["blockwise_input_filters"],
+            blockwise_output_filters=model_config["blockwise_output_filters"],
+            blockwise_expand_ratios=model_config["blockwise_expand_ratios"],
+            blockwise_se_ratios=model_config["blockwise_se_ratios"],
+            blockwise_strides=model_config["blockwise_strides"],
+            blockwise_conv_type=model_config["blockwise_conv_type"],
         )
-        target_model.top_bn.bias.data = torch.nn.Parameter(
-            torch.from_numpy(model.layers[-4].beta.numpy())
+        # Copy stem
+        target_model.stem_conv.weight.data = torch.nn.Parameter(
+            torch.from_numpy(tf.transpose(model.layers[1].kernel, (3, 2, 0, 1)).numpy())
         )
-        target_model.top_bn.running_mean.data = torch.nn.Parameter(
-            torch.from_numpy(model.layers[-4].moving_mean.numpy())
+        # Copy BatchNorm
+        target_model.stem_bn.weight.data = torch.nn.Parameter(
+            torch.from_numpy(model.layers[2].gamma.numpy())
         )
-        target_model.top_bn.running_var.data = torch.nn.Parameter(
-            torch.from_numpy(model.layers[-4].moving_variance.numpy())
+        target_model.stem_bn.bias.data = torch.nn.Parameter(
+            torch.from_numpy(model.layers[2].beta.numpy())
+        )
+        target_model.stem_bn.running_mean.data = torch.nn.Parameter(
+            torch.from_numpy(model.layers[2].moving_mean.numpy())
+        )
+        target_model.stem_bn.running_var.data = torch.nn.Parameter(
+            torch.from_numpy(model.layers[2].moving_variance.numpy())
         )
 
-        # Copy head
-        target_model.top_dense.weight.data = torch.nn.Parameter(
-            torch.from_numpy(model.layers[-1].kernel.numpy().transpose(1, 0))
+        tf_blocks = [
+            block
+            for block in model.layers
+            if isinstance(block, __FusedMBConvTF) or isinstance(block, __MBConvTF)
+        ]
+
+        for pt_block, tf_block in zip(target_model.blocks, tf_blocks):
+            if isinstance(tf_block, __FusedMBConvTF):
+                converted_block = fused_mbconv.tf_to_pt(tf_block)
+                pt_block.load_state_dict(converted_block.state_dict())
+            if isinstance(tf_block, __MBConvTF):
+                converted_block = mbconv.tf_to_pt(tf_block)
+                pt_block.load_state_dict(converted_block.state_dict())
+
+        target_model.top_conv.weight.data = torch.nn.Parameter(
+            torch.from_numpy(
+                tf.transpose(
+                    model.layers[-5 if model_config["include_top"] else -4].kernel,
+                    (3, 2, 0, 1),
+                ).numpy()
+            )
         )
-        target_model.top_dense.bias.data = torch.nn.Parameter(
-            torch.from_numpy(model.layers[-1].bias.numpy())
+        if model_config["include_top"]:
+            # Copy top BatchNorm
+            target_model.top_bn.weight.data = torch.nn.Parameter(
+                torch.from_numpy(model.layers[-4].gamma.numpy())
+            )
+            target_model.top_bn.bias.data = torch.nn.Parameter(
+                torch.from_numpy(model.layers[-4].beta.numpy())
+            )
+            target_model.top_bn.running_mean.data = torch.nn.Parameter(
+                torch.from_numpy(model.layers[-4].moving_mean.numpy())
+            )
+            target_model.top_bn.running_var.data = torch.nn.Parameter(
+                torch.from_numpy(model.layers[-4].moving_variance.numpy())
+            )
+
+            # Copy head
+            target_model.top_dense.weight.data = torch.nn.Parameter(
+                torch.from_numpy(model.layers[-1].kernel.numpy().transpose(1, 0))
+            )
+            target_model.top_dense.bias.data = torch.nn.Parameter(
+                torch.from_numpy(model.layers[-1].bias.numpy())
+            )
+
+        """
+        As noted in: https://discuss.pytorch.org/t/out-of-memory-error-when-resume-training-even-though-my-gpu-is-empty/30757/5
+        Sometimes, on some devices, PyTorch-based networks throw a CUDA OOM when loaded directly on the GPU. To avoid this,
+        we now *save* the model and load it back, mapping to the CPU and then pushing back to the original model device.
+        """
+        device = target_model.device
+        original_filepath = os.path.splitext(filepath)[0]
+        target_model.to('cpu')
+        torch.save(target_model.state_dict(), f"converted_{original_filepath}.pt")
+
+        target_model.load_state_dict(
+            torch.load(f"converted_{original_filepath}.pt", map_location="cpu"),
         )
+        target_model.to(device)
+        target_model.zero_grad()
 
-    """
-    As noted in: https://discuss.pytorch.org/t/out-of-memory-error-when-resume-training-even-though-my-gpu-is-empty/30757/5
-    Sometimes, on some devices, PyTorch-based networks throw a CUDA OOM when loaded directly on the GPU. To avoid this,
-    we now *save* the model and load it back, mapping to the CPU and then pushing back to the original model device.
-    """
-    device = target_model.device
-    original_filepath = os.path.splitext(filepath)[0]
-    target_model.to('cpu')
-    torch.save(target_model.state_dict(), f"converted_{original_filepath}.pt")
-
-    target_model.load_state_dict(
-        torch.load(f"converted_{original_filepath}.pt", map_location="cpu"),
-    )
-    target_model.to(device)
-    target_model.zero_grad()
-
-    if freeze_bn:
-        # Freeze all BatchNorm2d layers
-        for module in target_model.modules():
-            if isinstance(module, torch.nn.BatchNorm2d):
-                module.eval()
-                module.weight.requires_grad = False
-                module.bias.requires_grad = False
+        if freeze_bn:
+            # Freeze all BatchNorm2d layers
+            for module in target_model.modules():
+                if isinstance(module, torch.nn.BatchNorm2d):
+                    module.eval()
+                    module.weight.requires_grad = False
+                    module.bias.requires_grad = False
 
     return target_model
 
