@@ -183,7 +183,7 @@ def load_tf_to_pt(
     torch.save(target_model.state_dict(), f"converted_{original_filepath}.pt")
 
     target_model.load_state_dict(
-        torch.load(f"converted_{original_filepath}.pt", map_location="cpu"),
+        torch.load(f"converted_{original_filepath}.pt", map_location="cpu")['state_dict'],
     )
     target_model.to(device)
 
