@@ -304,7 +304,7 @@ feature_analysis.feature_analysis(components=3, figsize=(20, 20))
 
 ![image](https://user-images.githubusercontent.com/60978046/216826476-65911f69-cbc4-4428-97a5-4892f6125978.png)
 
-> For more, take a look at the (_"DeepVision Training and Feature Analysis"_)[https://colab.research.google.com/drive/1j8g0Urtko6pbRDKmU02cKnkyANGA0qdH#scrollTo=K5nW6HjgaKwZ] notebook.
+> For more, take a look at the [_"DeepVision Training and Feature Analysis"_](https://colab.research.google.com/drive/1j8g0Urtko6pbRDKmU02cKnkyANGA0qdH#scrollTo=K5nW6HjgaKwZ) notebook.
 
 
 ## DeepVision as a Model Zoo
