@@ -45,6 +45,10 @@ from deepvision.models.classification.efficientnet.efficientnetv2_tf import (
     EfficientNetV2TF,
 )
 
+gpus = tf.config.experimental.list_physical_devices('GPU')
+for gpu in gpus:
+  tf.config.experimental.set_memory_growth(gpu, True)
+
 MODEL_ARCHITECTURES = {
     "EfficientNetV2B0": EfficientNetV2B0,
     "EfficientNetV2B1": EfficientNetV2B1,
