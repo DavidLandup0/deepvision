@@ -324,9 +324,11 @@ def tf_to_pt(layer, dummy_input=None):
 
     # Pass dummy input through to
     # get variables under `layer.variables`
+    """
     if dummy_input is None:
         dummy_input = tf.random.normal([1, 224, 224, layer.input_filters])
     layer(dummy_input)
+    """
 
     pytorch_mbconv = __FusedMBConvPT(
         input_filters=layer.input_filters,
