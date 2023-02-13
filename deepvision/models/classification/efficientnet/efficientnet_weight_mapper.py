@@ -177,7 +177,7 @@ def load_tf_to_pt(
     Sometimes, on some devices, PyTorch-based networks throw a CUDA OOM when loaded directly on the GPU. To avoid this,
     we now *save* the model and load it back, mapping to the CPU and then pushing back to the original model device.
     """
-    device = model.device
+    device = target_model.device
     original_filepath = os.path.splitext(filepath)[0]
     torch.save(f"converted_{original_filepath}.pt")
 
