@@ -22,6 +22,14 @@ def load_tiny_nerf(save_path=None, download=False, backend=None):
             f"Backend not supported: {backend}. Supported backbones are {DATASET_BACKENDS.keys()}"
         )
 
+    deepvision_dataset_location = os.path.expanduser(
+        os.path.join("~", "deepvision_datasets")
+    )
+    if not os.path.exists(deepvision_dataset_location):
+        os.mkdir(deepvision_dataset_location)
+
+    save_path = os.path.join(deepvision_dataset_location, save_path)
+
     if not os.path.exists(save_path) or download:
         print(f"Downloading dataset and storing under {save_path}")
         file_data = requests.get(url).content
