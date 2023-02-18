@@ -1,6 +1,33 @@
 import tensorflow as tf
 
 
+def load_tiny_nerf(images, poses, focal):
+    """
+    Loads and returns a `tf.data.Dataset`, containing the "tiny_nerf" dataset, as per
+        [NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis](https://arxiv.org/abs/2003.08934)
+
+    The code and original docstrings were adapted from
+        Aritra Roy Gosthipaty and Ritwik Raha's [3D volumetric rendering with NeRF](https://keras.io/examples/vision/nerf/)
+
+    Args:
+        images: np.ndarray, images in the tiny_nerf dataset
+        poses: np.ndarray, camera poses in the tiny_nerf dataset
+        focal: np.ndarray, camera focal lengths in the tiny_nerf dataset
+
+    Returns:
+        tf.data.Dataset of (img_batch, ray_batch)
+
+    """
+    (num_images, height, width, _) = images.shape
+    img_ds = tf.data.Dataset.from_tensor_slices(images)
+    pose_ds = tf.data.Dataset.from_tensor_slices(poses)
+    ray_ds = pose_ds.map(
+        lambda pose: map_fn(pose=pose, height=height, width=width, focal=focal)
+    )
+    ds = tf.data.Dataset.zip((img_ds, ray_ds))
+    return ds
+
+
 def encode_position(x):
     """Encodes the position into its corresponding Fourier feature.
 
@@ -113,14 +140,3 @@ def map_fn(pose, height, width, focal):
         rand=True,
     )
     return rays_flat, t_vals
-
-
-def load_tiny_nerf(images, poses, focal):
-    (num_images, height, width, _) = images.shape
-    img_ds = tf.data.Dataset.from_tensor_slices(images)
-    pose_ds = tf.data.Dataset.from_tensor_slices(poses)
-    ray_ds = pose_ds.map(
-        lambda pose: map_fn(pose=pose, height=height, width=width, focal=focal)
-    )
-    ds = tf.data.Dataset.zip((img_ds, ray_ds))
-    return ds
