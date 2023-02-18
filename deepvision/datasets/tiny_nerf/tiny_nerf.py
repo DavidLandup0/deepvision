@@ -44,8 +44,6 @@ def load_tiny_nerf(save_path=None, download=False, backend=None):
 
     data = np.load(save_path)
     images = data["images"]
-    im_shape = images.shape
-    (num_images, H, W, _) = images.shape
     (poses, focal) = (data["poses"], data["focal"])
 
     dataset = dataset_class.load_tiny_nerf(images, poses, focal)
