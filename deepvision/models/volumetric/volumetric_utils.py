@@ -86,7 +86,7 @@ def render_rgb_depth_pt(
     # Get transmittance.
     exp_term = 1.0 - alpha
     epsilon = 1e-10
-    transmittance = torch.cumprod(exp_term + epsilon)
+    transmittance = torch.cumprod(exp_term + epsilon, dim=-1)
     weights = alpha * transmittance
     rgb = torch.sum(weights[..., None] * rgb, dim=-2)
     depth_map = torch.sum(weights * t_vals[:, None, None], dim=-1)
