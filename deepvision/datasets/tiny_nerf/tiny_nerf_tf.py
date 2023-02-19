@@ -6,8 +6,8 @@ def load_tiny_nerf(images, poses, focal):
     Loads and returns a `tf.data.Dataset`, containing the "tiny_nerf" dataset, as per
         [NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis](https://arxiv.org/abs/2003.08934)
 
-    The code and original docstrings were adapted from
-        Aritra Roy Gosthipaty and Ritwik Raha's [3D volumetric rendering with NeRF](https://keras.io/examples/vision/nerf/)
+    The code and original docstrings were adapted from the official implementation at
+        [NeRF: Neural Radiance Fields](https://github.com/bmild/nerf)
 
     Args:
         images: np.ndarray, images in the tiny_nerf dataset

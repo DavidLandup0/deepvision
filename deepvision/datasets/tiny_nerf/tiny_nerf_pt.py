@@ -1,5 +1,50 @@
-import tensorflow as tf
 import torch
+
+
+def load_tiny_nerf(images, poses, focal):
+    """
+    Loads and returns a `torch.utils.data.Dataset`, containing the "tiny_nerf" dataset, as per
+        [NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis](https://arxiv.org/abs/2003.08934)
+
+    The code was adapted from the TensorFlow counterpart, for which the original code and docstrings were adapted from
+        the official implementation at [NeRF: Neural Radiance Fields](https://github.com/bmild/nerf)
+
+    Args:
+        images: np.ndarray, images in the tiny_nerf dataset
+        poses: np.ndarray, camera poses in the tiny_nerf dataset
+        focal: np.ndarray, camera focal lengths in the tiny_nerf dataset
+
+    Returns:
+        torch.utils.data.Dataset of (img_batch, ray_batch)
+
+    """
+    (num_images, height, width, _) = images.shape
+    ds = TinyNerfDataset(images, poses, focal)
+    return ds
+
+
+class TinyNerfDataset(torch.utils.data.Dataset):
+    """Face Landmarks dataset."""
+
+    def __init__(self, images, poses, focal):
+        self.images = torch.from_numpy(images)
+        self.poses = torch.from_numpy(poses)
+        self.focal = torch.from_numpy(focal)
+
+        (num_images, height, width, _) = self.images.shape
+        self.height = height
+        self.width = width
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, idx):
+        poses = self.poses[idx]
+        rays_flat, t_val = map_fn(
+            pose=poses, height=self.height, width=self.width, focal=self.focal
+        )
+        sample = {"image": self.images[idx], "rays": (rays_flat, t_val)}
+        return sample
 
 
 def encode_position(x):
@@ -13,9 +58,9 @@ def encode_position(x):
     """
     positions = [x]
     for i in range(16):
-        for fn in [tf.sin, tf.cos]:
+        for fn in [torch.sin, torch.cos]:
             positions.append(fn(2.0**i * x))
-    return tf.concat(positions, axis=-1)
+    return torch.concat(positions, axis=-1)
 
 
 def get_rays(height, width, focal, pose):
@@ -31,9 +76,9 @@ def get_rays(height, width, focal, pose):
         Tuple of origin point and direction vector for rays.
     """
     # Build a meshgrid for the rays.
-    i, j = tf.meshgrid(
-        tf.range(width, dtype=tf.float32),
-        tf.range(height, dtype=tf.float32),
+    i, j = torch.meshgrid(
+        torch.arange(0, width),
+        torch.arange(0, height),
         indexing="xy",
     )
 
@@ -44,7 +89,9 @@ def get_rays(height, width, focal, pose):
     transformed_j = (j - height * 0.5) / focal
 
     # Create the direction unit vectors.
-    directions = tf.stack([transformed_i, -transformed_j, -tf.ones_like(i)], axis=-1)
+    directions = torch.stack(
+        [transformed_i, -transformed_j, -torch.ones_like(i)], axis=-1
+    )
 
     # Get the camera matrix.
     camera_matrix = pose[:3, :3]
@@ -53,11 +100,12 @@ def get_rays(height, width, focal, pose):
     # Get origins and directions for the rays.
     transformed_dirs = directions[..., None, :]
     camera_dirs = transformed_dirs * camera_matrix
-    ray_directions = tf.reduce_sum(camera_dirs, axis=-1)
-    ray_origins = tf.broadcast_to(height_width_focal, tf.shape(ray_directions))
+    ray_directions = camera_dirs.sum(-1)
+
+    ray_origins = torch.broadcast_to(height_width_focal, ray_directions.shape)
 
     # Return the origins and directions.
-    return (ray_origins, ray_directions)
+    return ray_origins, ray_directions
 
 
 def render_flat_rays(ray_origins, ray_directions, near, far, num_samples, rand=False):
@@ -76,18 +124,18 @@ def render_flat_rays(ray_origins, ray_directions, near, far, num_samples, rand=F
     """
     # Compute 3D query points.
     # Equation: r(t) = o+td -> Building the "t" here.
-    t_vals = tf.linspace(near, far, num_samples)
+    t_vals = torch.linspace(near, far, num_samples)
     if rand:
         # Inject uniform noise into sample space to make the sampling continuous.
         shape = list(ray_origins.shape[:-1]) + [num_samples]
-        noise = tf.random.uniform(shape=shape) * (far - near) / num_samples
+        noise = torch.rand(size=shape) * (far - near) / num_samples
         t_vals = t_vals + noise
 
     # Equation: r(t) = o + td -> Building the "r" here.
     rays = ray_origins[..., None, :] + (
         ray_directions[..., None, :] * t_vals[..., None]
     )
-    rays_flat = tf.reshape(rays, [-1, 3])
+    rays_flat = rays.reshape(-1, 3)
     rays_flat = encode_position(rays_flat)
     return rays_flat, t_vals
 
@@ -114,14 +162,3 @@ def map_fn(pose, height, width, focal):
         rand=True,
     )
     return rays_flat, t_vals
-
-
-def load_tiny_nerf(images, poses, focal):
-    (num_images, height, width, _) = images.shape
-    img_ds = tf.data.Dataset.from_tensor_slices(images)
-    pose_ds = tf.data.Dataset.from_tensor_slices(poses)
-    ray_ds = pose_ds.map(
-        lambda pose: map_fn(pose=pose, height=height, width=width, focal=focal)
-    )
-    ds = tf.data.Dataset.zip((img_ds, ray_ds))
-    return ds
