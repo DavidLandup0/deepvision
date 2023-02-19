@@ -15,11 +15,15 @@ DATASET_BACKENDS = {
 }
 
 
-def load_tiny_nerf(save_path=None, download=False, backend=None):
+def load_tiny_nerf(save_path=None, download=False, validation_split=None, backend=None):
     dataset_class = DATASET_BACKENDS.get(backend)
     if dataset_class is None:
         raise ValueError(
             f"Backend not supported: {backend}. Supported backbones are {DATASET_BACKENDS.keys()}"
+        )
+    if validation_split > 1.0:
+        raise ValueError(
+            f"The `validation_split` cannot be set to a value higher than `1.0` as it represents a [0..1] bound percentage value of the dataset. Received {validation_split}"
         )
 
     deepvision_dataset_location = os.path.expanduser(
@@ -45,7 +49,15 @@ def load_tiny_nerf(save_path=None, download=False, backend=None):
     data = np.load(save_path)
     images = data["images"]
     (poses, focal) = (data["poses"], data["focal"])
+    if validation_split:
+        split = int(len(images) * (1 - validation_split))
+        train_images, train_poses = images[:split], poses[:split]
+        valid_images, valid_poses = images[split:], poses[split:]
 
-    dataset = dataset_class.load_tiny_nerf(images, poses, focal)
+        train_dataset = dataset_class.load_tiny_nerf(train_images, train_poses, focal)
+        valid_dataset = dataset_class.load_tiny_nerf(valid_images, valid_poses, focal)
 
-    return dataset
+        return train_dataset, valid_dataset
+    else:
+        dataset = dataset_class.load_tiny_nerf(images, poses, focal)
+        return dataset
