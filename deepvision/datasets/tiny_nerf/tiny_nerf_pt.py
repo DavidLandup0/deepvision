@@ -9,6 +9,9 @@ def load_tiny_nerf(images, poses, focal):
     The code was adapted from the TensorFlow counterpart, for which the original code and docstrings were adapted from
         the official implementation at [NeRF: Neural Radiance Fields](https://github.com/bmild/nerf)
 
+        And the useful comments for readability were written by Aritra Roy Gosthipaty and Ritwik Raha at
+        [3D volumetric rendering with NeRF](https://keras.io/examples/vision/nerf/)
+
     Args:
         images: np.ndarray, images in the tiny_nerf dataset
         poses: np.ndarray, camera poses in the tiny_nerf dataset
