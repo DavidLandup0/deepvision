@@ -3,7 +3,7 @@ import torch
 
 
 def render_rgb_depth_tf(
-    model, rays_flat, t_vals, img_height, img_width, num_ray_samples, pos_embedding_dims
+    model, rays_flat, t_vals, img_height, img_width, num_ray_samples
 ):
     """Generates the RGB image and depth map from model prediction.
 
@@ -13,8 +13,6 @@ def render_rgb_depth_tf(
         rays_flat: The flattened rays that serve as the input to
             the NeRF model.
         t_vals: The sample points for the rays.
-        rand: Choice to randomise the sampling strategy.
-        train: Whether the model is in the training or testing phase.
 
     Returns:
         Tuple of rgb image and depth map.
@@ -48,7 +46,9 @@ def render_rgb_depth_tf(
     return rgb, depth_map
 
 
-def render_rgb_depth_pt(model, rays_flat, t_vals, rand=True, train=True):
+def render_rgb_depth_pt(
+    model, rays_flat, t_vals, img_height, img_width, num_ray_samples
+):
     """Generates the RGB image and depth map from model prediction.
 
     Args:
@@ -57,46 +57,37 @@ def render_rgb_depth_pt(model, rays_flat, t_vals, rand=True, train=True):
         rays_flat: The flattened rays that serve as the input to
             the NeRF model.
         t_vals: The sample points for the rays.
-        rand: Choice to randomise the sampling strategy.
-        train: Whether the model is in the training or testing phase.
 
     Returns:
         Tuple of rgb image and depth map.
     """
-    # Get the predictions from the nerf model and reshape it.
-    if train:
-        predictions = model(rays_flat)
-    else:
-        predictions = model.predict(rays_flat)
-    predictions = tf.reshape(predictions, shape=(BATCH_SIZE, H, W, NUM_SAMPLES, 4))
+    predictions = model(rays_flat)
+    predictions = predictions.reshape(
+        predictions.shape[0], img_height, img_width, num_ray_samples, 4
+    )
 
     # Slice the predictions into rgb and sigma.
-    rgb = tf.sigmoid(predictions[..., :-1])
-    sigma_a = tf.nn.relu(predictions[..., -1])
+    rgb = torch.nn.Sigmoid()(predictions[..., :-1])
+    sigma_a = torch.nn.ReLU()(predictions[..., -1])
 
     # Get the distance of adjacent intervals.
     delta = t_vals[..., 1:] - t_vals[..., :-1]
     # delta shape = (num_samples)
-    if rand:
-        delta = tf.concat(
-            [delta, tf.broadcast_to([1e10], shape=(BATCH_SIZE, H, W, 1))], axis=-1
-        )
-        alpha = 1.0 - tf.exp(-sigma_a * delta)
-    else:
-        delta = tf.concat(
-            [delta, tf.broadcast_to([1e10], shape=(BATCH_SIZE, 1))], axis=-1
-        )
-        alpha = 1.0 - tf.exp(-sigma_a * delta[:, None, None, :])
+    delta = torch.cat(
+        [
+            delta,
+            torch.broadcast_to(
+                input=torch.Tensor(1e10), size=(predictions.shape[0], 1)
+            ),
+        ]
+    )
+    alpha = 1.0 - torch.exp(-sigma_a * delta[:, None, None, :])
 
     # Get transmittance.
     exp_term = 1.0 - alpha
     epsilon = 1e-10
-    transmittance = tf.math.cumprod(exp_term + epsilon, axis=-1, exclusive=True)
+    transmittance = torch.cumprod(exp_term + epsilon)
     weights = alpha * transmittance
-    rgb = tf.reduce_sum(weights[..., None] * rgb, axis=-2)
-
-    if rand:
-        depth_map = tf.reduce_sum(weights * t_vals, axis=-1)
-    else:
-        depth_map = tf.reduce_sum(weights * t_vals[:, None, None], axis=-1)
-    return (rgb, depth_map)
+    rgb = torch.sum(weights[..., None] * rgb, dim=-2)
+    depth_map = torch.sum(weights * t_vals[:, None, None], dim=-1)
+    return rgb, depth_map
