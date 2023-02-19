@@ -407,6 +407,44 @@ print(add.shape) # torch.Size([1, 32, 224, 224])
 
 Would this make sense in an architecture? Maybe. Maybe not. Your imagination is your limit.
 
+## DeepVision as a Dataset Library
+
+We want DeepVision to host a suite of datasets and data loading utilities that can be easily used in production, as well as to host datasets that are suited for use with DeepVision models as well as vanilla PyTorch and vanilla TensorFlow models, in an attempt to lower the barrier to entry for some domains of computer vision:
+
+For instance, you can easily load the Tiny NeRF dataset used to train Neural Radiance Fields with DeepVision, as both a `tf.data.Dataset` or `torch.utils.data.Dataset`:
+```python
+import deepvision
+
+train_ds, valid_ds = deepvision.datasets.load_tiny_nerf(save_path='tiny_nerf.npz',
+                                                        validation_split=0.2,
+                                                        backend='tensorflow')
+
+print('Train dataset length:', len(train_ds)) # Train dataset length: 84
+train_ds # <ZipDataset element_spec=(TensorSpec(shape=(100, 100, 3), dtype=tf.float32, name=None), 
+#                                   (TensorSpec(shape=(320000, 99), dtype=tf.float32, name=None), TensorSpec(shape=(100, 100, 32), dtype=tf.float32, name=None)))>
+
+print('Valid dataset length:', len(valid_ds)) # Valid dataset length: 22
+valid_ds # <ZipDataset element_spec=(TensorSpec(shape=(100, 100, 3), dtype=tf.float32, name=None), 
+#                                   (TensorSpec(shape=(320000, 99), dtype=tf.float32, name=None), TensorSpec(shape=(100, 100, 32), dtype=tf.float32, name=None)))>
+```
+
+```python
+import torch
+train_ds, valid_ds = deepvision.datasets.load_tiny_nerf(save_path='tiny_nerf.npz',
+                                                        validation_split=0.2,
+                                                        backend='pytorch')
+
+train_loader = torch.utils.data.DataLoader(train_ds, batch_size=16, drop_last=True)
+valid_loader = torch.utils.data.DataLoader(valid_ds, batch_size=16, drop_last=True)
+
+print('Train dataset length:', len(train_ds)) # Train dataset length: 84
+train_ds # <deepvision.datasets.tiny_nerf.tiny_nerf_pt.TinyNerfDataset at 0x25e97f4dfd0>
+
+print('Valid dataset length:', len(valid_ds)) # Valid dataset length: 22
+valid_ds # <deepvision.datasets.tiny_nerf.tiny_nerf_pt.TinyNerfDataset at 0x25e94939080>
+```
+
+
 ## DeepVision as a Training Library
 
 We want DeepVision to host a suite of training frameworks, from classic supervised, to weakly-supervised and unsupervised learning. These frameworks would serve as a high-level API that you can optionally use, while still focusing on non-proprietary classes and architectures _you're used to_, such as pure `tf.keras.Model`s and `torch.nn.Module`s.
