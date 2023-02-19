@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from deepvision.models.volumetric_rendering.nerf.nerf_pt import NeRFPT
-from deepvision.models.volumetric_rendering.nerf.nerf_tf import NeRFTF
+from deepvision.models.volumetric.nerf.nerf_pt import NeRFPT
+from deepvision.models.volumetric.nerf.nerf_tf import NeRFTF
 
 MODEL_CONFIGS = {
     "NeRF": {

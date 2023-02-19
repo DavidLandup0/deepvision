@@ -23,14 +23,19 @@ class NeRFTF(tf.keras.Model):
         self,
         input_shape=(None, None, 3),
         input_tensor=None,
+        depth=None,
+        width=None,
         **kwargs,
     ):
-
 
         inputs = parse_model_inputs("tensorflow", input_shape, input_tensor)
         x = inputs
 
-        output = x
+        for i in range(depth):
+            x = layers.Dense(units=width, activation="relu")(x)
+            if i % 4 == 0 and i > 0:
+                x = layers.concatenate([x, inputs], axis=-1)
+        output = layers.Dense(4)(x)
 
         super().__init__(
             inputs={
