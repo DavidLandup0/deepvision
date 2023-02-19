@@ -23,7 +23,8 @@ def load_tiny_nerf(save_path=None, download=False, validation_split=None, backen
         )
     if validation_split > 1.0:
         raise ValueError(
-            f"The `validation_split` cannot be set to a value higher than `1.0` as it represents a [0..1] bound percentage value of the dataset. Received {validation_split}"
+            f"The `validation_split` cannot be set to a value higher than `1.0` as it represents a [0..1] bound percentage value of the dataset. "
+            f"Received {validation_split}"
         )
 
     deepvision_dataset_location = os.path.expanduser(
