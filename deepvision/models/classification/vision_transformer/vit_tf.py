@@ -80,7 +80,7 @@ class ViTTF(tf.keras.Model):
         layer_norm = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
 
         if include_top:
-            x = layers.GlobalAveragePooling1D(name="avg_pool")(layer_norm)
+            x = layers.Lambda(lambda rep: rep[:, 0], name="token_pool")(layer_norm)
             output = layers.Dense(classes, activation="softmax", name="predictions")(x)
         else:
             if pooling == "token":

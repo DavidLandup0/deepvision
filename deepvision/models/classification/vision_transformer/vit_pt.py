@@ -107,7 +107,7 @@ class ViTPT(pl.LightningModule):
         layer_norm = self.layer_norm(x)
 
         if self.include_top:
-            output = layer_norm.mean(dim=1)
+            output = layer_norm[:, 0]
             output = self.linear(output)
             output = nn.Softmax(dim=1)(output)
         else:
