@@ -14,8 +14,7 @@
 
 import tensorflow as tf
 from tensorflow.keras import layers
-
-from deepvision.utils.utils import parse_model_inputs
+from deepvision.models.volumetric.volumetric_utils import render_rgb_depth_tf
 
 
 class NeRFTF(tf.keras.Model):
@@ -27,22 +26,50 @@ class NeRFTF(tf.keras.Model):
         width=None,
         **kwargs,
     ):
+        super().__init__()
 
-        inputs = parse_model_inputs("tensorflow", input_shape, input_tensor)
-        x = inputs
 
+        inputs = tf.keras.Input(shape=input_shape)
         for i in range(depth):
-            x = layers.Dense(units=width, activation="relu")(x)
+            x = layers.Dense(units=width, activation="relu")(inputs)
             if i % 4 == 0 and i > 0:
                 x = layers.concatenate([x, inputs], axis=-1)
-        output = layers.Dense(4)(x)
+        outputs = layers.Dense(4)(x)
 
-        super().__init__(
-            inputs={
-                "inputs": inputs,
-            },
-            outputs={
-                "output": output,
-            },
-            **kwargs,
-        )
+        self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
+
+    def compile(self, optimizer, loss_fn):
+        super().compile()
+        self.optimizer = optimizer
+        self.loss_fn = loss_fn
+        self.loss_tracker = tf.keras.metrics.Mean(name="loss")
+        self.psnr_metric = tf.keras.metrics.Mean(name="psnr")
+
+    def train_step(self, inputs):
+        # Get the images and the rays.
+        (images, rays) = inputs
+        (rays_flat, t_vals) = rays
+
+        with tf.GradientTape() as tape:
+            # Get the predictions from the model.
+            rgb, _ = render_rgb_depth_tf(
+                model=self.model, rays_flat=rays_flat, t_vals=t_vals
+            )
+            loss = self.loss_fn(images, rgb)
+
+        # Get the trainable variables.
+        trainable_variables = self.nerf_model.trainable_variables
+
+        # Get the gradeints of the trainiable variables with respect to the loss.
+        gradients = tape.gradient(loss, trainable_variables)
+
+        # Apply the grads and optimize the model.
+        self.optimizer.apply_gradients(zip(gradients, trainable_variables))
+
+        # Get the PSNR of the reconstructed images and the source images.
+        psnr = tf.image.psnr(images, rgb, max_val=1.0)
+
+        # Compute our own metrics
+        self.loss_tracker.update_state(loss)
+        self.psnr_metric.update_state(psnr)
+        return {"loss": self.loss_tracker.result(), "psnr": self.psnr_metric.result()}
