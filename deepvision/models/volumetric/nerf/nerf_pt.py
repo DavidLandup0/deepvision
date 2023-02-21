@@ -16,13 +16,13 @@ import pytorch_lightning as pl
 import torch
 import torchmetrics
 
-from deepvision.utils.utils import parse_model_inputs
+from deepvision.models.volumetric.volumetric_utils import render_rgb_depth_pt
 
 
 class NeRFPT(pl.LightningModule):
     def __init__(
         self,
-        input_shape=(None, None, 3),
+        input_shape=(None, None, None),
         depth=None,
         width=None,
         **kwargs,
@@ -38,6 +38,7 @@ class NeRFPT(pl.LightningModule):
         super().__init__()
 
         self.layers = torch.nn.ModuleList()
+        self.psnr = torchmetrics.PeakSignalNoiseRatio(data_range=1.0)
 
         for i in range(depth):
             if i % 4 == 0 and i > 0:
@@ -49,14 +50,14 @@ class NeRFPT(pl.LightningModule):
 
         self.output = torch.nn.Linear(width, 4)
 
-    def forward(self, input_tensor):
-        x = input_tensor
+    def forward(self, inputs):
+        x = inputs
 
         for index, layer in enumerate(self.layers):
             x = layer(x)
             x = torch.nn.ReLU()(x)
             if index % 4 == 0 and index > 0:
-                x = torch.concat(x, input_tensor)
+                x = torch.concat(x, inputs)
         output = self.output(x)
 
         return output
@@ -72,10 +73,25 @@ class NeRFPT(pl.LightningModule):
     def compute_loss(self, outputs, targets):
         return self.loss(outputs, targets)
 
+    def compute_psnr(self, outputs, targets):
+        return self.psnr(outputs, targets)
+
     def training_step(self, train_batch, batch_idx):
-        inputs, targets = train_batch
-        outputs = self.forward(inputs)
-        loss = self.compute_loss(outputs, targets)
+        (images, rays) = train_batch
+        (rays_flat, t_vals) = rays
+
+        rgb, _ = render_rgb_depth_pt(
+            model=self,
+            rays_flat=rays_flat,
+            t_vals=t_vals,
+            img_height=images.shape[1],
+            img_width=images.shape[2],
+            num_ray_samples=t_vals.shape[-1],
+        )
+        loss = self.loss(images, rgb)
+        # Compute Peak Signal-to-Noise Ratio (PSNR) between the predicted images and actual images
+        psnr = self.compute_psnr(images, rgb)
+
         self.log(
             "loss",
             loss,
@@ -83,15 +99,44 @@ class NeRFPT(pl.LightningModule):
             on_epoch=True,
             prog_bar=True,
         )
+
+        self.log(
+            "psnr",
+            psnr,
+            on_step=True,
+            on_epoch=True,
+            prog_bar=True,
+        )
+
         return loss
 
     def validation_step(self, val_batch, batch_idx):
-        inputs, targets = val_batch
-        outputs = self.forward(inputs)
-        loss = self.compute_loss(outputs, targets)
+        (images, rays) = val_batch
+        (rays_flat, t_vals) = rays
+
+        rgb, _ = render_rgb_depth_pt(
+            model=self,
+            rays_flat=rays_flat,
+            t_vals=t_vals,
+            img_height=images.shape[1],
+            img_width=images.shape[2],
+            num_ray_samples=t_vals.shape[-1],
+        )
+        val_loss = self.loss(images, rgb)
+        # Compute Peak Signal-to-Noise Ratio (PSNR) between the predicted images and actual images
+        val_psnr = self.compute_psnr(images, rgb)
+
         self.log(
             "val_loss",
-            loss,
+            val_loss,
+            on_step=True,
+            on_epoch=True,
+            prog_bar=True,
+        )
+
+        self.log(
+            "val_psnr",
+            val_psnr,
             on_step=True,
             on_epoch=True,
             prog_bar=True,
