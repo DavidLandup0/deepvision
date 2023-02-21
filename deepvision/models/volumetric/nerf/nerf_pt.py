@@ -77,7 +77,7 @@ class NeRFPT(pl.LightningModule):
         return self.psnr(outputs, targets)
 
     def training_step(self, train_batch, batch_idx):
-        (images, rays) = train_batch
+        (images, rays) = train_batch["image"], train_batch["rays"]
         (rays_flat, t_vals) = rays
 
         rgb, _ = render_rgb_depth_pt(
@@ -111,7 +111,7 @@ class NeRFPT(pl.LightningModule):
         return loss
 
     def validation_step(self, val_batch, batch_idx):
-        (images, rays) = val_batch
+        (images, rays) = val_batch["image"], val_batch["rays"]
         (rays_flat, t_vals) = rays
 
         rgb, _ = render_rgb_depth_pt(
