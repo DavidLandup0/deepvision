@@ -16,8 +16,21 @@ from deepvision.models.volumetric.nerf.nerf_pt import NeRFPT
 from deepvision.models.volumetric.nerf.nerf_tf import NeRFTF
 
 MODEL_CONFIGS = {
-    "NeRF": {
-        "": 0,
+    "NeRFTiny": {
+        "depth": 2,
+        "width": 64,
+    },
+    "NeRFSmall": {
+        "depth": 4,
+        "width": 128,
+    },
+    "NeRFBase": {
+        "depth": 8,
+        "width": 256,
+    },
+    "NeRFLarge": {
+        "depth": 12,
+        "width": 256,
     },
 }
 

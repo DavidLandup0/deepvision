@@ -14,6 +14,7 @@
 
 import tensorflow as tf
 from tensorflow.keras import layers
+
 from deepvision.models.volumetric.volumetric_utils import render_rgb_depth_tf
 
 
@@ -26,22 +27,27 @@ class NeRFTF(tf.keras.Model):
         width=None,
         **kwargs,
     ):
-        super().__init__()
-
 
         inputs = tf.keras.Input(shape=input_shape)
+        x = inputs
         for i in range(depth):
-            x = layers.Dense(units=width, activation="relu")(inputs)
+            x = layers.Dense(units=width, activation="relu")(x)
             if i % 4 == 0 and i > 0:
                 x = layers.concatenate([x, inputs], axis=-1)
-        outputs = layers.Dense(4)(x)
+        output = layers.Dense(4)(x)
 
-        self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
+        super().__init__(
+            inputs={
+                "inputs": inputs,
+            },
+            outputs={
+                "output": output,
+            },
+            **kwargs,
+        )
 
-    def compile(self, optimizer, loss_fn):
-        super().compile()
-        self.optimizer = optimizer
-        self.loss_fn = loss_fn
+        self.depth = depth
+        self.width = width
         self.loss_tracker = tf.keras.metrics.Mean(name="loss")
         self.psnr_metric = tf.keras.metrics.Mean(name="psnr")
 
@@ -53,12 +59,18 @@ class NeRFTF(tf.keras.Model):
         with tf.GradientTape() as tape:
             # Get the predictions from the model.
             rgb, _ = render_rgb_depth_tf(
-                model=self.model, rays_flat=rays_flat, t_vals=t_vals
+                model=self,
+                batch_size=4,
+                rays_flat=rays_flat,
+                t_vals=t_vals,
+                img_height=images.shape[1],
+                img_width=images.shape[2],
+                num_ray_samples=16,
             )
-            loss = self.loss_fn(images, rgb)
+            loss = self.loss(images, rgb)
 
         # Get the trainable variables.
-        trainable_variables = self.nerf_model.trainable_variables
+        trainable_variables = self.trainable_variables
 
         # Get the gradeints of the trainiable variables with respect to the loss.
         gradients = tape.gradient(loss, trainable_variables)
