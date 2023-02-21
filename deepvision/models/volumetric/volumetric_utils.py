@@ -3,7 +3,7 @@ import torch
 
 
 def render_rgb_depth_tf(
-    model, rays_flat, t_vals, batch_size, img_height, img_width, num_ray_samples
+    model, rays_flat, t_vals, img_height, img_width, num_ray_samples
 ):
     """Generates the RGB image and depth map from model prediction.
 
@@ -21,7 +21,7 @@ def render_rgb_depth_tf(
     predictions = model(rays_flat, 0)["output"]
     predictions = tf.reshape(
         predictions,
-        shape=(batch_size, img_height, img_width, num_ray_samples, 4),
+        shape=(tf.shape(predictions)[0], img_height, img_width, num_ray_samples, 4),
     )
 
     # Slice the predictions into rgb and sigma.
@@ -32,7 +32,7 @@ def render_rgb_depth_tf(
     delta = t_vals[..., 1:] - t_vals[..., :-1]
     # delta shape = (num_samples)
     delta = tf.concat(
-        [delta, tf.broadcast_to([1e10], shape=(batch_size, img_height, img_width, 1))],
+        [delta, tf.broadcast_to([1e10], shape=(tf.shape(predictions)[0], img_height, img_width, 1))],
         axis=-1,
     )
     alpha = 1.0 - tf.exp(-sigma_a * delta[:, None, None, :])

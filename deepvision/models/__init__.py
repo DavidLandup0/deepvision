@@ -29,3 +29,4 @@ from deepvision.models.classification.vision_transformer.vit import ViTS32
 from deepvision.models.classification.vision_transformer.vit import ViTTiny16
 from deepvision.models.classification.vision_transformer.vit import ViTTiny32
 from deepvision.models.volumetric.nerf.nerf_tf import NeRFTF
+from deepvision.models.volumetric import volumetric_utils

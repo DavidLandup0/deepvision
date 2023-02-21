@@ -60,12 +60,11 @@ class NeRFTF(tf.keras.Model):
             # Get the predictions from the model.
             rgb, _ = render_rgb_depth_tf(
                 model=self,
-                batch_size=4,
                 rays_flat=rays_flat,
                 t_vals=t_vals,
                 img_height=images.shape[1],
                 img_width=images.shape[2],
-                num_ray_samples=16,
+                num_ray_samples=tf.shape(t_vals)[-1],
             )
             loss = self.loss(images, rgb)
 
