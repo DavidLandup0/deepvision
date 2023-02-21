@@ -22,11 +22,18 @@ class NeRFTF(tf.keras.Model):
     def __init__(
         self,
         input_shape=(None, None, 3),
-        input_tensor=None,
         depth=None,
         width=None,
         **kwargs,
     ):
+        """
+        Neural Radiance Field (NeRF) model, implemented in TensorFlow.
+
+        Args:
+            input_shape: the shape of the input tensor
+            depth: the depth of the model (i.e. the number of layers to stack)
+            width: the 'channels' of each stacked layer (i.e. the number of dense units in each layer)
+        """
 
         inputs = tf.keras.Input(shape=input_shape)
         x = inputs
@@ -57,7 +64,6 @@ class NeRFTF(tf.keras.Model):
         (rays_flat, t_vals) = rays
 
         with tf.GradientTape() as tape:
-            # Get the predictions from the model.
             rgb, _ = render_rgb_depth_tf(
                 model=self,
                 rays_flat=rays_flat,
@@ -68,19 +74,13 @@ class NeRFTF(tf.keras.Model):
             )
             loss = self.loss(images, rgb)
 
-        # Get the trainable variables.
-        trainable_variables = self.trainable_variables
+        # Compute gradients and apply optimizer step
+        gradients = tape.gradient(loss, self.trainable_variables)
+        self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 
-        # Get the gradeints of the trainiable variables with respect to the loss.
-        gradients = tape.gradient(loss, trainable_variables)
-
-        # Apply the grads and optimize the model.
-        self.optimizer.apply_gradients(zip(gradients, trainable_variables))
-
-        # Get the PSNR of the reconstructed images and the source images.
+        # Compute Peak Signal-to-Noise Ratio (PSNR) between the predicted images and actual images
         psnr = tf.image.psnr(images, rgb, max_val=1.0)
 
-        # Compute our own metrics
         self.loss_tracker.update_state(loss)
         self.psnr_metric.update_state(psnr)
         return {"loss": self.loss_tracker.result(), "psnr": self.psnr_metric.result()}

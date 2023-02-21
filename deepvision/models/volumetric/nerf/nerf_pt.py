@@ -23,9 +23,18 @@ class NeRFPT(pl.LightningModule):
     def __init__(
         self,
         input_shape=(None, None, 3),
-        input_tensor=None,
+        depth=None,
+        width=None,
         **kwargs,
     ):
+        """
+        Neural Radiance Field (NeRF) model, implemented in PyTorch.
+
+        Args:
+            input_shape: the shape of the input tensor
+            depth: the depth of the model (i.e. the number of layers to stack)
+            width: the 'channels' of each stacked layer (i.e. the number of dense units in each layer)
+        """
         super().__init__()
 
     def forward(self, input_tensor):
