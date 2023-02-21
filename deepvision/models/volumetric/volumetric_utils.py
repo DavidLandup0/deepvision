@@ -32,7 +32,12 @@ def render_rgb_depth_tf(
     delta = t_vals[..., 1:] - t_vals[..., :-1]
     # delta shape = (num_samples)
     delta = tf.concat(
-        [delta, tf.broadcast_to([1e10], shape=(tf.shape(predictions)[0], img_height, img_width, 1))],
+        [
+            delta,
+            tf.broadcast_to(
+                [1e10], shape=(tf.shape(predictions)[0], img_height, img_width, 1)
+            ),
+        ],
         axis=-1,
     )
     alpha = 1.0 - tf.exp(-sigma_a * delta[:, None, None, :])
