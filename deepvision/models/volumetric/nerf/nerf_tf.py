@@ -21,7 +21,7 @@ from deepvision.models.volumetric.volumetric_utils import render_rgb_depth_tf
 class NeRFTF(tf.keras.Model):
     def __init__(
         self,
-        input_shape=(None, None, 3),
+        input_shape=(None, None, None),
         depth=None,
         width=None,
         **kwargs,

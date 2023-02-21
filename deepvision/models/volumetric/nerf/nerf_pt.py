@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import pytorch_lightning as pl
+import torch
 import torchmetrics
-from torch import nn
 
 from deepvision.utils.utils import parse_model_inputs
 
@@ -37,11 +37,27 @@ class NeRFPT(pl.LightningModule):
         """
         super().__init__()
 
-    def forward(self, input_tensor):
-        inputs = parse_model_inputs("pytorch", input_tensor.shape, input_tensor)
-        x = inputs
+        self.layers = torch.nn.ModuleList()
 
-        output = x
+        for i in range(depth):
+            if i % 4 == 0 and i > 0:
+                self.layers.append(torch.nn.Linear(width + input_shape[-1], width))
+            else:
+                self.layers.append(
+                    torch.nn.Linear(width if i > 0 else input_shape[-1], width)
+                )
+
+        self.output = torch.nn.Linear(width, 4)
+
+    def forward(self, input_tensor):
+        x = input_tensor
+
+        for index, layer in enumerate(self.layers):
+            x = layer(x)
+            x = torch.nn.ReLU()(x)
+            if index % 4 == 0 and index > 0:
+                x = torch.concat(x, input_tensor)
+        output = self.output(x)
 
         return output
 
