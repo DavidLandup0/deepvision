@@ -444,6 +444,8 @@ print('Valid dataset length:', len(valid_ds)) # Valid dataset length: 22
 valid_ds # <deepvision.datasets.tiny_nerf.tiny_nerf_pt.TinyNerfDataset at 0x25e94939080>
 ```
 
+> If you'd like to take a look at an example of training NeRFs with PyTorch and TensorFlow, take a look at the [_"Training Neural Radiance Field (NeRF) Models with DeepVision"_](https://colab.research.google.com/drive/1RbpsfUj0tTbx6hS1xcPd6XaF7tkdWjeF) notebook.
+
 
 ## DeepVision as a Training Library
 
