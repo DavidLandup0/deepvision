@@ -7,36 +7,34 @@ def nerf_render_image_and_depth_tf(
 ):
     """Generates the RGB image and depth map from model prediction.
 
-    The code was adapted from the official implementation at [NeRF: Neural Radiance Fields](https://github.com/bmild/nerf)
-    And the useful comments for readability were written by Aritra Roy Gosthipaty and Ritwik Raha at [3D volumetric rendering with NeRF](https://keras.io/examples/vision/nerf/)
+    The code was adapted from the official implementation at [NeRF: Neural Radiance Fields](https://github.com/bmild/nerf) and
+        Aritra Roy Gosthipaty and Ritwik Raha's at [3D volumetric rendering with NeRF](https://keras.io/examples/vision/nerf/)
 
-    Args:
-        model: The MLP model that is trained to predict the rgb and
-            volume density of the volumetric scene.
-        rays_flat: The flattened rays that serve as the input to
-            the NeRF model.
-        t_vals: The sample points for the rays.
+        Args:
+        model: the NeRF model to predict the rgb and volume density of the volumetric scene
+        rays_flat: the flattened rays that to input into the NeRF model
+        t_vals: ray sample points
+        img_width: the image width
+        img_height: the image height
 
     Returns:
-        Tuple of rgb image and depth map.
+        The rgb_map (3-channel output image), depth_map and acc_map
     """
-
+    # Run model predictions and reshape the output
     predictions = model(rays_flat, 0)["output"]
     predictions = tf.reshape(
         predictions,
         shape=(tf.shape(predictions)[0], img_height, img_width, num_ray_samples, 4),
     )
 
-    # Slice the predictions into rgb and sigma.
+    # Compute opacity (sigma) and colors (rgb)
     rgb = tf.sigmoid(predictions[..., :-1])
     sigma_a = tf.nn.relu(predictions[..., -1])
 
-    # Get the distance of adjacent intervals.
-    delta = t_vals[..., 1:] - t_vals[..., :-1]
-    # delta shape = (num_samples)
+    # Distances to adjacent intervals
     delta = tf.concat(
         [
-            delta,
+            t_vals[..., 1:] - t_vals[..., :-1],
             tf.broadcast_to(
                 [1e10], shape=(tf.shape(predictions)[0], img_height, img_width, 1)
             ),
@@ -47,12 +45,13 @@ def nerf_render_image_and_depth_tf(
 
     # Get transmittance.
     exp_term = 1.0 - alpha
-    epsilon = 1e-10
-    transmittance = tf.math.cumprod(exp_term + epsilon, axis=-1, exclusive=True)
+    transmittance = tf.math.cumprod(exp_term + 1e-10, axis=-1, exclusive=True)
     weights = alpha * transmittance
-    rgb = tf.reduce_sum(weights[..., None] * rgb, axis=-2)
+
+    rgb_map = tf.reduce_sum(weights[..., None] * rgb, axis=-2)
     depth_map = tf.reduce_sum(weights * t_vals[:, None, None], axis=-1)
-    return rgb, depth_map
+    acc_map = tf.reduce_sum(weights, axis=-1)
+    return rgb_map, depth_map, acc_map
 
 
 def nerf_render_image_and_depth_pt(
@@ -60,35 +59,36 @@ def nerf_render_image_and_depth_pt(
 ):
     """Generates the RGB image and depth map from model prediction.
 
-    The code was adapted from the official implementation at [NeRF: Neural Radiance Fields](https://github.com/bmild/nerf)
-    And the useful comments for readability were written by Aritra Roy Gosthipaty and Ritwik Raha at [3D volumetric rendering with NeRF](https://keras.io/examples/vision/nerf/)
+    The code was adapted from the official implementation at [NeRF: Neural Radiance Fields](https://github.com/bmild/nerf) and
+        Aritra Roy Gosthipaty and Ritwik Raha's at [3D volumetric rendering with NeRF](https://keras.io/examples/vision/nerf/)
 
     Args:
-        model: The MLP model that is trained to predict the rgb and
-            volume density of the volumetric scene.
-        rays_flat: The flattened rays that serve as the input to
-            the NeRF model.
-        t_vals: The sample points for the rays.
+        model: the NeRF model to predict the rgb and volume density of the volumetric scene
+        rays_flat: the flattened rays that to input into the NeRF model
+        t_vals: ray sample points
+        img_width: the image width
+        img_height: the image height
 
     Returns:
-        Tuple of rgb image and depth map.
+        The rgb_map (3-channel output image), depth_map and acc_map
     """
+
+    # Run model predictions and reshape the output
     predictions = model(rays_flat)
     predictions = predictions.reshape(
         predictions.shape[0], img_height, img_width, num_ray_samples, 4
     )
 
-    # Slice the predictions into rgb and sigma.
+    # Compute opacity (sigma) and colors (rgb)
     rgb = torch.nn.Sigmoid()(predictions[..., :-1])
     sigma_a = torch.nn.ReLU()(predictions[..., -1])
 
-    # Get the distance of adjacent intervals.
-    delta = t_vals[..., 1:] - t_vals[..., :-1]
+    # Distances to adjacent intervals
     delta = torch.cat(
         [
-            delta,
+            t_vals[..., 1:] - t_vals[..., :-1],
             torch.broadcast_to(
-                input=torch.tensor([1e10], device=delta.device),
+                input=torch.tensor([1e10], device=rgb.device),
                 size=(predictions.shape[0], img_height, img_width, 1),
             ),
         ],
@@ -96,11 +96,11 @@ def nerf_render_image_and_depth_pt(
     )
     alpha = 1.0 - torch.exp(-sigma_a * delta[:, None, None, :])
 
-    # Get transmittance.
     exp_term = 1.0 - alpha
-    epsilon = 1e-10
-    transmittance = torch.cumprod(exp_term + epsilon, dim=-1)
+    transmittance = torch.cumprod(exp_term + 1e-10, dim=-1)
     weights = alpha * transmittance
-    rgb = torch.sum(weights[..., None] * rgb, dim=-2)
+
+    rgb_map = torch.sum(weights[..., None] * rgb, dim=-2)
     depth_map = torch.sum(weights * t_vals[:, None, None], dim=-1)
-    return rgb, depth_map
+    acc_map = torch.sum(weights, -1)
+    return rgb_map, depth_map, acc_map
