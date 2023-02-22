@@ -104,6 +104,6 @@ class NeRFTF(tf.keras.Model):
         self.loss_tracker.update_state(val_loss)
         self.psnr_metric.update_state(val_psnr)
         return {
-            "val_loss": self.loss_tracker.result(),
-            "val_psnr": self.psnr_metric.result(),
+            "loss": self.loss_tracker.result(),
+            "psnr": self.psnr_metric.result(),
         }
