@@ -16,7 +16,7 @@ import pytorch_lightning as pl
 import torch
 import torchmetrics
 
-from deepvision.models.volumetric.volumetric_utils import render_rgb_depth_pt
+from deepvision.models.volumetric.volumetric_utils import nerf_render_image_and_depth_pt
 
 
 class NeRFPT(pl.LightningModule):
@@ -41,7 +41,7 @@ class NeRFPT(pl.LightningModule):
         self.psnr = torchmetrics.PeakSignalNoiseRatio(data_range=1.0)
 
         for i in range(depth):
-            if i % 4 == 0 and i > 0:
+            if i % 5 == 0 and i > 0:
                 self.layers.append(torch.nn.Linear(width + input_shape[-1], width))
             else:
                 self.layers.append(
@@ -57,7 +57,7 @@ class NeRFPT(pl.LightningModule):
             x = layer(x)
             x = torch.nn.ReLU()(x)
             if index % 4 == 0 and index > 0:
-                x = torch.concat(x, inputs)
+                x = torch.cat([x, inputs], dim=-1)
         output = self.output(x)
 
         return output
@@ -80,7 +80,7 @@ class NeRFPT(pl.LightningModule):
         (images, rays) = train_batch["image"], train_batch["rays"]
         (rays_flat, t_vals) = rays
 
-        rgb, _ = render_rgb_depth_pt(
+        rgb, _ = nerf_render_image_and_depth_pt(
             model=self,
             rays_flat=rays_flat,
             t_vals=t_vals,
@@ -114,7 +114,7 @@ class NeRFPT(pl.LightningModule):
         (images, rays) = val_batch["image"], val_batch["rays"]
         (rays_flat, t_vals) = rays
 
-        rgb, _ = render_rgb_depth_pt(
+        rgb, _ = nerf_render_image_and_depth_pt(
             model=self,
             rays_flat=rays_flat,
             t_vals=t_vals,
@@ -141,4 +141,4 @@ class NeRFPT(pl.LightningModule):
             on_epoch=True,
             prog_bar=True,
         )
-        return loss
+        return val_loss

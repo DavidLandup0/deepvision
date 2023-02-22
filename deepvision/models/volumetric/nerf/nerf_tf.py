@@ -15,7 +15,7 @@
 import tensorflow as tf
 from tensorflow.keras import layers
 
-from deepvision.models.volumetric.volumetric_utils import render_rgb_depth_tf
+from deepvision.models.volumetric.volumetric_utils import nerf_render_image_and_depth_tf
 
 
 class NeRFTF(tf.keras.Model):
@@ -64,7 +64,7 @@ class NeRFTF(tf.keras.Model):
         (rays_flat, t_vals) = rays
 
         with tf.GradientTape() as tape:
-            rgb, _ = render_rgb_depth_tf(
+            rgb, _ = nerf_render_image_and_depth_tf(
                 model=self,
                 rays_flat=rays_flat,
                 t_vals=t_vals,

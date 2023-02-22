@@ -2,10 +2,13 @@ import tensorflow as tf
 import torch
 
 
-def render_rgb_depth_tf(
+def nerf_render_image_and_depth_tf(
     model, rays_flat, t_vals, img_height, img_width, num_ray_samples
 ):
     """Generates the RGB image and depth map from model prediction.
+
+    The code was adapted from the official implementation at [NeRF: Neural Radiance Fields](https://github.com/bmild/nerf)
+    And the useful comments for readability were written by Aritra Roy Gosthipaty and Ritwik Raha at [3D volumetric rendering with NeRF](https://keras.io/examples/vision/nerf/)
 
     Args:
         model: The MLP model that is trained to predict the rgb and
@@ -52,10 +55,13 @@ def render_rgb_depth_tf(
     return rgb, depth_map
 
 
-def render_rgb_depth_pt(
+def nerf_render_image_and_depth_pt(
     model, rays_flat, t_vals, img_height, img_width, num_ray_samples
 ):
     """Generates the RGB image and depth map from model prediction.
+
+    The code was adapted from the official implementation at [NeRF: Neural Radiance Fields](https://github.com/bmild/nerf)
+    And the useful comments for readability were written by Aritra Roy Gosthipaty and Ritwik Raha at [3D volumetric rendering with NeRF](https://keras.io/examples/vision/nerf/)
 
     Args:
         model: The MLP model that is trained to predict the rgb and
@@ -78,14 +84,15 @@ def render_rgb_depth_pt(
 
     # Get the distance of adjacent intervals.
     delta = t_vals[..., 1:] - t_vals[..., :-1]
-    # delta shape = (num_samples)
     delta = torch.cat(
         [
             delta,
             torch.broadcast_to(
-                input=torch.Tensor(1e10), size=(predictions.shape[0], 1)
+                input=torch.tensor([1e10], device=delta.device),
+                size=(predictions.shape[0], img_height, img_width, 1),
             ),
-        ]
+        ],
+        dim=-1,
     )
     alpha = 1.0 - torch.exp(-sigma_a * delta[:, None, None, :])
 
