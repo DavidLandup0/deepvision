@@ -88,7 +88,7 @@ class NeRFTF(tf.keras.Model):
         (images, rays) = inputs
         (rays_flat, t_vals) = rays
 
-        rgb, _ = nerf_render_image_and_depth_tf(
+        rgb, _, _ = nerf_render_image_and_depth_tf(
             model=self,
             rays_flat=rays_flat,
             t_vals=t_vals,
