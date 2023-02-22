@@ -63,7 +63,7 @@ class NeRFTF(tf.keras.Model):
         (rays_flat, t_vals) = rays
 
         with tf.GradientTape() as tape:
-            rgb, _ = nerf_render_image_and_depth_tf(
+            rgb, _, _ = nerf_render_image_and_depth_tf(
                 model=self,
                 rays_flat=rays_flat,
                 t_vals=t_vals,

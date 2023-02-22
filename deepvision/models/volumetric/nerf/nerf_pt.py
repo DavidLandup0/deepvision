@@ -80,7 +80,7 @@ class NeRFPT(pl.LightningModule):
         (images, rays) = train_batch["image"], train_batch["rays"]
         (rays_flat, t_vals) = rays
 
-        rgb, _ = nerf_render_image_and_depth_pt(
+        rgb, _, _ = nerf_render_image_and_depth_pt(
             model=self,
             rays_flat=rays_flat,
             t_vals=t_vals,
