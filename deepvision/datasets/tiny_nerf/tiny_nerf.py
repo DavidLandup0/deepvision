@@ -38,7 +38,7 @@ def load_tiny_nerf(
         os.path.join("~", "deepvision_datasets", "tiny_nerf")
     )
     if not os.path.exists(deepvision_dataset_location):
-        os.mkdir(deepvision_dataset_location)
+        os.makedirs(deepvision_dataset_location)
 
     save_path = os.path.join(deepvision_dataset_location, save_path)
 
