@@ -16,6 +16,7 @@ def nerf_render_image_and_depth_tf(
         t_vals: ray sample points
         img_width: the image width
         img_height: the image height
+        num_ray_samples: the number of samples in each ray
 
     Returns:
         The rgb_map (3-channel output image), depth_map and acc_map
@@ -43,7 +44,6 @@ def nerf_render_image_and_depth_tf(
     )
     alpha = 1.0 - tf.exp(-sigma_a * delta[:, None, None, :])
 
-    # Get transmittance.
     exp_term = 1.0 - alpha
     transmittance = tf.math.cumprod(exp_term + 1e-10, axis=-1, exclusive=True)
     weights = alpha * transmittance
@@ -68,6 +68,7 @@ def nerf_render_image_and_depth_pt(
         t_vals: ray sample points
         img_width: the image width
         img_height: the image height
+        num_ray_samples: the number of samples in each ray
 
     Returns:
         The rgb_map (3-channel output image), depth_map and acc_map
