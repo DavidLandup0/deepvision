@@ -1,8 +1,22 @@
-# DeepVision
+<div align="center">
+
+# DeepVision - Unifying Computer Vision
+
+<p align="center">
+  <a href="https://github.com/DavidLandup0/deepvision/tree/main/examples">Examples</a> •
+  <a href="https://github.com/DavidLandup0/deepvision/blob/main/LICENSE.md">License</a>
+</p>
+
+[![PyPI Version](https://badge.fury.io/py/deepvision-toolkit.svg)](https://badge.fury.io/py/deepvision-toolkit)
+[![Downloads](https://static.pepy.tech/badge/deepvision-toolkit/month)](https://pepy.tech/project/deepvision-toolkit)
+
+______________________________________________________________________
 
 ```console
 $ pip install deepvision-toolkit
 ```
+
+</div>
 
 - ✔️ TensorFlow **and** PyTorch implementations
 - ✔️ Pure `tf.keras.Model` and `torch.nn.Module`s, as well as PyTorch Lightning modules ready for training pipelines
@@ -13,6 +27,9 @@ $ pip install deepvision-toolkit
 - ✔️ Layered API with exposed building blocks (`TransformerEncoder`, `MBConv`, etc.)
 - ✔️ Image classification, (object detection, semantic/instance/panoptic segmentation, NeRFs, etc. coming soon)
 - ✔️ Mixed-precision, TPU and XLA training support
+
+______________________________________________________________________
+
 
 ### Introduction
 
