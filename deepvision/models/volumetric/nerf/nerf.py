@@ -17,7 +17,7 @@ from deepvision.models.volumetric.nerf.nerf_tf import NeRFTF
 
 """
 A few different setups for a NeRF-style model. The parameters used to instantiate a NeRF model equivalent to the
-official implementation is `NeRFBase`, with smaller and larger options available to fit hardware limitations of some machines.
+official implementation is `NeRF`, with smaller and larger options available to fit hardware limitations of some machines.
 """
 
 MODEL_CONFIGS = {
@@ -29,7 +29,11 @@ MODEL_CONFIGS = {
         "depth": 4,
         "width": 128,
     },
-    "NeRFBase": {
+    "NeRFMedium": {
+        "depth": 6,
+        "width": 128,
+    },
+    "NeRF": {
         "depth": 8,
         "width": 256,
     },
@@ -82,7 +86,7 @@ def NeRFSmall(
     return model
 
 
-def NeRFBase(
+def NeRFMedium(
     backend,
     input_shape=(None, None, None),
     **kwargs,
@@ -94,8 +98,28 @@ def NeRFBase(
         )
     model = model_class(
         input_shape=input_shape,
-        depth=MODEL_CONFIGS["NeRFBase"]["depth"],
-        width=MODEL_CONFIGS["NeRFBase"]["width"],
+        depth=MODEL_CONFIGS["NeRFMedium"]["depth"],
+        width=MODEL_CONFIGS["NeRFMedium"]["width"],
+        **kwargs,
+    )
+
+    return model
+
+
+def NeRF(
+    backend,
+    input_shape=(None, None, None),
+    **kwargs,
+):
+    model_class = MODEL_BACKBONES.get(backend)
+    if model_class is None:
+        raise ValueError(
+            f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
+        )
+    model = model_class(
+        input_shape=input_shape,
+        depth=MODEL_CONFIGS["NeRF"]["depth"],
+        width=MODEL_CONFIGS["NeRF"]["width"],
         **kwargs,
     )
 
