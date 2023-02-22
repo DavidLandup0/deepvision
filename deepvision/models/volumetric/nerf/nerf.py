@@ -15,6 +15,11 @@
 from deepvision.models.volumetric.nerf.nerf_pt import NeRFPT
 from deepvision.models.volumetric.nerf.nerf_tf import NeRFTF
 
+"""
+A few different setups for a NeRF-style model. The parameters used to instantiate a NeRF model equivalent to the
+official implementation is `NeRFBase`, with smaller and larger options available to fit hardware limitations of some machines.
+"""
+
 MODEL_CONFIGS = {
     "NeRFTiny": {
         "depth": 2,
@@ -37,10 +42,9 @@ MODEL_CONFIGS = {
 MODEL_BACKBONES = {"tensorflow": NeRFTF, "pytorch": NeRFPT}
 
 
-def NeRF(
+def NeRFTiny(
     backend,
-    input_shape=(None, None, 3),
-    input_tensor=None,
+    input_shape=(None, None, None),
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -50,8 +54,69 @@ def NeRF(
         )
     model = model_class(
         input_shape=input_shape,
-        input_tensor=input_tensor,
+        depth=MODEL_CONFIGS["NeRFTiny"]["depth"],
+        width=MODEL_CONFIGS["NeRFTiny"]["width"],
         **kwargs,
+    )
+
+    return model
+
+
+def NeRFSmall(
+    backend,
+    input_shape=(None, None, None),
+    **kwargs,
+):
+    model_class = MODEL_BACKBONES.get(backend)
+    if model_class is None:
+        raise ValueError(
+            f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
+        )
+    model = model_class(
+        input_shape=input_shape,
+        depth=MODEL_CONFIGS["NeRFSmall"]["depth"],
+        width=MODEL_CONFIGS["NeRFSmall"]["width"],
+        ** kwargs,
+    )
+
+    return model
+
+
+def NeRFBase(
+    backend,
+    input_shape=(None, None, None),
+    **kwargs,
+):
+    model_class = MODEL_BACKBONES.get(backend)
+    if model_class is None:
+        raise ValueError(
+            f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
+        )
+    model = model_class(
+        input_shape=input_shape,
+        depth=MODEL_CONFIGS["NeRFBase"]["depth"],
+        width=MODEL_CONFIGS["NeRFBase"]["width"],
+        ** kwargs,
+    )
+
+    return model
+
+
+def NeRFLarge(
+    backend,
+    input_shape=(None, None, None),
+    **kwargs,
+):
+    model_class = MODEL_BACKBONES.get(backend)
+    if model_class is None:
+        raise ValueError(
+            f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
+        )
+    model = model_class(
+        input_shape=input_shape,
+        depth=MODEL_CONFIGS["NeRFLarge"]["depth"],
+        width=MODEL_CONFIGS["NeRFLarge"]["width"],
+        ** kwargs,
     )
 
     return model
