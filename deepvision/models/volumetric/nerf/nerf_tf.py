@@ -59,7 +59,6 @@ class NeRFTF(tf.keras.Model):
         self.psnr_metric = tf.keras.metrics.Mean(name="psnr")
 
     def train_step(self, inputs):
-        # Get the images and the rays.
         (images, rays) = inputs
         (rays_flat, t_vals) = rays
 
@@ -84,3 +83,27 @@ class NeRFTF(tf.keras.Model):
         self.loss_tracker.update_state(loss)
         self.psnr_metric.update_state(psnr)
         return {"loss": self.loss_tracker.result(), "psnr": self.psnr_metric.result()}
+
+    def test_step(self, inputs):
+        (images, rays) = inputs
+        (rays_flat, t_vals) = rays
+
+        rgb, _ = nerf_render_image_and_depth_tf(
+            model=self,
+            rays_flat=rays_flat,
+            t_vals=t_vals,
+            img_height=images.shape[1],
+            img_width=images.shape[2],
+            num_ray_samples=tf.shape(t_vals)[-1],
+        )
+        val_loss = self.loss(images, rgb)
+
+        # Compute Peak Signal-to-Noise Ratio (PSNR) between the predicted images and actual images
+        val_psnr = tf.image.psnr(images, rgb, max_val=1.0)
+
+        self.loss_tracker.update_state(val_loss)
+        self.psnr_metric.update_state(val_psnr)
+        return {
+            "val_loss": self.loss_tracker.result(),
+            "val_psnr": self.psnr_metric.result(),
+        }

@@ -76,7 +76,7 @@ def NeRFSmall(
         input_shape=input_shape,
         depth=MODEL_CONFIGS["NeRFSmall"]["depth"],
         width=MODEL_CONFIGS["NeRFSmall"]["width"],
-        ** kwargs,
+        **kwargs,
     )
 
     return model
@@ -96,7 +96,7 @@ def NeRFBase(
         input_shape=input_shape,
         depth=MODEL_CONFIGS["NeRFBase"]["depth"],
         width=MODEL_CONFIGS["NeRFBase"]["width"],
-        ** kwargs,
+        **kwargs,
     )
 
     return model
@@ -116,7 +116,7 @@ def NeRFLarge(
         input_shape=input_shape,
         depth=MODEL_CONFIGS["NeRFLarge"]["depth"],
         width=MODEL_CONFIGS["NeRFLarge"]["width"],
-        ** kwargs,
+        **kwargs,
     )
 
     return model
