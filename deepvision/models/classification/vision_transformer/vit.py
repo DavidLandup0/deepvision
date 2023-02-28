@@ -182,7 +182,7 @@ def ViTS16(
         num_heads=MODEL_CONFIGS["ViTS16"]["num_heads"],
         mlp_dropout=MODEL_CONFIGS["ViTS16"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTS16"]["attention_dropout"],
-        weights="imagenet",
+        weights=weights,
         **kwargs,
     )
 
@@ -219,7 +219,7 @@ def ViTB16(
         num_heads=MODEL_CONFIGS["ViTB16"]["num_heads"],
         mlp_dropout=MODEL_CONFIGS["ViTB16"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTB16"]["attention_dropout"],
-        weights="imagenet",
+        weights=weights,
         **kwargs,
     )
 
@@ -256,7 +256,7 @@ def ViTL16(
         num_heads=MODEL_CONFIGS["ViTL16"]["num_heads"],
         mlp_dropout=MODEL_CONFIGS["ViTL16"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTL16"]["attention_dropout"],
-        weights="imagenet",
+        weights=weights,
         **kwargs,
     )
 
@@ -293,7 +293,7 @@ def ViTH16(
         num_heads=MODEL_CONFIGS["ViTH16"]["num_heads"],
         mlp_dropout=MODEL_CONFIGS["ViTH16"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTH16"]["attention_dropout"],
-        weights="imagenet",
+        weights=weights,
         **kwargs,
     )
 
@@ -330,7 +330,7 @@ def ViTTiny32(
         num_heads=MODEL_CONFIGS["ViTTiny32"]["num_heads"],
         mlp_dropout=MODEL_CONFIGS["ViTTiny32"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTTiny32"]["attention_dropout"],
-        weights="imagenet",
+        weights=weights,
         **kwargs,
     )
 
@@ -367,7 +367,7 @@ def ViTS32(
         num_heads=MODEL_CONFIGS["ViTS32"]["num_heads"],
         mlp_dropout=MODEL_CONFIGS["ViTS32"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTS32"]["attention_dropout"],
-        weights="imagenet",
+        weights=weights,
         **kwargs,
     )
 
@@ -404,7 +404,7 @@ def ViTB32(
         num_heads=MODEL_CONFIGS["ViTB32"]["num_heads"],
         mlp_dropout=MODEL_CONFIGS["ViTB32"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTB32"]["attention_dropout"],
-        weights="imagenet",
+        weights=weights,
         **kwargs,
     )
 
@@ -441,7 +441,7 @@ def ViTL32(
         num_heads=MODEL_CONFIGS["ViTL32"]["num_heads"],
         mlp_dropout=MODEL_CONFIGS["ViTL32"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTL32"]["attention_dropout"],
-        weights="imagenet",
+        weights=weights,
         **kwargs,
     )
 
@@ -478,7 +478,7 @@ def ViTH32(
         num_heads=MODEL_CONFIGS["ViTH32"]["num_heads"],
         mlp_dropout=MODEL_CONFIGS["ViTH32"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTH32"]["attention_dropout"],
-        weights="imagenet",
+        weights=weights,
         **kwargs,
     )
 
