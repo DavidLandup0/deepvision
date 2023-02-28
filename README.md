@@ -1,8 +1,22 @@
-# DeepVision
+<div align="center">
+
+# DeepVision - Unifying Computer Vision
+
+<p align="center">
+  <a href="https://github.com/DavidLandup0/deepvision/tree/main/examples">Examples</a> •
+  <a href="https://github.com/DavidLandup0/deepvision/blob/main/LICENSE.md">License</a>
+</p>
+
+[![PyPI Version](https://badge.fury.io/py/deepvision-toolkit.svg)](https://badge.fury.io/py/deepvision-toolkit)
+[![Downloads](https://static.pepy.tech/badge/deepvision-toolkit/month)](https://pepy.tech/project/deepvision-toolkit)
+
+______________________________________________________________________
 
 ```console
 $ pip install deepvision-toolkit
 ```
+
+</div>
 
 - ✔️ TensorFlow **and** PyTorch implementations
 - ✔️ Pure `tf.keras.Model` and `torch.nn.Module`s, as well as PyTorch Lightning modules ready for training pipelines
@@ -13,6 +27,9 @@ $ pip install deepvision-toolkit
 - ✔️ Layered API with exposed building blocks (`TransformerEncoder`, `MBConv`, etc.)
 - ✔️ Image classification, (object detection, semantic/instance/panoptic segmentation, NeRFs, etc. coming soon)
 - ✔️ Mixed-precision, TPU and XLA training support
+
+______________________________________________________________________
+
 
 ### Introduction
 
@@ -443,6 +460,8 @@ train_ds # <deepvision.datasets.tiny_nerf.tiny_nerf_pt.TinyNerfDataset at 0x25e9
 print('Valid dataset length:', len(valid_ds)) # Valid dataset length: 22
 valid_ds # <deepvision.datasets.tiny_nerf.tiny_nerf_pt.TinyNerfDataset at 0x25e94939080>
 ```
+
+> If you'd like to take a look at an example of training NeRFs with PyTorch and TensorFlow, take a look at the [_"Training Neural Radiance Field (NeRF) Models with DeepVision"_](https://colab.research.google.com/drive/1RbpsfUj0tTbx6hS1xcPd6XaF7tkdWjeF) notebook.
 
 
 ## DeepVision as a Training Library

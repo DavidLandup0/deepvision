@@ -15,7 +15,14 @@ DATASET_BACKENDS = {
 }
 
 
-def load_tiny_nerf(save_path=None, download=False, validation_split=None, backend=None):
+def load_tiny_nerf(
+    pos_embed=16,
+    num_ray_samples=32,
+    save_path=None,
+    download=False,
+    validation_split=None,
+    backend=None,
+):
     dataset_class = DATASET_BACKENDS.get(backend)
     if dataset_class is None:
         raise ValueError(
@@ -23,14 +30,15 @@ def load_tiny_nerf(save_path=None, download=False, validation_split=None, backen
         )
     if validation_split > 1.0:
         raise ValueError(
-            f"The `validation_split` cannot be set to a value higher than `1.0` as it represents a [0..1] bound percentage value of the dataset. Received {validation_split}"
+            f"The `validation_split` cannot be set to a value higher than `1.0` as it represents a [0..1] bound percentage value of the dataset. "
+            f"Received {validation_split}"
         )
 
     deepvision_dataset_location = os.path.expanduser(
         os.path.join("~", "deepvision_datasets", "tiny_nerf")
     )
     if not os.path.exists(deepvision_dataset_location):
-        os.mkdir(deepvision_dataset_location)
+        os.makedirs(deepvision_dataset_location)
 
     save_path = os.path.join(deepvision_dataset_location, save_path)
 
@@ -54,10 +62,16 @@ def load_tiny_nerf(save_path=None, download=False, validation_split=None, backen
         train_images, train_poses = images[:split], poses[:split]
         valid_images, valid_poses = images[split:], poses[split:]
 
-        train_dataset = dataset_class.load_tiny_nerf(train_images, train_poses, focal)
-        valid_dataset = dataset_class.load_tiny_nerf(valid_images, valid_poses, focal)
+        train_dataset = dataset_class.load_tiny_nerf(
+            train_images, train_poses, focal, pos_embed, num_ray_samples
+        )
+        valid_dataset = dataset_class.load_tiny_nerf(
+            valid_images, valid_poses, focal, pos_embed, num_ray_samples
+        )
 
         return train_dataset, valid_dataset
     else:
-        dataset = dataset_class.load_tiny_nerf(images, poses, focal)
+        dataset = dataset_class.load_tiny_nerf(
+            images, poses, focal, pos_embed, num_ray_samples
+        )
         return dataset

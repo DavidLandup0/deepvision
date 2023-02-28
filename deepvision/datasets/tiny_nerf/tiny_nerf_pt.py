@@ -1,7 +1,7 @@
 import torch
 
 
-def load_tiny_nerf(images, poses, focal):
+def load_tiny_nerf(images, poses, focal, pos_embed=16, num_ray_samples=32):
     """
     Loads and returns a `torch.utils.data.Dataset`, containing the "tiny_nerf" dataset, as per
         [NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis](https://arxiv.org/abs/2003.08934)
@@ -22,17 +22,19 @@ def load_tiny_nerf(images, poses, focal):
 
     """
     (num_images, height, width, _) = images.shape
-    ds = TinyNerfDataset(images, poses, focal)
+    ds = TinyNerfDataset(images, poses, focal, pos_embed, num_ray_samples)
     return ds
 
 
 class TinyNerfDataset(torch.utils.data.Dataset):
     """Face Landmarks dataset."""
 
-    def __init__(self, images, poses, focal):
+    def __init__(self, images, poses, focal, pos_embed, num_ray_samples):
         self.images = torch.from_numpy(images)
         self.poses = torch.from_numpy(poses)
         self.focal = torch.from_numpy(focal)
+        self.pos_embed = pos_embed
+        self.num_ray_samples = num_ray_samples
 
         (num_images, height, width, _) = self.images.shape
         self.height = height
@@ -44,13 +46,18 @@ class TinyNerfDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         poses = self.poses[idx]
         rays_flat, t_val = map_fn(
-            pose=poses, height=self.height, width=self.width, focal=self.focal
+            pose=poses,
+            height=self.height,
+            width=self.width,
+            focal=self.focal,
+            pos_embed=self.pos_embed,
+            num_ray_samples=self.num_ray_samples,
         )
         sample = {"image": self.images[idx], "rays": (rays_flat, t_val)}
         return sample
 
 
-def encode_position(x):
+def encode_position(x, pos_embed):
     """Encodes the position into its corresponding Fourier feature.
 
     Args:
@@ -60,7 +67,7 @@ def encode_position(x):
         Fourier features tensors of the position.
     """
     positions = [x]
-    for i in range(16):
+    for i in range(pos_embed):
         for fn in [torch.sin, torch.cos]:
             positions.append(fn(2.0**i * x))
     return torch.concat(positions, axis=-1)
@@ -111,7 +118,9 @@ def get_rays(height, width, focal, pose):
     return ray_origins, ray_directions
 
 
-def render_flat_rays(ray_origins, ray_directions, near, far, num_samples, rand=False):
+def render_flat_rays(
+    ray_origins, ray_directions, near, far, pos_embed, num_ray_samples, rand=False
+):
     """Renders the rays and flattens it.
 
     Args:
@@ -127,11 +136,11 @@ def render_flat_rays(ray_origins, ray_directions, near, far, num_samples, rand=F
     """
     # Compute 3D query points.
     # Equation: r(t) = o+td -> Building the "t" here.
-    t_vals = torch.linspace(near, far, num_samples)
+    t_vals = torch.linspace(near, far, num_ray_samples)
     if rand:
         # Inject uniform noise into sample space to make the sampling continuous.
-        shape = list(ray_origins.shape[:-1]) + [num_samples]
-        noise = torch.rand(size=shape) * (far - near) / num_samples
+        shape = list(ray_origins.shape[:-1]) + [num_ray_samples]
+        noise = torch.rand(size=shape) * (far - near) / num_ray_samples
         t_vals = t_vals + noise
 
     # Equation: r(t) = o + td -> Building the "r" here.
@@ -139,11 +148,11 @@ def render_flat_rays(ray_origins, ray_directions, near, far, num_samples, rand=F
         ray_directions[..., None, :] * t_vals[..., None]
     )
     rays_flat = rays.reshape(-1, 3)
-    rays_flat = encode_position(rays_flat)
+    rays_flat = encode_position(rays_flat, pos_embed)
     return rays_flat, t_vals
 
 
-def map_fn(pose, height, width, focal):
+def map_fn(pose, height, width, focal, pos_embed, num_ray_samples):
     """Maps individual pose to flattened rays and sample points.
 
     Args:
@@ -161,7 +170,8 @@ def map_fn(pose, height, width, focal):
         ray_directions=ray_directions,
         near=2.0,
         far=6.0,
-        num_samples=32,
+        pos_embed=pos_embed,
+        num_ray_samples=num_ray_samples,
         rand=True,
     )
     return rays_flat, t_vals
