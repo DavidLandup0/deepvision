@@ -1,13 +1,15 @@
 import os
+
 import requests
+
 
 def load_weights(model_name, include_top):
     if include_top:
-        model_name += '-notop'
+        model_name += "-notop"
 
     weight_path = MODELS[model_name]
     if weight_path is None:
-        raise ValueError(f'Weights do not exist for {model_name}')
+        raise ValueError(f"Weights do not exist for {model_name}")
 
     weight_location = os.path.expanduser(
         os.path.join("~", "deepvision_weights", model_name)
@@ -27,19 +29,17 @@ def load_weights(model_name, include_top):
     return save_path
 
 
-
 MODELS = {
-    "ViTTiny16" : "1",
-    "ViTTiny16-notop" : "2",
-    "ViTS16" : "3",
-    "ViTS16-notop" : "4",
-    "ViTB16" : "5",
+    "ViTTiny16": "1",
+    "ViTTiny16-notop": "2",
+    "ViTS16": "3",
+    "ViTS16-notop": "4",
+    "ViTB16": "5",
     "ViTB16-notop": "6",
-    "ViTL16" : "7",
-    "ViTL16-notop" : "8",
-    "ViTS32" : "9",
-    "ViTS32-notop" : "10",
-    "ViTB32" : "11",
-    "ViTB32-notop" : "12",
-
+    "ViTL16": "7",
+    "ViTL16-notop": "8",
+    "ViTS32": "9",
+    "ViTS32-notop": "10",
+    "ViTB32": "11",
+    "ViTB32-notop": "12",
 }
