@@ -14,10 +14,10 @@ def load_weights(model_name, include_top):
     weight_location = os.path.expanduser(
         os.path.join("~", "deepvision_weights", model_name)
     )
-    if not os.path.exists(weight_location):
-        os.mkdir(weight_location)
+    if not os.path.isdir(weight_location):
+        os.makedirs(weight_location)
 
-    save_path = os.path.join(weight_location, model_name)
+    save_path = os.path.join(weight_location, model_name+'.h5')
 
     if not os.path.exists(save_path):
         print(f"Downloading weights and storing under {save_path}")
