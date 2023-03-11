@@ -155,9 +155,6 @@ class ResNetV2TF(tf.keras.Model):
                 f"Received pooling={pooling} and include_top={include_top}. "
             )
 
-        if not include_top and pooling is None:
-            raise ValueError(f"`pooling` must be specified when `include_top=False`.")
-
         inputs = parse_model_inputs("tensorflow", input_shape, input_tensor)
         x = inputs
 
@@ -185,16 +182,16 @@ class ResNetV2TF(tf.keras.Model):
             )(x)
 
         x = layers.BatchNormalization(epsilon=1.001e-5)(x)
-        x = layers.Activation("relu")(x)
+        output = layers.Activation("relu")(x)
 
         if include_top:
-            x = layers.GlobalAveragePooling2D(name="avg_pool")(x)
-            output = layers.Dense(classes, activation="softmax", name="predictions")(x)
+            output = layers.GlobalAveragePooling2D(name="avg_pool")(output)
+            output = layers.Dense(classes, activation="softmax", name="predictions")(output)
         else:
             if pooling == "avg":
-                output = layers.GlobalAveragePooling2D(name="avg_pool")(x)
+                output = layers.GlobalAveragePooling2D(name="avg_pool")(output)
             elif pooling == "max":
-                output = layers.GlobalMaxPooling2D(name="max_pool")(x)
+                output = layers.GlobalMaxPooling2D(name="max_pool")(output)
 
         super().__init__(
             inputs={

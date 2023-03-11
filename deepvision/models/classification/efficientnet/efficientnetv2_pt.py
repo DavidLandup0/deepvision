@@ -105,9 +105,6 @@ class EfficientNetV2PT(pl.LightningModule):
                 f"Received pooling={self.pooling} and include_top={self.include_top}. "
             )
 
-        if not self.include_top and self.pooling is None:
-            raise ValueError(f"`pooling` must be specified when `include_top=False`.")
-
         stem_out_channels = _make_divisible(
             filter_num=self.blockwise_input_filters[0],
             width_coefficient=self.width_coefficient,
