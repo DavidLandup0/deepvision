@@ -4,7 +4,7 @@ import requests
 
 
 def load_weights(model_name, include_top):
-    if include_top:
+    if not include_top:
         model_name += "-notop"
 
     weight_path = MODELS[model_name]
