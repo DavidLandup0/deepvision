@@ -51,9 +51,6 @@ class ViTTF(tf.keras.Model):
                 f"Received pooling={pooling} and include_top={include_top}. "
             )
 
-        if not include_top and pooling is None:
-            raise ValueError(f"`pooling` must be specified when `include_top=False`.")
-
         inputs = parse_model_inputs("tensorflow", input_shape, input_tensor)
         x = inputs
 
@@ -77,20 +74,20 @@ class ViTTF(tf.keras.Model):
                 name=f"transformer_encoder_{i}",
             )(encoded_patches)
 
-        layer_norm = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
+        output = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
 
         if include_top:
-            x = layers.Lambda(lambda rep: rep[:, 0], name="token_pool")(layer_norm)
-            output = layers.Dense(classes, activation="softmax", name="predictions")(x)
+            output = layers.Lambda(lambda rep: rep[:, 0], name="token_pool")(output)
+            output = layers.Dense(classes, activation="softmax", name="predictions")(output)
         else:
             if pooling == "token":
                 output = layers.Lambda(lambda rep: rep[:, 0], name="token_pool")(
-                    layer_norm
+                    output
                 )
             elif pooling == "avg":
-                output = layers.GlobalAveragePooling1D(name="avg_pool")(layer_norm)
+                output = layers.GlobalAveragePooling1D(name="avg_pool")(output)
             elif pooling == "max":
-                output = layers.GlobalMaxPooling1D(name="max_pool")(layer_norm)
+                output = layers.GlobalMaxPooling1D(name="max_pool")(output)
 
         super().__init__(
             inputs={
