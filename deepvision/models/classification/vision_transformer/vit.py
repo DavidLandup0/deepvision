@@ -14,6 +14,7 @@
 
 from deepvision.models.classification.vision_transformer.vit_pt import ViTPT
 from deepvision.models.classification.vision_transformer.vit_tf import ViTTF
+from deepvision.models.load_weights import load_weights
 
 MODEL_CONFIGS = {
     "ViTTiny16": {
@@ -118,6 +119,7 @@ def ViTTiny16(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    weights="imagenet",
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -125,6 +127,9 @@ def ViTTiny16(
         raise ValueError(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
+    if weights == "imagenet":
+        weights = load_weights("ViTTiny16", include_top, backend)
+
     model = model_class(
         include_top,
         input_shape=input_shape,
@@ -138,6 +143,7 @@ def ViTTiny16(
         num_heads=MODEL_CONFIGS["ViTTiny16"]["num_heads"],
         mlp_dropout=MODEL_CONFIGS["ViTTiny16"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTTiny16"]["attention_dropout"],
+        weights=weights,
         **kwargs,
     )
 
@@ -151,6 +157,7 @@ def ViTS16(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    weights="imagenet",
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -158,6 +165,10 @@ def ViTS16(
         raise ValueError(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
+
+    if weights == "imagenet":
+        weights = load_weights("ViTS16", include_top, backend)
+
     model = model_class(
         include_top,
         input_shape=input_shape,
@@ -171,6 +182,7 @@ def ViTS16(
         num_heads=MODEL_CONFIGS["ViTS16"]["num_heads"],
         mlp_dropout=MODEL_CONFIGS["ViTS16"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTS16"]["attention_dropout"],
+        weights=weights,
         **kwargs,
     )
 
@@ -184,6 +196,7 @@ def ViTB16(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    weights="imagenet",
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -191,6 +204,8 @@ def ViTB16(
         raise ValueError(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
+    if weights == "imagenet":
+        weights = load_weights("ViTB16", include_top, backend)
     model = model_class(
         include_top,
         input_shape=input_shape,
@@ -204,6 +219,7 @@ def ViTB16(
         num_heads=MODEL_CONFIGS["ViTB16"]["num_heads"],
         mlp_dropout=MODEL_CONFIGS["ViTB16"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTB16"]["attention_dropout"],
+        weights=weights,
         **kwargs,
     )
 
@@ -217,6 +233,7 @@ def ViTL16(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    weights="imagenet",
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -224,6 +241,8 @@ def ViTL16(
         raise ValueError(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
+    if weights == "imagenet":
+        weights = load_weights("ViTL16", include_top, backend)
     model = model_class(
         include_top,
         input_shape=input_shape,
@@ -237,6 +256,7 @@ def ViTL16(
         num_heads=MODEL_CONFIGS["ViTL16"]["num_heads"],
         mlp_dropout=MODEL_CONFIGS["ViTL16"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTL16"]["attention_dropout"],
+        weights=weights,
         **kwargs,
     )
 
@@ -250,6 +270,7 @@ def ViTH16(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    weights="imagenet",
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -257,6 +278,8 @@ def ViTH16(
         raise ValueError(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
+    if weights == "imagenet":
+        weights = load_weights("ViTH16", include_top, backend)
     model = model_class(
         include_top,
         input_shape=input_shape,
@@ -270,6 +293,7 @@ def ViTH16(
         num_heads=MODEL_CONFIGS["ViTH16"]["num_heads"],
         mlp_dropout=MODEL_CONFIGS["ViTH16"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTH16"]["attention_dropout"],
+        weights=weights,
         **kwargs,
     )
 
@@ -283,6 +307,7 @@ def ViTTiny32(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    weights="imagenet",
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -290,6 +315,8 @@ def ViTTiny32(
         raise ValueError(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
+    if weights == "imagenet":
+        weights = load_weights("ViTTiny32", include_top, backend)
     model = model_class(
         include_top,
         input_shape=input_shape,
@@ -303,6 +330,7 @@ def ViTTiny32(
         num_heads=MODEL_CONFIGS["ViTTiny32"]["num_heads"],
         mlp_dropout=MODEL_CONFIGS["ViTTiny32"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTTiny32"]["attention_dropout"],
+        weights=weights,
         **kwargs,
     )
 
@@ -316,6 +344,7 @@ def ViTS32(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    weights="imagenet",
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -323,6 +352,8 @@ def ViTS32(
         raise ValueError(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
+    if weights == "imagenet":
+        weights = load_weights("ViTS32", include_top, backend)
     model = model_class(
         include_top,
         input_shape=input_shape,
@@ -336,6 +367,7 @@ def ViTS32(
         num_heads=MODEL_CONFIGS["ViTS32"]["num_heads"],
         mlp_dropout=MODEL_CONFIGS["ViTS32"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTS32"]["attention_dropout"],
+        weights=weights,
         **kwargs,
     )
 
@@ -349,6 +381,7 @@ def ViTB32(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    weights="imagenet",
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -356,6 +389,8 @@ def ViTB32(
         raise ValueError(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
+    if weights == "imagenet":
+        weights = load_weights("ViTB32", include_top, backend)
     model = model_class(
         include_top,
         input_shape=input_shape,
@@ -369,6 +404,7 @@ def ViTB32(
         num_heads=MODEL_CONFIGS["ViTB32"]["num_heads"],
         mlp_dropout=MODEL_CONFIGS["ViTB32"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTB32"]["attention_dropout"],
+        weights=weights,
         **kwargs,
     )
 
@@ -382,6 +418,7 @@ def ViTL32(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    weights="imagenet",
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -389,6 +426,8 @@ def ViTL32(
         raise ValueError(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
+    if weights == "imagenet":
+        weights = load_weights("ViTL32", include_top, backend)
     model = model_class(
         include_top,
         input_shape=input_shape,
@@ -402,6 +441,7 @@ def ViTL32(
         num_heads=MODEL_CONFIGS["ViTL32"]["num_heads"],
         mlp_dropout=MODEL_CONFIGS["ViTL32"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTL32"]["attention_dropout"],
+        weights=weights,
         **kwargs,
     )
 
@@ -415,6 +455,7 @@ def ViTH32(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    weights="imagenet",
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -422,6 +463,8 @@ def ViTH32(
         raise ValueError(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
+    if weights == "imagenet":
+        weights = load_weights("ViTH32", include_top, backend)
     model = model_class(
         include_top,
         input_shape=input_shape,
@@ -435,6 +478,7 @@ def ViTH32(
         num_heads=MODEL_CONFIGS["ViTH32"]["num_heads"],
         mlp_dropout=MODEL_CONFIGS["ViTH32"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTH32"]["attention_dropout"],
+        weights=weights,
         **kwargs,
     )
 

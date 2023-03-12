@@ -36,6 +36,7 @@ class ViTTF(tf.keras.Model):
         mlp_dropout=None,
         attention_dropout=None,
         activation=None,
+        weights=None,
         **kwargs,
     ):
 
