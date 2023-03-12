@@ -1,6 +1,7 @@
 import os
 
 import requests
+from tqdm import tqdm
 
 
 def load_weights(model_name, include_top, backend):
@@ -24,9 +25,18 @@ def load_weights(model_name, include_top, backend):
 
     if not os.path.exists(save_path):
         print(f"Downloading weights and storing under {save_path}")
-        file_data = requests.get(weight_path).content
-        with open(save_path, "wb") as file:
-            file.write(file_data)
+        file_data = requests.get(weight_path, stream=True)
+        total = int(file_data.headers.get("content-length", 0))
+        with open(save_path, "wb") as file, tqdm(
+            desc=save_path,
+            total=total,
+            unit="iB",
+            unit_scale=True,
+            unit_divisor=1024,
+        ) as bar:
+            for data in file_data.iter_content(chunk_size=1024):
+                size = file.write(data)
+                bar.update(size)
         print(f"Weight download finished.")
 
     return save_path
