@@ -51,6 +51,7 @@ class __PatchingAndEmbeddingTF(layers.Layer):
         self.position_embedding = layers.Embedding(
             input_dim=self.num_patches + 1, output_dim=self.project_dim
         )
+        tf.print(self.num_patches)
 
     def call(
         self,
@@ -110,8 +111,9 @@ class __PatchingAndEmbeddingTF(layers.Layer):
                 interpolate_height,
                 patch_size,
             )
-            addition = patches_flattened + interpolated_embeddings
-            encoded = tf.concat([class_token, addition], 1)
+            encoded = patches_flattened + tf.concat(
+                [class_token, interpolated_embeddings], 1
+            )
         elif interpolate and None in (
             interpolate_width,
             interpolate_height,
