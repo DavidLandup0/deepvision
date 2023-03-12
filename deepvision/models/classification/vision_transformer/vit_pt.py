@@ -98,7 +98,6 @@ class ViTPT(pl.LightningModule):
     def forward(self, input_tensor):
         inputs = parse_model_inputs("pytorch", input_tensor.shape, input_tensor)
         x = inputs
-        print(x.shape)
 
         if x.shape != (3, 224, 224):
             encoded_patches = self.patching_and_embedding(
