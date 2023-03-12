@@ -198,7 +198,7 @@ class __PatchingAndEmbeddingPT(torch.nn.Module):
             padding=self.padding,
         )
 
-        self.class_token = nn.Parameter(torch.rand(1, 1, self.project_dim))
+        self.class_token = nn.Parameter(torch.zeros(1, 1, self.project_dim))
         self.num_patches = (
             input_shape[1] // self.patch_size * input_shape[2] // self.patch_size
         )
