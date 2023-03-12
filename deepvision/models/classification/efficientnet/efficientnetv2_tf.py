@@ -172,12 +172,8 @@ class EfficientNetV2TF(tf.keras.Model):
                 output = layers.GlobalMaxPooling2D(name="max_pool")(output)
 
         super().__init__(
-            inputs={
-                "inputs": inputs,
-            },
-            outputs={
-                "output": output,
-            },
+            inputs=inputs,
+            outputs=output,
             **kwargs,
         )
         self.include_top = include_top
