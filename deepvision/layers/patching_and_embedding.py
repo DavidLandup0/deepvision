@@ -79,7 +79,7 @@ class __PatchingAndEmbeddingTF(layers.Layer):
             patches,
             shape=(
                 patch_shapes[0],
-                patch_shapes[-2] * patch_shapes[-2],
+                patch_shapes[-2] * patch_shapes[-3],
                 patch_shapes[-1],
             ),
         )
@@ -234,7 +234,7 @@ class __PatchingAndEmbeddingPT(torch.nn.Module):
             patches,
             shape=(
                 patch_shapes[0],
-                patch_shapes[-1] * patch_shapes[-1],
+                patch_shapes[-1] * patch_shapes[-2],
                 patch_shapes[1],
             ),
         )
