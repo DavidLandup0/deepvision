@@ -91,14 +91,14 @@ class ViTTF(tf.keras.Model):
                 output = layers.GlobalMaxPooling1D(name="max_pool")(output)
 
         super().__init__(
-            inputs={
-                "inputs": inputs,
-            },
-            outputs={
-                "output": output,
-            },
+            inputs=inputs,
+            outputs=output,
             **kwargs,
         )
+
+        if weights is not None:
+            self.load_weights(weights)
+
         self.include_top = include_top
         self.pooling = pooling
         self.classes = classes
