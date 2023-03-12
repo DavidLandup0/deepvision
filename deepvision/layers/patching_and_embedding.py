@@ -51,7 +51,6 @@ class __PatchingAndEmbeddingTF(layers.Layer):
         self.position_embedding = layers.Embedding(
             input_dim=self.num_patches + 1, output_dim=self.project_dim
         )
-        tf.print(self.num_patches)
 
     def call(
         self,
