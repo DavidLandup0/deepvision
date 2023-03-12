@@ -9,9 +9,10 @@ def load_weights(model_name, include_top, backend):
         model_name += "-notop"
 
     if backend == "tensorflow":
-        weight_path = MODELS_TF[model_name]
+        weight_path = MODELS_TF.get(model_name, None)
     else:
-        weight_path = MODELS_PT[model_name]
+        weight_path = MODELS_PT.get(model_name, None)
+
     if weight_path is None:
         raise ValueError(f"Weights do not exist for {model_name}")
 

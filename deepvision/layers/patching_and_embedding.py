@@ -262,8 +262,9 @@ class __PatchingAndEmbeddingPT(torch.nn.Module):
                 interpolate_height,
                 patch_size,
             )
-            addition = patches_flattened + interpolated_embeddings
-            encoded = torch.cat([class_token, addition], 1)
+            encoded = patches_flattened + torch.cat(
+                [class_token, interpolated_embeddings], 1
+            )
         elif interpolate and None in (
             interpolate_width,
             interpolate_height,
@@ -296,12 +297,15 @@ class __PatchingAndEmbeddingPT(torch.nn.Module):
         new_shape = int(math.sqrt(self.num_patches))
 
         interpolated_embeddings = torch.nn.functional.interpolate(
+            # Permute since interpolate() operates on the last two dims
             patch_positional_embeddings.reshape(
                 1, new_shape, new_shape, dimensionality
-            ),
+            ).permute(0, 3, 1, 2),
             size=(h0, w0),
             mode="bicubic",
-        )
+        ).permute(
+            0, 2, 3, 1
+        )  # Permute back
 
         reshaped_embeddings = interpolated_embeddings.reshape(1, -1, dimensionality)
 

@@ -68,8 +68,8 @@ class ViTTF(tf.keras.Model):
             encoded_patches = encoded_patches(
                 x,
                 interpolate=True,
-                interpolate_width=input_shape[0],
-                interpolate_height=input_shape[1],
+                interpolate_height=input_shape[0],
+                interpolate_width=input_shape[1],
                 patch_size=patch_size,
             )
         else:
