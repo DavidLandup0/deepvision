@@ -119,7 +119,7 @@ def ViTTiny16(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
-    weights="imagenet",
+    weights=None,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -157,7 +157,7 @@ def ViTS16(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
-    weights="imagenet",
+    weights=None,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -196,7 +196,7 @@ def ViTB16(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
-    weights="imagenet",
+    weights=None,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -233,7 +233,7 @@ def ViTL16(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
-    weights="imagenet",
+    weights=None,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -270,7 +270,7 @@ def ViTH16(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
-    weights="imagenet",
+    weights=None,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -307,7 +307,7 @@ def ViTTiny32(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
-    weights="imagenet",
+    weights=None,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -344,7 +344,7 @@ def ViTS32(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
-    weights="imagenet",
+    weights=None,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -381,7 +381,7 @@ def ViTB32(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
-    weights="imagenet",
+    weights=None,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -418,7 +418,7 @@ def ViTL32(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
-    weights="imagenet",
+    weights=None,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -455,7 +455,7 @@ def ViTH32(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
-    weights="imagenet",
+    weights=None,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)

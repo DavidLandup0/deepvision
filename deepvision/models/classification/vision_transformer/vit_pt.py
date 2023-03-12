@@ -64,11 +64,14 @@ class ViTPT(pl.LightningModule):
         self.mlp_dropout = mlp_dropout
         self.attention_dropout = attention_dropout
         self.activation = activation
+        self.patch_size = patch_size
 
+        # Enforce (3, 224, 224) for  default weights and then
+        # interpolate for higher resolutions
         self.patching_and_embedding = PatchingAndEmbedding(
             project_dim=project_dim,
             patch_size=patch_size,
-            input_shape=input_shape,
+            input_shape=(3, 224, 224),
             backend="pytorch",
         )
 
@@ -96,7 +99,16 @@ class ViTPT(pl.LightningModule):
         inputs = parse_model_inputs("pytorch", input_tensor.shape, input_tensor)
         x = inputs
 
-        encoded_patches = self.patching_and_embedding(x)
+        if x.shape != (3, 224, 224):
+            encoded_patches = self.patching_and_embedding(
+                x,
+                interpolate=True,
+                patch_size=self.patch_size,
+                interpolate_height=x.shape[2],
+                interpolate_width=x.shape[3],
+            )
+        else:
+            encoded_patches = self.patching_and_embedding(x)
         x = nn.Dropout(self.mlp_dropout)(encoded_patches)
 
         for transformer_layer in self.transformer_layers:

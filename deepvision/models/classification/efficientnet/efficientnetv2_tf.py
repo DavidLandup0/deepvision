@@ -164,7 +164,9 @@ class EfficientNetV2TF(tf.keras.Model):
 
         if include_top:
             output = layers.GlobalAveragePooling2D(name="avg_pool")(output)
-            output = layers.Dense(classes, activation="softmax", name="predictions")(output)
+            output = layers.Dense(classes, activation="softmax", name="predictions")(
+                output
+            )
         else:
             if pooling == "avg":
                 output = layers.GlobalAveragePooling2D(name="avg_pool")(output)

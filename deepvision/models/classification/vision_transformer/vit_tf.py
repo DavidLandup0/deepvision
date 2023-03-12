@@ -58,9 +58,23 @@ class ViTTF(tf.keras.Model):
         encoded_patches = PatchingAndEmbedding(
             project_dim=project_dim,
             patch_size=patch_size,
-            input_shape=input_shape,
+            input_shape=(224, 224, 3),
             backend="tensorflow",
-        )(x)
+        )
+        if input_shape != (224, 224, 3):
+            # Dummy input on the pre-trained resolution to construct graph so that
+            # the next call doesn't call build() and update the num_patches/positional encodings
+            encoded_patches(tf.random.uniform([1, 224, 224, 3]))
+            encoded_patches = encoded_patches(
+                x,
+                interpolate=True,
+                interpolate_height=input_shape[0],
+                interpolate_width=input_shape[1],
+                patch_size=patch_size,
+            )
+        else:
+            encoded_patches = encoded_patches(x)
+
         encoded_patches = layers.Dropout(mlp_dropout)(encoded_patches)
 
         for i in range(transformer_layer_num):
@@ -79,12 +93,12 @@ class ViTTF(tf.keras.Model):
 
         if include_top:
             output = layers.Lambda(lambda rep: rep[:, 0], name="token_pool")(output)
-            output = layers.Dense(classes, activation="softmax", name="predictions")(output)
+            output = layers.Dense(classes, activation="softmax", name="predictions")(
+                output
+            )
         else:
             if pooling == "token":
-                output = layers.Lambda(lambda rep: rep[:, 0], name="token_pool")(
-                    output
-                )
+                output = layers.Lambda(lambda rep: rep[:, 0], name="token_pool")(output)
             elif pooling == "avg":
                 output = layers.GlobalAveragePooling1D(name="avg_pool")(output)
             elif pooling == "max":
