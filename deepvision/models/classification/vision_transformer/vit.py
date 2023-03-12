@@ -128,7 +128,7 @@ def ViTTiny16(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     if weights == "imagenet":
-        weights = load_weights("ViTTiny16", include_top)
+        weights = load_weights("ViTTiny16", include_top, backend)
 
     model = model_class(
         include_top,
@@ -167,7 +167,7 @@ def ViTS16(
         )
 
     if weights == "imagenet":
-        weights = load_weights("ViTS16", include_top)
+        weights = load_weights("ViTS16", include_top, backend)
 
     model = model_class(
         include_top,
@@ -205,7 +205,7 @@ def ViTB16(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     if weights == "imagenet":
-        weights = load_weights("ViTB16", include_top)
+        weights = load_weights("ViTB16", include_top, backend)
     model = model_class(
         include_top,
         input_shape=input_shape,
@@ -242,7 +242,7 @@ def ViTL16(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     if weights == "imagenet":
-        weights = load_weights("ViTL16", include_top)
+        weights = load_weights("ViTL16", include_top, backend)
     model = model_class(
         include_top,
         input_shape=input_shape,
@@ -279,7 +279,7 @@ def ViTH16(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     if weights == "imagenet":
-        weights = load_weights("ViTH16", include_top)
+        weights = load_weights("ViTH16", include_top, backend)
     model = model_class(
         include_top,
         input_shape=input_shape,
@@ -316,7 +316,7 @@ def ViTTiny32(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     if weights == "imagenet":
-        weights = load_weights("ViTTiny32", include_top)
+        weights = load_weights("ViTTiny32", include_top, backend)
     model = model_class(
         include_top,
         input_shape=input_shape,
@@ -353,7 +353,7 @@ def ViTS32(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     if weights == "imagenet":
-        weights = load_weights("ViTS32", include_top)
+        weights = load_weights("ViTS32", include_top, backend)
     model = model_class(
         include_top,
         input_shape=input_shape,
@@ -390,7 +390,7 @@ def ViTB32(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     if weights == "imagenet":
-        weights = load_weights("ViTB32", include_top)
+        weights = load_weights("ViTB32", include_top, backend)
     model = model_class(
         include_top,
         input_shape=input_shape,
@@ -427,7 +427,7 @@ def ViTL32(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     if weights == "imagenet":
-        weights = load_weights("ViTL32", include_top)
+        weights = load_weights("ViTL32", include_top, backend)
     model = model_class(
         include_top,
         input_shape=input_shape,
@@ -464,7 +464,7 @@ def ViTH32(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     if weights == "imagenet":
-        weights = load_weights("ViTH32", include_top)
+        weights = load_weights("ViTH32", include_top, backend)
     model = model_class(
         include_top,
         input_shape=input_shape,
