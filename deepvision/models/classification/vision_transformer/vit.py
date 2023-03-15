@@ -120,6 +120,7 @@ def ViTTiny16(
     input_tensor=None,
     pooling=None,
     weights=None,
+    tpu=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -144,6 +145,7 @@ def ViTTiny16(
         mlp_dropout=MODEL_CONFIGS["ViTTiny16"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTTiny16"]["attention_dropout"],
         weights=weights,
+        tpu=tpu,
         **kwargs,
     )
 
@@ -158,6 +160,7 @@ def ViTS16(
     input_tensor=None,
     pooling=None,
     weights=None,
+    tpu=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -183,6 +186,7 @@ def ViTS16(
         mlp_dropout=MODEL_CONFIGS["ViTS16"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTS16"]["attention_dropout"],
         weights=weights,
+        tpu=tpu,
         **kwargs,
     )
 
@@ -197,6 +201,7 @@ def ViTB16(
     input_tensor=None,
     pooling=None,
     weights=None,
+    tpu=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -220,6 +225,7 @@ def ViTB16(
         mlp_dropout=MODEL_CONFIGS["ViTB16"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTB16"]["attention_dropout"],
         weights=weights,
+        tpu=tpu,
         **kwargs,
     )
 
@@ -234,6 +240,7 @@ def ViTL16(
     input_tensor=None,
     pooling=None,
     weights=None,
+    tpu=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -257,6 +264,7 @@ def ViTL16(
         mlp_dropout=MODEL_CONFIGS["ViTL16"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTL16"]["attention_dropout"],
         weights=weights,
+        tpu=tpu,
         **kwargs,
     )
 
@@ -271,6 +279,7 @@ def ViTH16(
     input_tensor=None,
     pooling=None,
     weights=None,
+    tpu=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -294,6 +303,7 @@ def ViTH16(
         mlp_dropout=MODEL_CONFIGS["ViTH16"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTH16"]["attention_dropout"],
         weights=weights,
+        tpu=tpu,
         **kwargs,
     )
 
@@ -308,6 +318,7 @@ def ViTTiny32(
     input_tensor=None,
     pooling=None,
     weights=None,
+    tpu=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -331,6 +342,7 @@ def ViTTiny32(
         mlp_dropout=MODEL_CONFIGS["ViTTiny32"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTTiny32"]["attention_dropout"],
         weights=weights,
+        tpu=tpu,
         **kwargs,
     )
 
@@ -345,6 +357,7 @@ def ViTS32(
     input_tensor=None,
     pooling=None,
     weights=None,
+    tpu=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -368,6 +381,7 @@ def ViTS32(
         mlp_dropout=MODEL_CONFIGS["ViTS32"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTS32"]["attention_dropout"],
         weights=weights,
+        tpu=tpu,
         **kwargs,
     )
 
@@ -382,6 +396,7 @@ def ViTB32(
     input_tensor=None,
     pooling=None,
     weights=None,
+    tpu=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -405,6 +420,7 @@ def ViTB32(
         mlp_dropout=MODEL_CONFIGS["ViTB32"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTB32"]["attention_dropout"],
         weights=weights,
+        tpu=tpu,
         **kwargs,
     )
 
@@ -419,6 +435,7 @@ def ViTL32(
     input_tensor=None,
     pooling=None,
     weights=None,
+    tpu=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -442,6 +459,7 @@ def ViTL32(
         mlp_dropout=MODEL_CONFIGS["ViTL32"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTL32"]["attention_dropout"],
         weights=weights,
+        tpu=tpu,
         **kwargs,
     )
 
@@ -456,6 +474,7 @@ def ViTH32(
     input_tensor=None,
     pooling=None,
     weights=None,
+    tpu=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -479,6 +498,7 @@ def ViTH32(
         mlp_dropout=MODEL_CONFIGS["ViTH32"]["mlp_dropout"],
         attention_dropout=MODEL_CONFIGS["ViTH32"]["attention_dropout"],
         weights=weights,
+        tpu=tpu,
         **kwargs,
     )
 

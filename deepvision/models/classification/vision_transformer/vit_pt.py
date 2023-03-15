@@ -38,6 +38,7 @@ class ViTPT(pl.LightningModule):
         attention_dropout=None,
         activation=None,
         weights=None,
+        tpu=False,
         **kwargs,
     ):
         super().__init__()

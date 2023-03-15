@@ -37,6 +37,7 @@ class ViTTF(tf.keras.Model):
         attention_dropout=None,
         activation=None,
         weights=None,
+        tpu=False,
         **kwargs,
     ):
 
@@ -60,6 +61,7 @@ class ViTTF(tf.keras.Model):
             patch_size=patch_size,
             input_shape=(224, 224, 3),
             backend="tensorflow",
+            tpu=tpu,
         )
         if input_shape != (224, 224, 3):
             # Dummy input on the pre-trained resolution to construct graph so that

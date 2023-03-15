@@ -21,7 +21,7 @@ from tensorflow.keras import layers
 
 
 class __PatchingAndEmbeddingTF(layers.Layer):
-    def __init__(self, project_dim, patch_size, padding="valid", **kwargs):
+    def __init__(self, project_dim, patch_size, padding="valid", tpu=False, **kwargs):
         super().__init__(**kwargs)
         self.project_dim = project_dim
         self.patch_size = patch_size
@@ -40,6 +40,7 @@ class __PatchingAndEmbeddingTF(layers.Layer):
             strides=self.patch_size,
             padding=self.padding,
         )
+        self.tpu = tpu
 
     def build(self, input_shape):
         self.class_token = self.add_weight(
@@ -101,15 +102,27 @@ class __PatchingAndEmbeddingTF(layers.Layer):
             interpolate_height,
             patch_size,
         ):
-            (
-                interpolated_embeddings,
-                class_token,
-            ) = self.__interpolate_positional_embeddings(
-                self.position_embedding(positions),
-                interpolate_width,
-                interpolate_height,
-                patch_size,
-            )
+            if self.tpu:
+                (
+                    interpolated_embeddings,
+                    class_token,
+                ) = tf.compat.v1.tpu.outside_compilation(
+                    self.__interpolate_positional_embeddings,
+                    self.position_embedding(positions),
+                    interpolate_width,
+                    interpolate_height,
+                    patch_size,
+                )
+            else:
+                (
+                    interpolated_embeddings,
+                    class_token,
+                ) = self.__interpolate_positional_embeddings(
+                    self.position_embedding(positions),
+                    interpolate_width,
+                    interpolate_height,
+                    patch_size,
+                )
             encoded = patches_flattened + tf.concat(
                 [class_token, interpolated_embeddings], 1
             )
@@ -319,7 +332,12 @@ LAYER_BACKBONES = {
 
 
 def PatchingAndEmbedding(
-    project_dim, patch_size, backend, input_shape=None, padding="valid"
+    project_dim,
+    patch_size,
+    backend,
+    input_shape=None,
+    padding="valid",
+    tpu=tpu,
 ):
     """
     Layer to patchify images, prepend a class token, positionally embed and
@@ -344,6 +362,8 @@ def PatchingAndEmbedding(
         input_shape: the input height and width (ignored for TensorFlow version)
         patch_size: the patch size
         padding: default 'valid', the padding to apply for patchifying images
+        tpu: default False, whether the layer is being used on a TPU or not, to allow for
+            device replacement (i.e. to move the resizing operations on the CPU due to a lack of support on the TPU)
 
     Returns:
         Patchified and linearly projected input images, including a prepended learnable class token
@@ -379,6 +399,7 @@ def PatchingAndEmbedding(
         patch_size=patch_size,
         input_shape=input_shape,
         padding=padding,
+        tpu=tpu,
     )
 
     return layer
