@@ -337,7 +337,7 @@ def PatchingAndEmbedding(
     backend,
     input_shape=None,
     padding="valid",
-    tpu=tpu,
+    tpu=False,
 ):
     """
     Layer to patchify images, prepend a class token, positionally embed and
