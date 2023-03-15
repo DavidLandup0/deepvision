@@ -157,8 +157,10 @@ class __PatchingAndEmbeddingTF(layers.Layer):
 
         new_shape = tf.constant(int(math.sqrt(self.num_patches)))
 
-        interpolated_embeddings = tf.image.resize(
-            images=tf.reshape(
+        interpolated_embeddings = tf.keras.layers.Resizing(
+            h0, w0, interpolation="bicubic"
+        )(
+            tf.reshape(
                 patch_positional_embeddings,
                 shape=(
                     1,
@@ -166,9 +168,7 @@ class __PatchingAndEmbeddingTF(layers.Layer):
                     new_shape,
                     dimensionality,
                 ),
-            ),
-            size=(h0, w0),
-            method="bicubic",
+            )
         )
 
         reshaped_embeddings = tf.reshape(
