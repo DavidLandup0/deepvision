@@ -141,6 +141,13 @@ def EfficientAttention(project_dim, num_heads, sr_ratio, backend="pytorch"):
                                                   backend='pytorch')(tensor, H=14, W=14)
 
     print(output.shape) # torch.Size([1, 196, 32])
+
+    tensor = tf.random.uniform([1, 196, 32])
+    output = deepvision.layers.EfficientAttention(project_dim=32,
+                                                  num_heads=2,
+                                                  sr_ratio=4,
+                                                  backend='tensorflow')(tensor, H=14, W=14)
+    print(output.shape) # (1, 196, 32)
     ```
 
     """

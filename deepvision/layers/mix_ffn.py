@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import torch
 from torch import nn
 from torch.nn import functional as F
+import tensorflow as tf
 
 
 class __MixFFNPT(nn.Module):
@@ -41,9 +41,30 @@ class __MixFFNPT(nn.Module):
         x = self.fc2(x)
         return x
 
+class __MixFFNTF(tf.keras.layers.Layer):
+    def __init__(self, channels, mid_channels):
+        super().__init__()
+        self.fc1 = tf.keras.layers.Dense(mid_channels)
+        self.dwconv = tf.keras.layers.DepthwiseConv2D(
+            kernel_size=3,
+            strides=1,
+            padding='same',
+        )
+        self.fc2 = tf.keras.layers.Dense(channels)
+
+    def forward(self, x, H, W):
+        x = self.fc1(x)
+        B, _, C = x.shape
+        x = x.transpose(1, 2).view(B, C, H, W)
+        x = self.dwconv(x)
+        x = x.flatten(2).transpose(1, 2)
+        x = F.gelu(x)
+        x = self.fc2(x)
+        return x
+
 
 LAYER_BACKBONES = {
-    "tensorflow": None,
+    "tensorflow": __MixFFNTF,
     "pytorch": __MixFFNPT,
 }
 

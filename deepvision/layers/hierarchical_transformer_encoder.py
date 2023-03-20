@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import torch
 from torch import nn
 import tensorflow as tf
 
@@ -69,7 +68,7 @@ class __HierarchicalTransformerEncoderTF(tf.keras.layers.Layer):
 
 
 LAYER_BACKBONES = {
-    "tensorflow": None,
+    "tensorflow": __HierarchicalTransformerEncoderTF,
     "pytorch": __HierarchicalTransformerEncoderPT,
 }
 

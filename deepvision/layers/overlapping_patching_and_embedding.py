@@ -58,7 +58,7 @@ class __OverlappingPatchingAndEmbeddingTF(tf.keras.layers.Layer):
 
 
 LAYER_BACKBONES = {
-    "tensorflow": None,
+    "tensorflow": __OverlappingPatchingAndEmbeddingTF,
     "pytorch": __OverlappingPatchingAndEmbeddingPT,
 }
 
