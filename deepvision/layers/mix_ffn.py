@@ -22,7 +22,12 @@ class __MixFFNPT(nn.Module):
         super().__init__()
         self.fc1 = nn.Linear(channels, mid_channels)
         self.dwconv = nn.Conv2d(
-            mid_channels, mid_channels, 3, 1, 1, groups=mid_channels
+            in_channels=mid_channels,
+            out_channels=mid_channels,
+            kernel_size=3,
+            stride=1,
+            padding=1,
+            groups=mid_channels,
         )
         self.fc2 = nn.Linear(mid_channels, channels)
 
@@ -43,7 +48,7 @@ LAYER_BACKBONES = {
 }
 
 
-def MixFFN(channels, mid_channels, backend="pytorch"):
+def MixFFN(channels, mid_channels, backend):
 
     layer_class = LAYER_BACKBONES.get(backend)
     if layer_class is None:

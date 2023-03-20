@@ -26,7 +26,7 @@ class __OverlappingPatchingAndEmbeddingPT(nn.Module):
             stride=stride,
             padding=patch_size // 2,
         )
-        self.norm = nn.LayerNorm(dim=out_channels)
+        self.norm = nn.LayerNorm(out_channels)
 
     def forward(self, x):
         x = self.proj(x)
@@ -43,8 +43,45 @@ LAYER_BACKBONES = {
 
 
 def OverlappingPatchingAndEmbedding(
-    in_channels=3, out_channels=32, patch_size=7, stride=4, backend="pytorch"
+    in_channels=3, out_channels=32, patch_size=7, stride=4, backend=None
 ):
+    """
+    ViT-inspired PatchingAndEmbedding, modified to merge overlapping patches for the SegFormer architecture.
+
+    Reference:
+        - ["SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers"](https://arxiv.org/pdf/2105.15203v2.pdf)
+
+
+    Args:
+        in_channels: the number of channels in the input tensor
+        out_channels: the projection dimensionality
+        patch_size: the patch size/kernel size to apply in the convolutional layer used to patchify
+        stride: the stride to apply in the convolutional layer used to patchify
+        backend: the backend framework to use
+
+    Returns:
+
+    Basic usage:
+
+    ```
+    inp = torch.rand(1, 3, 224, 224)
+    output, H, W = deepvision.layers.OverlappingPatchingAndEmbedding(in_channels=3,
+                                                                     out_channels=64,
+                                                                     patch_size=7,
+                                                                     stride=4,
+                                                                     backend='pytorch')(inp)
+    print(output.shape) # torch.Size([1, 3136, 64])
+
+
+    inp = tf.random.uniform(1, 224, 224, 3)
+    output, H, W = deepvision.layers.OverlappingPatchingAndEmbedding(in_channels=3,
+                                                                     out_channels=64,
+                                                                     patch_size=7,
+                                                                     stride=4,
+                                                                     backend='tensorflow')(inp)
+    print(output.shape) # (1, 3136, 64)
+    ```
+    """
 
     layer_class = LAYER_BACKBONES.get(backend)
     if layer_class is None:

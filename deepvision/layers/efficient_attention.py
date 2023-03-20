@@ -15,7 +15,6 @@
 import torch
 from torch import nn
 
-
 """
 Based on: https://github.com/sithu31296/semantic-segmentation/blob/main/semseg/models/backbones/mit.py
 """

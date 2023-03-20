@@ -344,6 +344,7 @@ def PatchingAndEmbedding(
         input_shape: the input height and width (ignored for TensorFlow version)
         patch_size: the patch size
         padding: default 'valid', the padding to apply for patchifying images
+        backend: the backend framework to use
 
     Returns:
         Patchified and linearly projected input images, including a prepended learnable class token
