@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import torch
 from torch import nn
+import tensorflow as tf
 
 """
 Based on: https://github.com/sithu31296/semantic-segmentation/blob/main/semseg/models/backbones/mit.py
@@ -35,34 +35,84 @@ class __EfficientAttentionPT(nn.Module):
             self.norm = nn.LayerNorm(project_dim)
 
     def forward(self, x, H, W):
-        B, N, C = x.shape
+        batch_size, seq_len, project_dim = x.shape
         q = (
             self.q(x)
-            .reshape(B, N, self.num_heads, C // self.num_heads)
+            .reshape(batch_size, seq_len, self.num_heads, project_dim // self.num_heads)
             .permute(0, 2, 1, 3)
         )
 
         if self.sr_ratio > 1:
-            x = x.permute(0, 2, 1).reshape(B, C, H, W)
-            x = self.sr(x).reshape(B, C, -1).permute(0, 2, 1)
+            x = x.permute(0, 2, 1).reshape(batch_size, project_dim, H, W)
+            x = self.sr(x).reshape(batch_size, project_dim, -1).permute(0, 2, 1)
             x = self.norm(x)
 
         k, v = (
             self.kv(x)
-            .reshape(B, -1, 2, self.num_heads, C // self.num_heads)
+            .reshape(batch_size, -1, 2, self.num_heads, project_dim // self.num_heads)
             .permute(2, 0, 3, 1, 4)
         )
 
         attn = (q @ k.transpose(-2, -1)) * self.scale
         attn = attn.softmax(dim=-1)
 
-        x = (attn @ v).transpose(1, 2).reshape(B, N, C)
+        x = (attn @ v).transpose(1, 2).reshape(batch_size, seq_len, project_dim)
+        x = self.proj(x)
+        return x
+
+
+class __EfficientAttentionTF(tf.keras.layers.Layer):
+    def __init__(self, project_dim, num_heads, sr_ratio):
+        super().__init__()
+        self.num_heads = num_heads
+        self.sr_ratio = sr_ratio
+        self.scale = (project_dim // num_heads) ** -0.5
+        self.q = tf.keras.layers.Dense(project_dim)
+        self.kv = tf.keras.layers.Dense(project_dim * 2)
+        self.proj = tf.keras.layers.Dense(project_dim)
+
+        if sr_ratio > 1:
+            self.sr = tf.keras.layers.Conv2D(project_dim, sr_ratio, strides=sr_ratio)
+            self.norm = tf.keras.layers.LayerNormalization()
+
+    def call(self, x, H, W):
+        batch_size, seq_len, project_dim = tf.shape(x)
+
+        q = self.q(x)
+        q = tf.reshape(
+            q,
+            shape=[batch_size, seq_len, self.num_heads, project_dim // self.num_heads],
+        )
+        q = tf.transpose(q, [0, 2, 1, 3])
+
+        if self.sr_ratio > 1:
+            x = tf.reshape(
+                tf.transpose(x, [0, 2, 1]), shape=[batch_size, project_dim, H, W]
+            )
+            x = self.sr(x)
+            x = tf.reshape(x, [batch_size, project_dim, -1])
+            x = tf.transpose(x, [0, 2, 1])
+            x = self.norm(x)
+
+        k, v = tf.transpose(
+            tf.reshape(
+                self.kv(x),
+                [batch_size, -1, 2, self.num_heads, project_dim // self.num_heads],
+            ),
+            [2, 0, 3, 1, 4],
+        )
+        attn = (q @ tf.transpose(k, [0, 1, 3, 2])) * self.scale
+        attn = tf.nn.softmax(attn, axis=-1)
+
+        x = tf.reshape(
+            tf.transpose((attn @ v, [1, 2])), shape=[batch_size, seq_len, project_dim]
+        )
         x = self.proj(x)
         return x
 
 
 LAYER_BACKBONES = {
-    "tensorflow": None,
+    "tensorflow": __EfficientAttentionTF,
     "pytorch": __EfficientAttentionPT,
 }
 

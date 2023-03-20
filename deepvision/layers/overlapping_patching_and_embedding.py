@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import torch
+
 from torch import nn
+import tensorflow as tf
 
 
 class __OverlappingPatchingAndEmbeddingPT(nn.Module):
@@ -32,6 +33,26 @@ class __OverlappingPatchingAndEmbeddingPT(nn.Module):
         x = self.proj(x)
         _, _, H, W = x.shape
         x = x.flatten(2).transpose(1, 2)
+        x = self.norm(x)
+        return x, H, W
+
+
+class __OverlappingPatchingAndEmbeddingTF(tf.keras.layers.Layer):
+    def __init__(self, in_channels=3, out_channels=32, patch_size=7, stride=4):
+        super().__init__()
+        self.proj = tf.keras.layers.Conv2D(
+            filters=out_channels,
+            kernel_size=patch_size,
+            strides=stride,
+            padding="same",
+        )
+        self.norm = tf.keras.layers.LayerNormalization()
+
+    def call(self, x):
+        x = self.proj(x)
+        _, H, W, C = x.shape.as_list()
+        x = tf.reshape(x, [-1, H * W, C])
+        x = tf.transpose(x, [0, 2, 1])
         x = self.norm(x)
         return x, H, W
 

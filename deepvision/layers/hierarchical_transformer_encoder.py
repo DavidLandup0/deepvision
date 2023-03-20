@@ -14,10 +14,12 @@
 
 import torch
 from torch import nn
+import tensorflow as tf
 
 from deepvision.layers.droppath import DropPath
 from deepvision.layers.efficient_attention import EfficientAttention
 from deepvision.layers.mix_ffn import MixFFN
+from deepvision.layers.identity import Identity
 
 
 class __HierarchicalTransformerEncoderPT(nn.Module):
@@ -36,6 +38,31 @@ class __HierarchicalTransformerEncoderPT(nn.Module):
         )
 
     def forward(self, x, H, W):
+        x = x + self.drop_path(self.attn(self.norm1(x), H, W))
+        x = x + self.drop_path(self.mlp(self.norm2(x), H, W))
+        return x
+
+
+class __HierarchicalTransformerEncoderTF(tf.keras.layers.Layer):
+    def __init__(
+        self, project_dim, num_heads, sr_ratio=1, drop_prob=0.0, layer_norm_epsilon=1e-6
+    ):
+        super().__init__()
+        self.norm1 = tf.keras.layers.LayerNormalization()
+        self.attn = EfficientAttention(
+            project_dim, num_heads, sr_ratio, backend="tensorlflow"
+        )
+        self.drop_path = (
+            DropPath(drop_prob, backend="tensorflow") if drop_prob else Identity
+        )
+        self.norm2 = tf.keras.layers.LayerNormalization(epsilon=layer_norm_epsilon)
+        self.mlp = MixFFN(
+            channels=project_dim,
+            mid_channels=int(project_dim * 4),
+            backend="tensorflow",
+        )
+
+    def call(self, x, H, W):
         x = x + self.drop_path(self.attn(self.norm1(x), H, W))
         x = x + self.drop_path(self.mlp(self.norm2(x), H, W))
         return x
