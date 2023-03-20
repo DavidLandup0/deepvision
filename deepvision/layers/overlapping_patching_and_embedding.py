@@ -59,8 +59,6 @@ def OverlappingPatchingAndEmbedding(
         stride: the stride to apply in the convolutional layer used to patchify
         backend: the backend framework to use
 
-    Returns:
-
     Basic usage:
 
     ```

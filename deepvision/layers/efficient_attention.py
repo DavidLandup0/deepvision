@@ -68,7 +68,32 @@ LAYER_BACKBONES = {
 
 
 def EfficientAttention(project_dim, num_heads, sr_ratio, backend="pytorch"):
+    """
+    `EfficientAttention` is a standard scaled softmax attention layer, but shortens the sequence it operates on by a reduction factor, to reduce computational cost.
+    The layer is meant to be used as part of the `deepvision.layers.HierarchicalTransformerEncoder` for the SegFormer architecture.
 
+    Reference:
+        - ["SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers"](https://arxiv.org/pdf/2105.15203v2.pdf)
+
+    Args:
+        project_dim: the dimensionality of the projection for the keys, values and queries
+        num_heads: the number of attention heads to apply
+        sr_ratio: the reduction ratio for the sequence length
+        backend: the backend framework to use
+
+    Basic usage:
+
+    ```
+    tensor = torch.rand(1, 196, 32)
+    output = deepvision.layers.EfficientAttention(project_dim=32,
+                                                  num_heads=2,
+                                                  sr_ratio=4,
+                                                  backend='pytorch')(tensor, H=14, W=14)
+
+    print(output.shape) # torch.Size([1, 196, 32])
+    ```
+
+    """
     layer_class = LAYER_BACKBONES.get(backend)
     if layer_class is None:
         raise ValueError(

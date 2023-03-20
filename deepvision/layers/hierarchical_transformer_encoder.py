@@ -63,16 +63,13 @@ def HierarchicalTransformerEncoder(
     Reference:
         - ["SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers"](https://arxiv.org/pdf/2105.15203v2.pdf)
 
-
     Args:
         project_dim: the dimensionality of the projection of the encoder, and output of the `EfficientAttention`
         num_heads: the number of heads for the `EfficientAttention` layer
-        layer_norm_epsilon: default 1e-06, the epsilon for Layer Normalization layers
         sr_ratio: the reduction ratio to apply within the `EfficientAttention` layer
+        layer_norm_epsilon: default 1e-06, the epsilon for Layer Normalization layers
         drop_prob: the drop probability for the `DropPath` layers
         backend: the backend framework to use
-
-    Returns:
 
     Basic usage:
 
