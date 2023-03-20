@@ -104,10 +104,10 @@ class __EfficientAttentionTF(tf.keras.layers.Layer):
         attn = (q @ tf.transpose(k, [0, 1, 3, 2])) * self.scale
         attn = tf.nn.softmax(attn, axis=-1)
 
-        x = tf.reshape(
-            tf.transpose((attn @ v, [1, 2])), shape=[batch_size, seq_len, project_dim]
-        )
-        x = self.proj(x)
+        attn = attn @ v
+        attn = tf.transpose(attn, [0, 2, 1, 3])
+        attn = tf.reshape(attn, shape=[batch_size, seq_len, project_dim])
+        x = self.proj(attn)
         return x
 
 
