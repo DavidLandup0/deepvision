@@ -28,9 +28,9 @@ class __MiTPT(torch.nn.Module):
         self.num_stages = 4
         self.output_channels = embed_dims
 
-        self.patch_embedding_layers = []
-        self.transformer_blocks = []
-        self.layer_norms = []
+        self.patch_embedding_layers = torch.nn.ModuleList()
+        self.transformer_blocks = torch.nn.ModuleList()
+        self.layer_norms = torch.nn.ModuleList()
 
         blockwise_num_heads = [1, 2, 5, 8]
         blockwise_sr_ratios = [8, 4, 2, 1]
@@ -48,16 +48,18 @@ class __MiTPT(torch.nn.Module):
             )
             self.patch_embedding_layers.append(patch_embed_layer)
 
-            transformer_block = [
-                HierarchicalTransformerEncoder(
-                    project_dim=embed_dims[i],
-                    num_heads=blockwise_num_heads[i],
-                    sr_ratio=blockwise_sr_ratios[i],
-                    drop_prob=dpr[cur + k],
-                    backend="pytorch",
-                )
-                for k in range(depths[i])
-            ]
+            transformer_block = torch.nn.ModuleList(
+                [
+                    HierarchicalTransformerEncoder(
+                        project_dim=embed_dims[i],
+                        num_heads=blockwise_num_heads[i],
+                        sr_ratio=blockwise_sr_ratios[i],
+                        drop_prob=dpr[cur + k],
+                        backend="pytorch",
+                    )
+                    for k in range(depths[i])
+                ]
+            )
             self.transformer_blocks.append(transformer_block)
             cur += depths[i]
 
