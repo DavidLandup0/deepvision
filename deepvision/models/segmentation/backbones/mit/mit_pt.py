@@ -26,6 +26,7 @@ class __MiTPT(torch.nn.Module):
         drop_path_rate = 0.1
         self.channels = embed_dims
         self.num_stages = 4
+        self.output_channels = embed_dims
 
         self.patch_embedding_layers = []
         self.transformer_blocks = []

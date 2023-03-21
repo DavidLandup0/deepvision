@@ -42,3 +42,10 @@ from deepvision.models.volumetric.nerf.nerf import (
     NeRFSmall,
     NeRFTiny,
 )
+
+from deepvision.models.segmentation.segformer.segformer import SegFormerB0
+from deepvision.models.segmentation.segformer.segformer import SegFormerB1
+from deepvision.models.segmentation.segformer.segformer import SegFormerB2
+from deepvision.models.segmentation.segformer.segformer import SegFormerB3
+from deepvision.models.segmentation.segformer.segformer import SegFormerB4
+from deepvision.models.segmentation.segformer.segformer import SegFormerB5
