@@ -34,6 +34,14 @@ from deepvision.models.segmentation.backbones.mit.mit import (
     MiTB4,
     MiTB5,
 )
+from deepvision.models.segmentation.segformer.segformer import (
+    SegFormerB0,
+    SegFormerB1,
+    SegFormerB2,
+    SegFormerB3,
+    SegFormerB4,
+    SegFormerB5,
+)
 from deepvision.models.volumetric import volumetric_utils
 from deepvision.models.volumetric.nerf.nerf import (
     NeRF,
@@ -42,10 +50,3 @@ from deepvision.models.volumetric.nerf.nerf import (
     NeRFSmall,
     NeRFTiny,
 )
-
-from deepvision.models.segmentation.segformer.segformer import SegFormerB0
-from deepvision.models.segmentation.segformer.segformer import SegFormerB1
-from deepvision.models.segmentation.segformer.segformer import SegFormerB2
-from deepvision.models.segmentation.segformer.segformer import SegFormerB3
-from deepvision.models.segmentation.segformer.segformer import SegFormerB4
-from deepvision.models.segmentation.segformer.segformer import SegFormerB5

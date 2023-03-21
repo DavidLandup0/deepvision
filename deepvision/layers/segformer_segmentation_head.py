@@ -1,8 +1,9 @@
-import torch
-from torch import nn, Tensor
 from typing import Tuple
-from torch.nn import functional as F
+
 import tensorflow as tf
+import torch
+from torch import Tensor, nn
+from torch.nn import functional as F
 
 
 class MLP(nn.Module):
