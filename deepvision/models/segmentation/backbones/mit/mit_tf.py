@@ -28,6 +28,16 @@ class __MiTTF(tf.keras.models.Model):
         self.num_stages = 4
 
         self.patch_embedding_layers = []
+        self.transformer_blocks = []
+        self.layer_norms = []
+
+        dpr = [x.numpy() for x in tf.linspace(0.0, drop_path_rate, sum(depths))]
+
+        blockwise_num_heads = [1, 2, 5, 8]
+        blockwise_sr_ratios = [8, 4, 2, 1]
+
+        cur = 0
+
         for i in range(self.num_stages):
             patch_embed_layer = OverlappingPatchingAndEmbedding(
                 in_channels=3 if i == 0 else embed_dims[i - 1],
@@ -38,14 +48,7 @@ class __MiTTF(tf.keras.models.Model):
             )
             self.patch_embedding_layers.append(patch_embed_layer)
 
-        dpr = [x.numpy() for x in tf.linspace(0.0, drop_path_rate, sum(depths))]
-
-        blockwise_num_heads = [1, 2, 5, 8]
-        blockwise_sr_ratios = [8, 4, 2, 1]
-        cur = 0
-        self.blocks = []
-        for i in range(self.num_stages):
-            block = [
+            transformer_block = [
                 HierarchicalTransformerEncoder(
                     project_dim=embed_dims[i],
                     num_heads=blockwise_num_heads[i],
@@ -55,11 +58,9 @@ class __MiTTF(tf.keras.models.Model):
                 )
                 for k in range(depths[i])
             ]
-            self.blocks.append(block)
+            self.transformer_blocks.append(transformer_block)
             cur += depths[i]
 
-        self.layer_norms = []
-        for i in range(4):
             self.layer_norms.append(tf.keras.layers.LayerNormalization())
 
     def call(self, x):

@@ -25,91 +25,50 @@ class __MiTPT(torch.nn.Module):
         super().__init__()
         drop_path_rate = 0.1
         self.channels = embed_dims
+        self.num_stages = 4
 
-        # patch_embed
-        self.patch_embed1 = OverlappingPatchingAndEmbedding(
-            3, embed_dims[0], 7, 4, backend="pytorch"
-        )
-        self.patch_embed2 = OverlappingPatchingAndEmbedding(
-            embed_dims[0], embed_dims[1], 3, 2, backend="pytorch"
-        )
-        self.patch_embed3 = OverlappingPatchingAndEmbedding(
-            embed_dims[1], embed_dims[2], 3, 2, backend="pytorch"
-        )
-        self.patch_embed4 = OverlappingPatchingAndEmbedding(
-            embed_dims[2], embed_dims[3], 3, 2, backend="pytorch"
-        )
+        self.patch_embedding_layers = []
+        self.transformer_blocks = []
+        self.layer_norms = []
+
+        blockwise_num_heads = [1, 2, 5, 8]
+        blockwise_sr_ratios = [8, 4, 2, 1]
+        cur = 0
 
         dpr = [x.item() for x in torch.linspace(0, drop_path_rate, sum(depths))]
 
-        cur = 0
-        self.block1 = torch.nn.ModuleList(
-            [
-                HierarchicalTransformerEncoder(
-                    embed_dims[0], 1, 8, dpr[cur + i], backend="pytorch"
-                )
-                for i in range(depths[0])
-            ]
-        )
-        self.norm1 = torch.nn.LayerNorm(embed_dims[0])
+        for i in range(self.num_stages):
+            patch_embed_layer = OverlappingPatchingAndEmbedding(
+                in_channels=3 if i == 0 else embed_dims[i - 1],
+                out_channels=embed_dims[0] if i == 0 else embed_dims[i],
+                patch_size=7 if i == 0 else 3,
+                stride=4 if i == 0 else 2,
+                backend="pytorch",
+            )
+            self.patch_embedding_layers.append(patch_embed_layer)
 
-        cur += depths[0]
-        self.block2 = torch.nn.ModuleList(
-            [
+            transformer_block = [
                 HierarchicalTransformerEncoder(
-                    embed_dims[1], 2, 4, dpr[cur + i], backend="pytorch"
+                    project_dim=embed_dims[i],
+                    num_heads=blockwise_num_heads[i],
+                    sr_ratio=blockwise_sr_ratios[i],
+                    drop_prob=dpr[cur + k],
+                    backend="pytorch",
                 )
-                for i in range(depths[1])
+                for k in range(depths[i])
             ]
-        )
-        self.norm2 = torch.nn.LayerNorm(embed_dims[1])
+            self.transformer_blocks.append(transformer_block)
+            cur += depths[i]
 
-        cur += depths[1]
-        self.block3 = torch.nn.ModuleList(
-            [
-                HierarchicalTransformerEncoder(
-                    embed_dims[2], 5, 2, dpr[cur + i], backend="pytorch"
-                )
-                for i in range(depths[2])
-            ]
-        )
-        self.norm3 = torch.nn.LayerNorm(embed_dims[2])
-
-        cur += depths[2]
-        self.block4 = torch.nn.ModuleList(
-            [
-                HierarchicalTransformerEncoder(
-                    embed_dims[3], 8, 1, dpr[cur + i], backend="pytorch"
-                )
-                for i in range(depths[3])
-            ]
-        )
-        self.norm4 = torch.nn.LayerNorm(embed_dims[3])
+            self.layer_norms.append(torch.nn.LayerNorm(embed_dims[i]))
 
     def forward(self, x):
         B = x.shape[0]
-        # stage 1
-        x, H, W = self.patch_embed1(x)
-        for blk in self.block1:
-            x = blk(x, H, W)
-        x1 = self.norm1(x).reshape(B, H, W, -1).permute(0, 3, 1, 2)
-
-        # stage 2
-        x, H, W = self.patch_embed2(x1)
-        for blk in self.block2:
-            x = blk(x, H, W)
-        x2 = self.norm2(x).reshape(B, H, W, -1).permute(0, 3, 1, 2)
-
-        # stage 3
-        x, H, W = self.patch_embed3(x2)
-        for blk in self.block3:
-            x = blk(x, H, W)
-        x3 = self.norm3(x).reshape(B, H, W, -1).permute(0, 3, 1, 2)
-
-        # stage 4
-        x, H, W = self.patch_embed4(x3)
-        for blk in self.block4:
-            x = blk(x, H, W)
-        x4 = self.norm4(x).reshape(B, H, W, -1).permute(0, 3, 1, 2)
-
-        return x1, x2, x3, x4
+        out = []
+        for i in range(self.num_stages):
+            x, H, W = self.patch_embedding_layers[i](x)
+            for blk in self.transformer_blocks[i]:
+                x = blk(x, H, W)
+            x = self.layer_norms[i](x).reshape(B, H, W, -1).permute(0, 3, 1, 2)
+            out.append(x)
+        return out
