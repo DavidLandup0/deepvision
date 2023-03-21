@@ -25,91 +25,51 @@ class __MiTTF(tf.keras.models.Model):
         super().__init__()
         drop_path_rate = 0.1
         self.channels = embed_dims
+        self.num_stages = 4
 
-        # patch_embed
-        self.patch_embed1 = OverlappingPatchingAndEmbedding(
-            3, embed_dims[0], 7, 4, backend="tensorflow"
-        )
-        self.patch_embed2 = OverlappingPatchingAndEmbedding(
-            embed_dims[0], embed_dims[1], 3, 2, backend="tensorflow"
-        )
-        self.patch_embed3 = OverlappingPatchingAndEmbedding(
-            embed_dims[1], embed_dims[2], 3, 2, backend="tensorflow"
-        )
-        self.patch_embed4 = OverlappingPatchingAndEmbedding(
-            embed_dims[2], embed_dims[3], 3, 2, backend="tensorflow"
-        )
+        self.patch_embedding_layers = []
+        for i in range(self.num_stages):
+            patch_embed_layer = OverlappingPatchingAndEmbedding(
+                in_channels=3 if i == 0 else embed_dims[i - 1],
+                out_channels=embed_dims[0] if i == 0 else embed_dims[i],
+                patch_size=7 if i == 0 else 3,
+                stride=4 if i == 0 else 2,
+                backend="tensorflow",
+            )
+            self.patch_embedding_layers.append(patch_embed_layer)
 
         dpr = [x.numpy() for x in tf.linspace(0.0, drop_path_rate, sum(depths))]
 
+        blockwise_num_heads = [1, 2, 5, 8]
+        blockwise_sr_ratios = [8, 4, 2, 1]
         cur = 0
-        self.block1 = [
-            HierarchicalTransformerEncoder(
-                embed_dims[0], 1, 8, dpr[cur + i], backend="tensorflow"
-            )
-            for i in range(depths[0])
-        ]
+        self.blocks = []
+        for i in range(self.num_stages):
+            block = [
+                HierarchicalTransformerEncoder(
+                    project_dim=embed_dims[i],
+                    num_heads=blockwise_num_heads[i],
+                    sr_ratio=blockwise_sr_ratios[i],
+                    drop_prob=dpr[cur + k],
+                    backend="tensorflow",
+                )
+                for k in range(depths[i])
+            ]
+            self.blocks.append(block)
+            cur += depths[i]
 
-        self.norm1 = tf.keras.layers.LayerNormalization()
-
-        cur += depths[0]
-        self.block2 = [
-            HierarchicalTransformerEncoder(
-                embed_dims[1], 2, 4, dpr[cur + i], backend="tensorflow"
-            )
-            for i in range(depths[1])
-        ]
-
-        self.norm2 = tf.keras.layers.LayerNormalization()
-
-        cur += depths[1]
-        self.block3 = [
-            HierarchicalTransformerEncoder(
-                embed_dims[2], 5, 2, dpr[cur + i], backend="tensorflow"
-            )
-            for i in range(depths[2])
-        ]
-
-        self.norm3 = tf.keras.layers.LayerNormalization()
-
-        cur += depths[2]
-        self.block4 = [
-            HierarchicalTransformerEncoder(
-                embed_dims[3], 8, 1, dpr[cur + i], backend="tensorflow"
-            )
-            for i in range(depths[3])
-        ]
-
-        self.norm4 = tf.keras.layers.LayerNormalization()
+        self.layer_norms = []
+        for i in range(4):
+            self.layer_norms.append(tf.keras.layers.LayerNormalization())
 
     def call(self, x):
         B = x.shape[0]
-        # stage 1
-        x, H, W = self.patch_embed1(x)
-        for blk in self.block1:
-            x = blk(x, H, W)
-        x1 = self.norm1(x)
-        x1 = tf.reshape(x1, [B, H, W, -1])
-
-        # stage 2
-        x, H, W = self.patch_embed2(x1)
-        for blk in self.block2:
-            x = blk(x, H, W)
-        x2 = self.norm2(x)
-        x2 = tf.reshape(x2, [B, H, W, -1])
-
-        # stage 3
-        x, H, W = self.patch_embed3(x2)
-        for blk in self.block3:
-            x = blk(x, H, W)
-        x3 = self.norm3(x)
-        x3 = tf.reshape(x3, [B, H, W, -1])
-
-        # stage 4
-        x, H, W = self.patch_embed4(x3)
-        for blk in self.block4:
-            x = blk(x, H, W)
-        x4 = self.norm4(x)
-        x4 = tf.reshape(x4, [B, H, W, -1])
-
-        return x1, x2, x3, x4
+        out = []
+        for i in range(self.num_stages):
+            x, H, W = self.patch_embedding_layers[i](x)
+            for blk in self.blocks[i]:
+                x = blk(x, H, W)
+            x = self.layer_norms[i](x)
+            x = tf.reshape(x, [B, H, W, -1])
+            out.append(x)
+        return out
