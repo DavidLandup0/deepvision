@@ -68,7 +68,7 @@ class __MiTTF(tf.keras.models.Model):
         out = []
         for i in range(self.num_stages):
             x, H, W = self.patch_embedding_layers[i](x)
-            for blk in self.blocks[i]:
+            for blk in self.transformer_blocks[i]:
                 x = blk(x, H, W)
             x = self.layer_norms[i](x)
             x = tf.reshape(x, [B, H, W, -1])
