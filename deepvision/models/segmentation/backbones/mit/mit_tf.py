@@ -21,7 +21,7 @@ from deepvision.layers import (
 
 
 class __MiTTF(tf.keras.models.Model):
-    def __init__(self, embed_dims, depths):
+    def __init__(self, input_shape, embed_dims, depths):
         super().__init__()
         drop_path_rate = 0.1
         self.channels = embed_dims
