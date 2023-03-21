@@ -76,7 +76,7 @@ class __EfficientAttentionTF(tf.keras.layers.Layer):
             self.norm = tf.keras.layers.LayerNormalization()
 
     def call(self, x, H, W):
-        batch_size, seq_len, project_dim = tf.shape(x)
+        batch_size, seq_len, project_dim = x.shape
 
         q = self.q(x)
         q = tf.reshape(
