@@ -13,19 +13,15 @@
 # limitations under the License.
 
 import torch
-from torch import Tensor, nn
-from torch.nn import functional as F
 
 from deepvision.layers import (
     HierarchicalTransformerEncoder,
     OverlappingPatchingAndEmbedding,
 )
 
-# from semseg.models.layers import DropPath
 
-
-class __MiTPT(nn.Module):
-    def __init__(self, embed_dims, depths):
+class __MiTPT(torch.nn.Module):
+    def __init__(self, input_shape, embed_dims, depths):
         super().__init__()
         drop_path_rate = 0.1
         self.channels = embed_dims
@@ -47,7 +43,7 @@ class __MiTPT(nn.Module):
         dpr = [x.item() for x in torch.linspace(0, drop_path_rate, sum(depths))]
 
         cur = 0
-        self.block1 = nn.ModuleList(
+        self.block1 = torch.nn.ModuleList(
             [
                 HierarchicalTransformerEncoder(
                     embed_dims[0], 1, 8, dpr[cur + i], backend="pytorch"
@@ -55,10 +51,10 @@ class __MiTPT(nn.Module):
                 for i in range(depths[0])
             ]
         )
-        self.norm1 = nn.LayerNorm(embed_dims[0])
+        self.norm1 = torch.nn.LayerNorm(embed_dims[0])
 
         cur += depths[0]
-        self.block2 = nn.ModuleList(
+        self.block2 = torch.nn.ModuleList(
             [
                 HierarchicalTransformerEncoder(
                     embed_dims[1], 2, 4, dpr[cur + i], backend="pytorch"
@@ -66,10 +62,10 @@ class __MiTPT(nn.Module):
                 for i in range(depths[1])
             ]
         )
-        self.norm2 = nn.LayerNorm(embed_dims[1])
+        self.norm2 = torch.nn.LayerNorm(embed_dims[1])
 
         cur += depths[1]
-        self.block3 = nn.ModuleList(
+        self.block3 = torch.nn.ModuleList(
             [
                 HierarchicalTransformerEncoder(
                     embed_dims[2], 5, 2, dpr[cur + i], backend="pytorch"
@@ -77,10 +73,10 @@ class __MiTPT(nn.Module):
                 for i in range(depths[2])
             ]
         )
-        self.norm3 = nn.LayerNorm(embed_dims[2])
+        self.norm3 = torch.nn.LayerNorm(embed_dims[2])
 
         cur += depths[2]
-        self.block4 = nn.ModuleList(
+        self.block4 = torch.nn.ModuleList(
             [
                 HierarchicalTransformerEncoder(
                     embed_dims[3], 8, 1, dpr[cur + i], backend="pytorch"
@@ -88,9 +84,9 @@ class __MiTPT(nn.Module):
                 for i in range(depths[3])
             ]
         )
-        self.norm4 = nn.LayerNorm(embed_dims[3])
+        self.norm4 = torch.nn.LayerNorm(embed_dims[3])
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x):
         B = x.shape[0]
         # stage 1
         x, H, W = self.patch_embed1(x)

@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import tensorflow as tf
 from torch import nn
 from torch.nn import functional as F
-import tensorflow as tf
 
 
 class __MixFFNPT(nn.Module):
@@ -41,6 +41,7 @@ class __MixFFNPT(nn.Module):
         x = self.fc2(x)
         return x
 
+
 class __MixFFNTF(tf.keras.layers.Layer):
     def __init__(self, channels, mid_channels):
         super().__init__()
@@ -48,7 +49,7 @@ class __MixFFNTF(tf.keras.layers.Layer):
         self.dwconv = tf.keras.layers.DepthwiseConv2D(
             kernel_size=3,
             strides=1,
-            padding='same',
+            padding="same",
         )
         self.fc2 = tf.keras.layers.Dense(channels)
 

@@ -13,8 +13,8 @@
 # limitations under the License.
 
 
-from torch import nn
 import tensorflow as tf
+from torch import nn
 
 
 class __OverlappingPatchingAndEmbeddingPT(nn.Module):
@@ -52,7 +52,6 @@ class __OverlappingPatchingAndEmbeddingTF(tf.keras.layers.Layer):
         x = self.proj(x)
         _, H, W, C = x.shape.as_list()
         x = tf.reshape(x, [-1, H * W, C])
-        x = tf.transpose(x, [0, 2, 1])
         x = self.norm(x)
         return x, H, W
 

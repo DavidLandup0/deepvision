@@ -10,4 +10,5 @@ from deepvision.layers.overlapping_patching_and_embedding import (
     OverlappingPatchingAndEmbedding,
 )
 from deepvision.layers.patching_and_embedding import PatchingAndEmbedding
+from deepvision.layers.stochasticdepth import StochasticDepth
 from deepvision.layers.transformer_encoder import TransformerEncoder

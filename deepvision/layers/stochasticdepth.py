@@ -17,20 +17,20 @@ import torch
 
 
 @tf.keras.utils.register_keras_serializable(package="deepvision")
-class __DropPathTF(tf.keras.layers.Layer):
-    def __init__(self, drop_prob=None, **kwargs):
-        super().__init__(**kwargs)
+class __StochaticDepthTF(tf.keras.layers.Layer):
+    def __init__(self, drop_prob):
+        super().__init__()
         self.drop_prob = drop_prob
 
     def call(self, x):
-        input_shape = tf.shape(x)
-        batch_size = input_shape[0]
-        rank = x.shape.rank
-        shape = (batch_size,) + (1,) * (rank - 1)
-        random_tensor = (1 - self.drop_prob) + tf.random.uniform(shape, dtype=x.dtype)
-        path_mask = tf.floor(random_tensor)
-        output = tf.math.divide(x, 1 - self.drop_prob) * path_mask
-        return output
+        if self.drop_prob == 0.0 or not self.trainable:
+            return x
+        keep_mask = 1 - self.drop_prob
+        shape = (x.shape[0],) + (1,) * (x.ndim - 1)
+        random_tensor = keep_mask + tf.random.uniform(shape)
+        random_tensor = tf.floor(random_tensor)
+        random_tensor = tf.divide(keep_mask, random_tensor)
+        return random_tensor
 
     def get_config(self):
         base_config = super().get_config()
@@ -38,29 +38,32 @@ class __DropPathTF(tf.keras.layers.Layer):
         return {**base_config, **config}
 
 
-class __DropPathPT(torch.nn.Module):
+class __StochaticDepthPT(torch.nn.Module):
+    """
+    Based on: https://github.com/sithu31296/semantic-segmentation/blob/main/semseg/models/layers/common.py
+    """
+
     def __init__(self, drop_prob=None, **kwargs):
         super().__init__(**kwargs)
         self.drop_prob = drop_prob
 
     def forward(self, x):
-        input_shape = x.shape
-        batch_size = input_shape[0]
-        rank = len(x.shape)
-        shape = (batch_size,) + (1,) * (rank - 1)
-        random_tensor = (1 - self.drop_prob) + torch.rand(*shape).to(x.dtype)
-        path_mask = torch.floor(random_tensor)
-        output = x / (1 - self.drop_prob) * path_mask
-        return output
+        if self.drop_prob == 0.0 or not self.training:
+            return x
+        kp = 1 - self.drop_prob
+        shape = (x.shape[0],) + (1,) * (x.ndim - 1)
+        random_tensor = kp + torch.rand(shape, dtype=x.dtype, device=x.device)
+        random_tensor.floor_()
+        return x.div(kp) * random_tensor
 
 
 LAYER_BACKBONES = {
-    "tensorflow": __DropPathTF,
-    "pytorch": __DropPathPT,
+    "tensorflow": __StochaticDepthTF,
+    "pytorch": __StochaticDepthPT,
 }
 
 
-def DropPath(
+def StochasticDepth(
     drop_prob,
     backend,
     **kwargs,

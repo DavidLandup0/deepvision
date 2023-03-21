@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from deepvision.models.segmentation.backbones.mit.mit_pt import __MiTPT
+from deepvision.models.segmentation.backbones.mit.mit_tf import __MiTTF
 
 MODEL_CONFIGS = {
     "B0": {"embedding_dims": [32, 64, 160, 256], "depths": [2, 2, 2, 2]},
@@ -23,76 +24,82 @@ MODEL_CONFIGS = {
     "B5": {"embedding_dims": [64, 128, 320, 512], "depths": [3, 6, 40, 3]},
 }
 
-MODEL_BACKBONES = {"tensorflow": None, "pytorch": __MiTPT}
+MODEL_BACKBONES = {"tensorflow": __MiTTF, "pytorch": __MiTPT}
 
 
-def MiTB0(backend):
+def MiTB0(input_shape, backend):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     return model_class(
+        input_shape=input_shape,
         embed_dims=MODEL_CONFIGS["B0"]["embedding_dims"],
         depths=MODEL_CONFIGS["B0"]["depths"],
     )
 
 
-def MiTB1(backend):
+def MiTB1(input_shape, backend):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     return model_class(
+        input_shape=input_shape,
         embed_dims=MODEL_CONFIGS["B1"]["embedding_dims"],
         depths=MODEL_CONFIGS["B1"]["depths"],
     )
 
 
-def MiTB2(backend):
+def MiTB2(input_shape, backend):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     return model_class(
+        input_shape=input_shape,
         embed_dims=MODEL_CONFIGS["B2"]["embedding_dims"],
         depths=MODEL_CONFIGS["B2"]["depths"],
     )
 
 
-def MiTB3(backend):
+def MiTB3(input_shape, backend):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     return model_class(
+        input_shape=input_shape,
         embed_dims=MODEL_CONFIGS["B3"]["embedding_dims"],
         depths=MODEL_CONFIGS["B3"]["depths"],
     )
 
 
-def MiTB4(backend):
+def MiTB4(input_shape, backend):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     return model_class(
+        input_shape=input_shape,
         embed_dims=MODEL_CONFIGS["B4"]["embedding_dims"],
         depths=MODEL_CONFIGS["B4"]["depths"],
     )
 
 
-def MiTB5(backend):
+def MiTB5(input_shape, backend):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
     return model_class(
+        input_shape=input_shape,
         embed_dims=MODEL_CONFIGS["B5"]["embedding_dims"],
         depths=MODEL_CONFIGS["B5"]["depths"],
     )

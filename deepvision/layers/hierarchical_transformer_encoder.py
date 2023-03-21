@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from torch import nn
 import tensorflow as tf
+from torch import nn
 
-from deepvision.layers.droppath import DropPath
 from deepvision.layers.efficient_attention import EfficientAttention
 from deepvision.layers.mix_ffn import MixFFN
-from deepvision.layers.identity import Identity
+from deepvision.layers.stochasticdepth import StochasticDepth
 
 
 class __HierarchicalTransformerEncoderPT(nn.Module):
@@ -28,9 +27,7 @@ class __HierarchicalTransformerEncoderPT(nn.Module):
         super().__init__()
         self.norm1 = nn.LayerNorm(project_dim)
         self.attn = EfficientAttention(project_dim, num_heads, sr_ratio)
-        self.drop_path = (
-            DropPath(drop_prob, backend="pytorch") if drop_prob else nn.Identity()
-        )
+        self.drop_path = StochasticDepth(drop_prob, backend="pytorch")
         self.norm2 = nn.LayerNorm(project_dim, eps=layer_norm_epsilon)
         self.mlp = MixFFN(
             channels=project_dim, mid_channels=int(project_dim * 4), backend="pytorch"
@@ -47,13 +44,11 @@ class __HierarchicalTransformerEncoderTF(tf.keras.layers.Layer):
         self, project_dim, num_heads, sr_ratio=1, drop_prob=0.0, layer_norm_epsilon=1e-6
     ):
         super().__init__()
-        self.norm1 = tf.keras.layers.LayerNormalization()
+        self.norm1 = tf.keras.layers.LayerNormalization(epsilon=layer_norm_epsilon)
         self.attn = EfficientAttention(
-            project_dim, num_heads, sr_ratio, backend="tensorlflow"
+            project_dim, num_heads, sr_ratio, backend="tensorflow"
         )
-        self.drop_path = (
-            DropPath(drop_prob, backend="tensorflow") if drop_prob else Identity
-        )
+        self.drop_path = StochasticDepth(drop_prob, backend="tensorflow")
         self.norm2 = tf.keras.layers.LayerNormalization(epsilon=layer_norm_epsilon)
         self.mlp = MixFFN(
             channels=project_dim,

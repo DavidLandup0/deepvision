@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from torch import nn
 import tensorflow as tf
+from torch import nn
 
 """
 Based on: https://github.com/sithu31296/semantic-segmentation/blob/main/semseg/models/backbones/mit.py
@@ -76,7 +76,7 @@ class __EfficientAttentionTF(tf.keras.layers.Layer):
             self.norm = tf.keras.layers.LayerNormalization()
 
     def call(self, x, H, W):
-        batch_size, seq_len, project_dim = tf.shape(x)
+        batch_size, seq_len, project_dim = x.shape
 
         q = self.q(x)
         q = tf.reshape(
