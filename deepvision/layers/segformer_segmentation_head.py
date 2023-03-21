@@ -88,7 +88,6 @@ class __SegFormerHeadTF(tf.keras.layers.Layer):
             feature = tf.image.resize(feature, size=(H, W), method="bilinear")
             outs.append(feature)
 
-
         seg = self.linear_fuse(tf.concat(outs[::-1], axis=3))
         seg = self.dropout(seg)
         seg = self.seg_out(seg)

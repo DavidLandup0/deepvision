@@ -29,7 +29,7 @@ class __StochaticDepthTF(tf.keras.layers.Layer):
         shape = (x.shape[0],) + (1,) * (x.ndim - 1)
         random_tensor = keep_mask + tf.random.uniform(shape)
         random_tensor = tf.floor(random_tensor)
-        random_tensor = tf.divide(keep_mask, random_tensor)
+        random_tensor = tf.divide(x, keep_mask) * random_tensor
         return random_tensor
 
     def get_config(self):
