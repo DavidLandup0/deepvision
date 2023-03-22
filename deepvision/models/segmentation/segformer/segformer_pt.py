@@ -64,15 +64,14 @@ class __SegFormerPT(pl.LightningModule):
             on_epoch=True,
             prog_bar=True,
         )
-        if self.include_top:
-            acc = self.acc(outputs, targets)
-            self.log(
-                "acc",
-                acc,
-                on_step=True,
-                on_epoch=True,
-                prog_bar=True,
-            )
+        acc = self.acc(outputs, targets)
+        self.log(
+            "acc",
+            acc,
+            on_step=True,
+            on_epoch=True,
+            prog_bar=True,
+        )
         return loss
 
     def validation_step(self, val_batch, batch_idx):
@@ -86,13 +85,12 @@ class __SegFormerPT(pl.LightningModule):
             on_epoch=True,
             prog_bar=True,
         )
-        if self.include_top:
-            val_acc = self.acc(outputs, targets)
-            self.log(
-                "val_acc",
-                val_acc,
-                on_step=True,
-                on_epoch=True,
-                prog_bar=True,
-            )
+        val_acc = self.acc(outputs, targets)
+        self.log(
+            "val_acc",
+            val_acc,
+            on_step=True,
+            on_epoch=True,
+            prog_bar=True,
+        )
         return loss
