@@ -12,13 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytorch_lightning as pl
 import torch
+import torchmetrics
 from torch.nn import functional as F
 
 from deepvision.layers.segformer_segmentation_head import SegFormerHead
 
 
-class __SegFormerPT(torch.nn.Module):
+class __SegFormerPT(pl.LightningModule):
     def __init__(self, num_classes, backbone, embed_dim, softmax_output=None):
         super().__init__()
         self.backbone = backbone
@@ -39,3 +41,58 @@ class __SegFormerPT(torch.nn.Module):
         if self.softmax_output:
             y = torch.nn.Softmax(1)(y)
         return y
+
+    def compile(self, loss, optimizer):
+        self.loss = loss
+        self.optimizer = optimizer
+
+    def configure_optimizers(self):
+        optimizer = self.optimizer
+        return optimizer
+
+    def compute_loss(self, outputs, targets):
+        return self.loss(outputs, targets)
+
+    def training_step(self, train_batch, batch_idx):
+        inputs, targets = train_batch
+        outputs = self.forward(inputs)
+        loss = self.compute_loss(outputs, targets)
+        self.log(
+            "loss",
+            loss,
+            on_step=True,
+            on_epoch=True,
+            prog_bar=True,
+        )
+        if self.include_top:
+            acc = self.acc(outputs, targets)
+            self.log(
+                "acc",
+                acc,
+                on_step=True,
+                on_epoch=True,
+                prog_bar=True,
+            )
+        return loss
+
+    def validation_step(self, val_batch, batch_idx):
+        inputs, targets = val_batch
+        outputs = self.forward(inputs)
+        loss = self.compute_loss(outputs, targets)
+        self.log(
+            "val_loss",
+            loss,
+            on_step=True,
+            on_epoch=True,
+            prog_bar=True,
+        )
+        if self.include_top:
+            val_acc = self.acc(outputs, targets)
+            self.log(
+                "val_acc",
+                val_acc,
+                on_step=True,
+                on_epoch=True,
+                prog_bar=True,
+            )
+        return loss
