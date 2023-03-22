@@ -31,7 +31,7 @@ class __SegFormerPT(pl.LightningModule):
             backend="pytorch",
         )
         self.softmax_output = softmax_output
-
+        self.acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
     def forward(self, x):
         y = self.backbone(x)
         y = self.decode_head(y)
