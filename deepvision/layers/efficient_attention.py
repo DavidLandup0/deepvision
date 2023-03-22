@@ -68,7 +68,8 @@ class __EfficientAttentionTF(tf.keras.layers.Layer):
         self.sr_ratio = sr_ratio
         self.scale = (project_dim // num_heads) ** -0.5
         self.q = tf.keras.layers.Dense(project_dim)
-        self.kv = tf.keras.layers.Dense(project_dim * 2)
+        self.k = tf.keras.layers.Dense(project_dim)
+        self.v = tf.keras.layers.Dense(project_dim)
         self.proj = tf.keras.layers.Dense(project_dim)
 
         if sr_ratio > 1:
@@ -76,37 +77,55 @@ class __EfficientAttentionTF(tf.keras.layers.Layer):
             self.norm = tf.keras.layers.LayerNormalization()
 
     def call(self, x, H, W):
-        batch_size, seq_len, project_dim = x.shape
+        input_shape = tf.shape(x)
 
         q = self.q(x)
         q = tf.reshape(
             q,
-            shape=[batch_size, seq_len, self.num_heads, project_dim // self.num_heads],
+            shape=[
+                input_shape[0],
+                input_shape[1],
+                self.num_heads,
+                input_shape[2] // self.num_heads,
+            ],
         )
+
         q = tf.transpose(q, [0, 2, 1, 3])
 
         if self.sr_ratio > 1:
             x = tf.reshape(
-                tf.transpose(x, [0, 2, 1]), shape=[batch_size, project_dim, H, W]
+                tf.transpose(x, [0, 2, 1]), shape=[input_shape[0], input_shape[2], H, W]
             )
             x = self.sr(x)
-            x = tf.reshape(x, [batch_size, project_dim, -1])
+            x = tf.reshape(x, [input_shape[0], input_shape[2], -1])
             x = tf.transpose(x, [0, 2, 1])
             x = self.norm(x)
 
-        k, v = tf.transpose(
+        k = self.k(x)
+        v = self.v(x)
+
+        k = tf.transpose(
             tf.reshape(
-                self.kv(x),
-                [batch_size, -1, 2, self.num_heads, project_dim // self.num_heads],
+                k,
+                [input_shape[0], -1, self.num_heads, input_shape[2] // self.num_heads],
             ),
-            [2, 0, 3, 1, 4],
+            [0, 2, 1, 3],
         )
+
+        v = tf.transpose(
+            tf.reshape(
+                v,
+                [input_shape[0], -1, self.num_heads, input_shape[2] // self.num_heads],
+            ),
+            [0, 2, 1, 3],
+        )
+
         attn = (q @ tf.transpose(k, [0, 1, 3, 2])) * self.scale
         attn = tf.nn.softmax(attn, axis=-1)
 
         attn = attn @ v
         attn = tf.transpose(attn, [0, 2, 1, 3])
-        attn = tf.reshape(attn, shape=[batch_size, seq_len, project_dim])
+        attn = tf.reshape(attn, shape=[input_shape[0], input_shape[1], input_shape[2]])
         x = self.proj(attn)
         return x
 

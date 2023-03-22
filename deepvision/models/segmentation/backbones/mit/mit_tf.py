@@ -65,7 +65,7 @@ class __MiTTF(tf.keras.models.Model):
             self.layer_norms.append(tf.keras.layers.LayerNormalization())
 
     def call(self, x):
-        B = x.shape[0]
+        B = tf.shape(x)[0]
         out = []
         for i in range(self.num_stages):
             x, H, W = self.patch_embedding_layers[i](x)

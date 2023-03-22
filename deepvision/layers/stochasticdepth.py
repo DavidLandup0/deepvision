@@ -26,7 +26,8 @@ class __StochaticDepthTF(tf.keras.layers.Layer):
         if self.drop_prob == 0.0 or not self.trainable:
             return x
         keep_mask = 1 - self.drop_prob
-        shape = (x.shape[0],) + (1,) * (x.ndim - 1)
+        shape = (tf.shape(x)[0],) + (1,) * (len(tf.shape(x)) - 1)
+        print(shape)
         random_tensor = keep_mask + tf.random.uniform(shape)
         random_tensor = tf.floor(random_tensor)
         random_tensor = tf.divide(x, keep_mask) * random_tensor
