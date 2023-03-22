@@ -79,6 +79,7 @@ class __SegFormerPT(pl.LightningModule):
     def validation_step(self, val_batch, batch_idx):
         inputs, targets = val_batch
         outputs = self.forward(inputs)
+        outputs = torch.argmax(outputs, dim=1)
         loss = self.compute_loss(outputs, targets)
         self.log(
             "val_loss",
