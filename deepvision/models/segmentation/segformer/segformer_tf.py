@@ -34,5 +34,5 @@ class __SegFormerTF(tf.keras.Model):
         y = self.decode_head(y)
         y = tf.image.resize(y, size=[x.shape[1], x.shape[2]], method="bilinear")
         if self.softmax_output:
-            y = tf.nn.softmax(y, axis=1)
+            y = tf.keras.layers.Activation('softmax')(y)
         return y
