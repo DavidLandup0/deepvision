@@ -27,7 +27,7 @@ MODEL_CONFIGS = {
 MODEL_BACKBONES = {"tensorflow": __MiTTF, "pytorch": __MiTPT}
 
 
-def MiTB0(input_shape, backend):
+def MiTB0(input_shape, backend, **kwargs):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
@@ -37,10 +37,11 @@ def MiTB0(input_shape, backend):
         input_shape=input_shape,
         embed_dims=MODEL_CONFIGS["B0"]["embedding_dims"],
         depths=MODEL_CONFIGS["B0"]["depths"],
+        **kwargs,
     )
 
 
-def MiTB1(input_shape, backend):
+def MiTB1(input_shape, backend, **kwargs):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
@@ -50,10 +51,11 @@ def MiTB1(input_shape, backend):
         input_shape=input_shape,
         embed_dims=MODEL_CONFIGS["B1"]["embedding_dims"],
         depths=MODEL_CONFIGS["B1"]["depths"],
+        **kwargs,
     )
 
 
-def MiTB2(input_shape, backend):
+def MiTB2(input_shape, backend, **kwargs):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
@@ -63,10 +65,11 @@ def MiTB2(input_shape, backend):
         input_shape=input_shape,
         embed_dims=MODEL_CONFIGS["B2"]["embedding_dims"],
         depths=MODEL_CONFIGS["B2"]["depths"],
+        **kwargs,
     )
 
 
-def MiTB3(input_shape, backend):
+def MiTB3(input_shape, backend, **kwargs):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
@@ -76,10 +79,11 @@ def MiTB3(input_shape, backend):
         input_shape=input_shape,
         embed_dims=MODEL_CONFIGS["B3"]["embedding_dims"],
         depths=MODEL_CONFIGS["B3"]["depths"],
+        **kwargs,
     )
 
 
-def MiTB4(input_shape, backend):
+def MiTB4(input_shape, backend, **kwargs):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
@@ -89,10 +93,11 @@ def MiTB4(input_shape, backend):
         input_shape=input_shape,
         embed_dims=MODEL_CONFIGS["B4"]["embedding_dims"],
         depths=MODEL_CONFIGS["B4"]["depths"],
+        **kwargs,
     )
 
 
-def MiTB5(input_shape, backend):
+def MiTB5(input_shape, backend, **kwargs):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
@@ -102,4 +107,5 @@ def MiTB5(input_shape, backend):
         input_shape=input_shape,
         embed_dims=MODEL_CONFIGS["B5"]["embedding_dims"],
         depths=MODEL_CONFIGS["B5"]["depths"],
+        **kwargs,
     )

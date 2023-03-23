@@ -21,7 +21,7 @@ from torch.nn import functional as F
 
 
 class __SegFormerHeadPT(nn.Module):
-    def __init__(self, in_dims, embed_dim=256, num_classes=19):
+    def __init__(self, in_dims, embed_dim=256, num_classes=19, name=None):
         super().__init__()
         self.linear_layers = torch.nn.ModuleList()
         for i, dim in enumerate(in_dims):
@@ -71,9 +71,10 @@ class __SegFormerHeadPT(nn.Module):
 
 
 class __SegFormerHeadTF(tf.keras.layers.Layer):
-    def __init__(self, in_dims, embed_dim=256, num_classes=19):
-        super().__init__()
+    def __init__(self, in_dims, embed_dim=256, num_classes=19, **kwargs):
+        super().__init__(**kwargs)
         self.linear_layers = []
+
         for i in in_dims:
             self.linear_layers.append(
                 tf.keras.layers.Dense(embed_dim, name=f"linear_{i}")
@@ -120,6 +121,7 @@ def SegFormerHead(
     num_classes,
     backend,
     embed_dim=256,
+    name=None,
 ):
     layer_class = LAYER_BACKBONES.get(backend)
     if layer_class is None:
@@ -131,6 +133,7 @@ def SegFormerHead(
         in_dims=in_dims,
         num_classes=num_classes,
         embed_dim=embed_dim,
+        name=name,
     )
 
     return layer
