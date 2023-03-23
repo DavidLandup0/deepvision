@@ -71,7 +71,6 @@ LAYER_BACKBONES = {
 
 
 def MixFFN(channels, mid_channels, backend):
-
     layer_class = LAYER_BACKBONES.get(backend)
     if layer_class is None:
         raise ValueError(

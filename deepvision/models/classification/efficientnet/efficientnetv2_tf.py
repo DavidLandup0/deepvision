@@ -65,7 +65,6 @@ class EfficientNetV2TF(tf.keras.Model):
         blockwise_conv_type=None,
         **kwargs,
     ):
-
         if include_top and not classes:
             raise ValueError(
                 "If `include_top` is True, you should specify `classes`. "

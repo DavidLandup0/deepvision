@@ -201,7 +201,6 @@ def load_pt_to_tf(
     architecture=None,
     freeze_bn=True,
 ):
-
     """
     Basic usage:
 

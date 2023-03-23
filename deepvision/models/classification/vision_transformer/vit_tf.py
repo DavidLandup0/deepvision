@@ -38,7 +38,6 @@ class ViTTF(tf.keras.Model):
         weights=None,
         **kwargs,
     ):
-
         if include_top and not classes:
             raise ValueError(
                 "If `include_top` is True, you should specify `classes`. "

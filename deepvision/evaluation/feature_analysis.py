@@ -30,7 +30,6 @@ class FeatureAnalyzer:
         random_state=42,
         limit_batches=-1,
     ):
-
         self.model = model
         self.dataset = dataset
         self.backend = backend

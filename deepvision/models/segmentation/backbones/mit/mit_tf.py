@@ -72,6 +72,7 @@ class __MiTTF(tf.keras.models.Model):
             for blk in self.transformer_blocks[i]:
                 x = blk(x, H, W)
             x = self.layer_norms[i](x)
-            x = tf.reshape(x, [B, H, W, -1])
+            C = tf.shape(x)[-1]
+            x = tf.reshape(x, [B, H, W, C])
             out.append(x)
         return out

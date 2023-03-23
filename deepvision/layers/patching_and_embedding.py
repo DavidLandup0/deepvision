@@ -60,7 +60,6 @@ class __PatchingAndEmbeddingTF(layers.Layer):
         interpolate_height=None,
         patch_size=None,
     ):
-
         """Calls the PatchingAndEmbedding layer on a batch of images.
         Args:
             images: A `tf.Tensor` of shape [batch, width, height, depth]
@@ -214,7 +213,6 @@ class __PatchingAndEmbeddingPT(torch.nn.Module):
         interpolate_height=None,
         patch_size=None,
     ):
-
         """Calls the PatchingAndEmbedding layer on a batch of images.
         Args:
             images: A `torch.Tensor` of shape [batch, channels, width, height]

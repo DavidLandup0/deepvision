@@ -35,7 +35,6 @@ class __MBConvTF(layers.Layer):
         dropout: float = 0.8,
         **kwargs,
     ):
-
         super().__init__(**kwargs)
         self.input_filters = input_filters
         self.output_filters = output_filters
@@ -167,7 +166,6 @@ class __MBConvPT(nn.Module):
         name=None,  # Ignored but added for generalizability between backends
         **kwargs,
     ):
-
         super().__init__(**kwargs)
         self.input_filters = input_filters
         self.output_filters = output_filters
