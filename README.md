@@ -372,6 +372,29 @@ Currently, these models are supported (parameter counts are *equal* between back
 | ResNet101V2  | 44,675,560 |       |           |
 | ResNet152V2  | 60,380,648 |       |           |
 
+- SegFormer Family
+
+| Architecture | Parameters | FLOPs | Size (MB) |
+|--------------|------------|-------|-----------|
+| SegFormerB0  | 1,841,013  |       |           |
+| SegFormerB1  | 5,910,997  |       |           |
+| SegFormerB2  | 11,640,981 |       |           |
+| SegFormerB3  | 16,721,301 |       |           |
+| SegFormerB4  | 20,930,389 |       |           |
+| SegFormerB5  | 26,234,645 |       |           |
+
+- Mix-Transformer (MiT) Family (multi-spatial-level output, only for SegFormer backbone)
+
+| Architecture | Parameters | FLOPs | Size (MB) |
+|--------------|------------|-------|-----------|
+| MiTB0        | 1,440,352  |       |           |
+| MiTB1        | 5,379,264  |       |           |
+| MiTB2        | 8,472,960  |       |           |
+| MiTB3        | 13,553,280 |       |           |
+| MiTB4        | 17,762,368 |       |           |
+| MiTB5        | 23,066,624 |       |           |
+
+
 ## DeepVision as a Components Provider
 
 Models and architectures are built on top of each other. VGGNets begat ResNets, which begat a plethora of other architectures, with incremental improvements, small changes and new ideas building on top of already accepted ideas to bring about new advances. To make architectures more approachable, as well as easily buildable, more readable and to make experimentation and building new architectures simpler - we want to expose as many internal building blocks as possible, as part of the general DeepVision API. If an architecture uses a certain block repeatedly, it's likely going to be exposed as part of the public API.
