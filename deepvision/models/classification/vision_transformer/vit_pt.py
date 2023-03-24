@@ -16,8 +16,7 @@ import pytorch_lightning as pl
 import torchmetrics
 from torch import nn
 
-from deepvision.layers import PatchingAndEmbedding
-from deepvision.layers import TransformerEncoder
+from deepvision.layers import PatchingAndEmbedding, TransformerEncoder
 from deepvision.utils.utils import parse_model_inputs
 
 

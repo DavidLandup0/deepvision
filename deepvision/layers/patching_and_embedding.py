@@ -60,7 +60,6 @@ class __PatchingAndEmbeddingTF(layers.Layer):
         interpolate_height=None,
         patch_size=None,
     ):
-
         """Calls the PatchingAndEmbedding layer on a batch of images.
         Args:
             images: A `tf.Tensor` of shape [batch, width, height, depth]
@@ -214,7 +213,6 @@ class __PatchingAndEmbeddingPT(torch.nn.Module):
         interpolate_height=None,
         patch_size=None,
     ):
-
         """Calls the PatchingAndEmbedding layer on a batch of images.
         Args:
             images: A `torch.Tensor` of shape [batch, channels, width, height]
@@ -344,6 +342,7 @@ def PatchingAndEmbedding(
         input_shape: the input height and width (ignored for TensorFlow version)
         patch_size: the patch size
         padding: default 'valid', the padding to apply for patchifying images
+        backend: the backend framework to use
 
     Returns:
         Patchified and linearly projected input images, including a prepended learnable class token

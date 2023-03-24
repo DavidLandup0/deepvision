@@ -17,8 +17,7 @@ import math
 import tensorflow as tf
 from tensorflow.keras import layers
 
-from deepvision.layers import FusedMBConv
-from deepvision.layers import MBConv
+from deepvision.layers import FusedMBConv, MBConv
 from deepvision.utils.utils import parse_model_inputs
 
 
@@ -66,7 +65,6 @@ class EfficientNetV2TF(tf.keras.Model):
         blockwise_conv_type=None,
         **kwargs,
     ):
-
         if include_top and not classes:
             raise ValueError(
                 "If `include_top` is True, you should specify `classes`. "

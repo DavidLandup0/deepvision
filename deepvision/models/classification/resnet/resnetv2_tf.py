@@ -67,7 +67,6 @@ class ResNetV2Block(layers.Layer):
             self.conv4 = layers.Conv2D(4 * filters, 1)
 
     def call(self, inputs):
-
         x = self.preact_bn(inputs)
         x = layers.Activation("relu")(x)
         shortcut = self.shortcut(x)
@@ -142,7 +141,6 @@ class ResNetV2TF(tf.keras.Model):
         block_type=None,
         **kwargs,
     ):
-
         if include_top and not classes:
             raise ValueError(
                 "If `include_top` is True, you should specify `classes`. "

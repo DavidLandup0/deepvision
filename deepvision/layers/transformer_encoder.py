@@ -133,7 +133,6 @@ class __TransformerEncoderTF(layers.Layer):
         layer_norm_epsilon=1e-06,
         **kwargs,
     ):
-
         super().__init__(**kwargs)
         self.project_dim = project_dim
         self.mlp_dim = mlp_dim

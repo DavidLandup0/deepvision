@@ -15,8 +15,7 @@
 import tensorflow as tf
 from tensorflow.keras import layers
 
-from deepvision.layers import PatchingAndEmbedding
-from deepvision.layers import TransformerEncoder
+from deepvision.layers import PatchingAndEmbedding, TransformerEncoder
 from deepvision.utils.utils import parse_model_inputs
 
 
@@ -39,7 +38,6 @@ class ViTTF(tf.keras.Model):
         weights=None,
         **kwargs,
     ):
-
         if include_top and not classes:
             raise ValueError(
                 "If `include_top` is True, you should specify `classes`. "

@@ -30,4 +30,4 @@ class Identity(Layer):
     """
 
     def call(self, inputs):
-        return tf.identity(inputs)
+        return tf.identity(inputs, trainable=False)
