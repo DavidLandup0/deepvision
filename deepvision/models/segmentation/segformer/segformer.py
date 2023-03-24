@@ -65,6 +65,8 @@ def SegFormerB1(
         embed_dim=256,
         num_classes=num_classes,
         softmax_output=softmax_output,
+        input_shape=input_shape,
+        input_tensor=input_tensor,
         backbone=backbone,
     )
 
@@ -89,6 +91,8 @@ def SegFormerB2(
         embed_dim=768,
         num_classes=num_classes,
         softmax_output=softmax_output,
+        input_shape=input_shape,
+        input_tensor=input_tensor,
         backbone=backbone,
     )
 
@@ -113,6 +117,8 @@ def SegFormerB3(
         embed_dim=768,
         num_classes=num_classes,
         softmax_output=softmax_output,
+        input_shape=input_shape,
+        input_tensor=input_tensor,
         backbone=backbone,
     )
 
@@ -137,6 +143,8 @@ def SegFormerB4(
         embed_dim=768,
         num_classes=num_classes,
         softmax_output=softmax_output,
+        input_shape=input_shape,
+        input_tensor=input_tensor,
         backbone=backbone,
     )
 
@@ -161,5 +169,7 @@ def SegFormerB5(
         embed_dim=768,
         num_classes=num_classes,
         softmax_output=softmax_output,
+        input_shape=input_shape,
+        input_tensor=input_tensor,
         backbone=backbone,
     )
