@@ -21,7 +21,16 @@ from deepvision.layers.segformer_segmentation_head import SegFormerHead
 
 
 class __SegFormerPT(pl.LightningModule):
-    def __init__(self, num_classes, backbone, embed_dim, softmax_output=None):
+    def __init__(
+        self,
+        num_classes=None,
+        backbone=None,
+        embed_dim=None,
+        softmax_output=None,
+        name=None,
+        input_shape=None,
+        input_tensor=None,
+    ):
         super().__init__()
         self.backbone = backbone
         self.decode_head = SegFormerHead(
