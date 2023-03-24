@@ -20,7 +20,11 @@ MODEL_BACKBONES = {"tensorflow": __SegFormerTF, "pytorch": __SegFormerPT}
 
 
 def SegFormerB0(
-    input_shape, num_classes, backend, input_tensor=None, softmax_output=True
+    input_shape,
+    num_classes,
+    backend,
+    softmax_output,
+    input_tensor=None,
 ):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
@@ -41,7 +45,13 @@ def SegFormerB0(
     )
 
 
-def SegFormerB1(input_shape, num_classes, backend, softmax_output=True):
+def SegFormerB1(
+    input_shape,
+    num_classes,
+    backend,
+    softmax_output,
+    input_tensor=None,
+):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
@@ -59,7 +69,13 @@ def SegFormerB1(input_shape, num_classes, backend, softmax_output=True):
     )
 
 
-def SegFormerB2(input_shape, num_classes, backend, softmax_output=True):
+def SegFormerB2(
+    input_shape,
+    num_classes,
+    backend,
+    softmax_output,
+    input_tensor=None,
+):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
@@ -77,7 +93,13 @@ def SegFormerB2(input_shape, num_classes, backend, softmax_output=True):
     )
 
 
-def SegFormerB3(input_shape, num_classes, backend, softmax_output=True):
+def SegFormerB3(
+    input_shape,
+    num_classes,
+    backend,
+    softmax_output,
+    input_tensor=None,
+):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
@@ -95,7 +117,13 @@ def SegFormerB3(input_shape, num_classes, backend, softmax_output=True):
     )
 
 
-def SegFormerB4(input_shape, num_classes, backend, softmax_output=True):
+def SegFormerB4(
+    input_shape,
+    num_classes,
+    backend,
+    softmax_output,
+    input_tensor=None,
+):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
@@ -113,7 +141,13 @@ def SegFormerB4(input_shape, num_classes, backend, softmax_output=True):
     )
 
 
-def SegFormerB5(input_shape, num_classes, backend, softmax_output=True):
+def SegFormerB5(
+    input_shape,
+    num_classes,
+    backend,
+    softmax_output,
+    input_tensor=None,
+):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
