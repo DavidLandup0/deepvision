@@ -25,7 +25,7 @@ $ pip install deepvision-toolkit
 - ✔️ TensorFlow/PyTorch duality on multiple levels (model-level and component-level are backend agnostic and weights are transferable on model-level and component-level)
 - ✔️ Identical, readable implementations, with the **same API**, code structure and style
 - ✔️ Layered API with exposed building blocks (`TransformerEncoder`, `MBConv`, etc.)
-- ✔️ Image classification, (object detection, semantic/instance/panoptic segmentation, NeRFs, etc. coming soon)
+- ✔️ Image classification, semantic segmentation, NeRFs (object detection, instance/panoptic segmentation, etc. coming soon)
 - ✔️ Mixed-precision, TPU and XLA training support
 
 ______________________________________________________________________
@@ -383,7 +383,7 @@ Currently, these models are supported (parameter counts are *equal* between back
 | SegFormerB4  | 20,930,389 |       |           |
 | SegFormerB5  | 26,234,645 |       |           |
 
-- Mix-Transformer (MiT) Family (multi-spatial-level output, only for SegFormer backbone)
+- Mix-Transformer (MiT) Family:
 
 | Architecture | Parameters | FLOPs | Size (MB) |
 |--------------|------------|-------|-----------|
