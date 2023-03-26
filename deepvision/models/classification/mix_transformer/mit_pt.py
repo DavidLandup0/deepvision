@@ -52,6 +52,7 @@ class __MiTPT(nn.Module):
 
         if self.include_top and self.classes:
             self.acc = torchmetrics.Accuracy(task="multiclass", num_classes=classes)
+            self.linear = nn.Linear(embed_dims[-1], classes)
 
         if self.include_top and not self.classes:
             raise ValueError(
