@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytorch_lightning as pl
 import torch
 import torchmetrics
 from torch import nn
@@ -22,7 +23,7 @@ from deepvision.layers import (
 )
 
 
-class __MiTPT(nn.Module):
+class __MiTPT(pl.LightningModule):
     def __init__(
         self,
         input_shape=None,
@@ -133,3 +134,58 @@ class __MiTPT(nn.Module):
                 return nn.AvgPool2d(x.shape[2])(x).flatten(1)
             elif self.pooling == "max":
                 return nn.MaxPool2d(x.shape[2])(x).flatten(1)
+
+    def compile(self, loss, optimizer):
+        self.loss = loss
+        self.optimizer = optimizer
+
+    def configure_optimizers(self):
+        optimizer = self.optimizer
+        return optimizer
+
+    def compute_loss(self, outputs, targets):
+        return self.loss(outputs, targets)
+
+    def training_step(self, train_batch, batch_idx):
+        inputs, targets = train_batch
+        outputs = self.forward(inputs)
+        loss = self.compute_loss(outputs, targets)
+        self.log(
+            "loss",
+            loss,
+            on_step=True,
+            on_epoch=True,
+            prog_bar=True,
+        )
+        if self.include_top:
+            acc = self.acc(outputs, targets)
+            self.log(
+                "acc",
+                acc,
+                on_step=True,
+                on_epoch=True,
+                prog_bar=True,
+            )
+        return loss
+
+    def validation_step(self, val_batch, batch_idx):
+        inputs, targets = val_batch
+        outputs = self.forward(inputs)
+        loss = self.compute_loss(outputs, targets)
+        self.log(
+            "val_loss",
+            loss,
+            on_step=True,
+            on_epoch=True,
+            prog_bar=True,
+        )
+        if self.include_top:
+            val_acc = self.acc(outputs, targets)
+            self.log(
+                "val_acc",
+                val_acc,
+                on_step=True,
+                on_epoch=True,
+                prog_bar=True,
+            )
+        return loss
