@@ -387,12 +387,13 @@ Currently, these models are supported (parameter counts are *equal* between back
 
 | Architecture | Parameters | FLOPs | Size (MB) |
 |--------------|------------|-------|-----------|
-| MiTB0        | 1,440,352  |       |           |
-| MiTB1        | 5,379,264  |       |           |
-| MiTB2        | 8,472,960  |       |           |
-| MiTB3        | 13,553,280 |       |           |
-| MiTB4        | 17,762,368 |       |           |
-| MiTB5        | 23,066,624 |       |           |
+| MiTB0        | 3,321,962  |       |           |
+| MiTB1        | 13,156,554 |       |           |
+| MiTB2        | 24,201,418 |       |           |
+| MiTB3        | 44,077,258 |       |           |
+| MiTB4        | 60,847,818 |       |           |
+| MiTB5        | 81,448,138 |       |           |
+
 
 
 ## DeepVision as a Components Provider
