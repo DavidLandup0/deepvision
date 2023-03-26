@@ -130,6 +130,7 @@ def EfficientNetV2B0(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    as_backbone=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -145,6 +146,7 @@ def EfficientNetV2B0(
         pooling=pooling,
         width_coefficient=1.0,
         depth_coefficient=1.0,
+        as_backbone=as_backbone,
         blockwise_kernel_sizes=MODEL_CONFIGS["EfficientNetV2Base"][
             "block_kernel_sizes"
         ],
@@ -168,6 +170,7 @@ def EfficientNetV2B1(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    as_backbone=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -183,6 +186,7 @@ def EfficientNetV2B1(
         pooling=pooling,
         width_coefficient=1.0,
         depth_coefficient=1.1,
+        as_backbone=as_backbone,
         blockwise_kernel_sizes=MODEL_CONFIGS["EfficientNetV2Base"][
             "block_kernel_sizes"
         ],
@@ -206,6 +210,7 @@ def EfficientNetV2B2(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    as_backbone=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -221,6 +226,7 @@ def EfficientNetV2B2(
         pooling=pooling,
         width_coefficient=1.1,
         depth_coefficient=1.2,
+        as_backbone=as_backbone,
         blockwise_kernel_sizes=MODEL_CONFIGS["EfficientNetV2Base"][
             "block_kernel_sizes"
         ],
@@ -244,6 +250,7 @@ def EfficientNetV2B3(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    as_backbone=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -259,6 +266,7 @@ def EfficientNetV2B3(
         pooling=pooling,
         width_coefficient=1.2,
         depth_coefficient=1.4,
+        as_backbone=as_backbone,
         blockwise_kernel_sizes=MODEL_CONFIGS["EfficientNetV2Base"][
             "block_kernel_sizes"
         ],
@@ -282,6 +290,7 @@ def EfficientNetV2S(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    as_backbone=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -297,6 +306,7 @@ def EfficientNetV2S(
         pooling=pooling,
         width_coefficient=1.0,
         depth_coefficient=1.0,
+        as_backbone=as_backbone,
         blockwise_kernel_sizes=MODEL_CONFIGS["EfficientNetV2S"]["block_kernel_sizes"],
         blockwise_num_repeat=MODEL_CONFIGS["EfficientNetV2S"]["block_num_repeat"],
         blockwise_input_filters=MODEL_CONFIGS["EfficientNetV2S"]["block_in_filters"],
@@ -316,6 +326,7 @@ def EfficientNetV2M(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    as_backbone=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -331,6 +342,7 @@ def EfficientNetV2M(
         pooling=pooling,
         width_coefficient=1.0,
         depth_coefficient=1.0,
+        as_backbone=as_backbone,
         blockwise_kernel_sizes=MODEL_CONFIGS["EfficientNetV2M"]["block_kernel_sizes"],
         blockwise_num_repeat=MODEL_CONFIGS["EfficientNetV2M"]["block_num_repeat"],
         blockwise_input_filters=MODEL_CONFIGS["EfficientNetV2M"]["block_in_filters"],
@@ -350,6 +362,7 @@ def EfficientNetV2L(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    as_backbone=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -365,6 +378,7 @@ def EfficientNetV2L(
         pooling=pooling,
         width_coefficient=1.0,
         depth_coefficient=1.0,
+        as_backbone=as_backbone,
         blockwise_kernel_sizes=MODEL_CONFIGS["EfficientNetV2L"]["block_kernel_sizes"],
         blockwise_num_repeat=MODEL_CONFIGS["EfficientNetV2L"]["block_num_repeat"],
         blockwise_input_filters=MODEL_CONFIGS["EfficientNetV2L"]["block_in_filters"],

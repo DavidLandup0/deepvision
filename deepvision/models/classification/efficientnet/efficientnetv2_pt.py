@@ -55,6 +55,7 @@ class EfficientNetV2PT(pl.LightningModule):
         min_depth=8,
         bn_momentum=0.9,
         activation=nn.SiLU,
+        as_backbone=None,
         blockwise_kernel_sizes=None,
         blockwise_num_repeat=None,
         blockwise_input_filters=None,
@@ -87,6 +88,7 @@ class EfficientNetV2PT(pl.LightningModule):
         self.blockwise_se_ratios = blockwise_se_ratios
         self.blockwise_strides = blockwise_strides
         self.blockwise_conv_type = blockwise_conv_type
+        self.as_backbone = as_backbone
 
         if include_top and classes:
             self.acc = torchmetrics.Accuracy(task="multiclass", num_classes=classes)
@@ -193,17 +195,22 @@ class EfficientNetV2PT(pl.LightningModule):
         x = self.stem_bn(x)
         x = self.activation()(x)
 
+        outputs = []
         for block in self.blocks:
             x = block(x)
+            outputs.append(x)
         x = self.top_conv(x)
         x = self.top_bn(x)
         x = self.activation()(x)
+        outputs.append(x)
 
         if self.include_top:
             # [B, C, F, F] -> [B, avg C]
             x = nn.AvgPool2d(x.shape[2])(x).flatten(1)
             x = self.top_dense(x)
             x = nn.Softmax(dim=1)(x)
+        elif self.as_backbone:
+            return outputs
         else:
             if self.pooling == "avg":
                 x = nn.AvgPool2d(x.shape[2])(x).flatten(1)
