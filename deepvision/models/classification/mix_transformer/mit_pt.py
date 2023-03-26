@@ -26,12 +26,15 @@ class __MiTPT(nn.Module):
     def __init__(
         self,
         input_shape=None,
+        input_tensor=None,
         classes=None,
+        include_top=None,
         embed_dims=None,
         depths=None,
         as_backbone=None,
         pooling=None,
         name=None,
+        **kwargs,
     ):
         super().__init__()
         drop_path_rate = 0.1
@@ -41,6 +44,7 @@ class __MiTPT(nn.Module):
         self.classes = classes
         self.as_backbone = as_backbone
         self.pooling = pooling
+        self.include_top = include_top
 
         self.patch_embedding_layers = nn.ModuleList()
         self.transformer_blocks = nn.ModuleList()
@@ -65,6 +69,12 @@ class __MiTPT(nn.Module):
             raise ValueError(
                 f"`as_backbone` must be `False` when `include_top=True`."
                 f"Received as_backbone={self.as_backbone} and include_top={self.include_top}. "
+            )
+
+        if self.as_backbone and self.classes:
+            raise ValueError(
+                f"`as_backbone` must be `False` when `classes` are set."
+                f"Received as_backbone={self.as_backbone} and classes={self.classes}. "
             )
 
         blockwise_num_heads = [1, 2, 5, 8]

@@ -27,7 +27,16 @@ MODEL_CONFIGS = {
 MODEL_BACKBONES = {"tensorflow": __MiTTF, "pytorch": __MiTPT}
 
 
-def MiTB0(input_shape, classes, include_top, backend, as_backbone=False, **kwargs):
+def MiTB0(
+    backend,
+    include_top,
+    classes=None,
+    input_shape=(None, None, 3),
+    input_tensor=None,
+    pooling=None,
+    as_backbone=False,
+    **kwargs,
+):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
@@ -35,6 +44,8 @@ def MiTB0(input_shape, classes, include_top, backend, as_backbone=False, **kwarg
         )
     return model_class(
         input_shape=input_shape,
+        input_tensor=input_tensor,
+        pooling=pooling,
         embed_dims=MODEL_CONFIGS["B0"]["embedding_dims"],
         depths=MODEL_CONFIGS["B0"]["depths"],
         classes=classes,
@@ -44,7 +55,16 @@ def MiTB0(input_shape, classes, include_top, backend, as_backbone=False, **kwarg
     )
 
 
-def MiTB1(input_shape, classes, include_top, backend, as_backbone=False, **kwargs):
+def MiTB1(
+    backend,
+    include_top,
+    classes=None,
+    input_shape=(None, None, 3),
+    input_tensor=None,
+    pooling=None,
+    as_backbone=False,
+    **kwargs,
+):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
@@ -52,6 +72,8 @@ def MiTB1(input_shape, classes, include_top, backend, as_backbone=False, **kwarg
         )
     return model_class(
         input_shape=input_shape,
+        input_tensor=input_tensor,
+        pooling=pooling,
         embed_dims=MODEL_CONFIGS["B1"]["embedding_dims"],
         depths=MODEL_CONFIGS["B1"]["depths"],
         classes=classes,
@@ -61,7 +83,16 @@ def MiTB1(input_shape, classes, include_top, backend, as_backbone=False, **kwarg
     )
 
 
-def MiTB2(input_shape, classes, include_top, backend, as_backbone=False, **kwargs):
+def MiTB2(
+    backend,
+    include_top,
+    classes=None,
+    input_shape=(None, None, 3),
+    input_tensor=None,
+    pooling=None,
+    as_backbone=False,
+    **kwargs,
+):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
@@ -69,6 +100,8 @@ def MiTB2(input_shape, classes, include_top, backend, as_backbone=False, **kwarg
         )
     return model_class(
         input_shape=input_shape,
+        input_tensor=input_tensor,
+        pooling=pooling,
         embed_dims=MODEL_CONFIGS["B2"]["embedding_dims"],
         depths=MODEL_CONFIGS["B2"]["depths"],
         classes=classes,
@@ -78,7 +111,16 @@ def MiTB2(input_shape, classes, include_top, backend, as_backbone=False, **kwarg
     )
 
 
-def MiTB3(input_shape, classes, include_top, backend, as_backbone=False, **kwargs):
+def MiTB3(
+    backend,
+    include_top,
+    classes=None,
+    input_shape=(None, None, 3),
+    input_tensor=None,
+    pooling=None,
+    as_backbone=False,
+    **kwargs,
+):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
@@ -86,6 +128,8 @@ def MiTB3(input_shape, classes, include_top, backend, as_backbone=False, **kwarg
         )
     return model_class(
         input_shape=input_shape,
+        input_tensor=input_tensor,
+        pooling=pooling,
         embed_dims=MODEL_CONFIGS["B3"]["embedding_dims"],
         depths=MODEL_CONFIGS["B3"]["depths"],
         classes=classes,
@@ -95,7 +139,16 @@ def MiTB3(input_shape, classes, include_top, backend, as_backbone=False, **kwarg
     )
 
 
-def MiTB4(input_shape, classes, include_top, backend, as_backbone=False, **kwargs):
+def MiTB4(
+    backend,
+    include_top,
+    classes=None,
+    input_shape=(None, None, 3),
+    input_tensor=None,
+    pooling=None,
+    as_backbone=False,
+    **kwargs,
+):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
@@ -103,6 +156,8 @@ def MiTB4(input_shape, classes, include_top, backend, as_backbone=False, **kwarg
         )
     return model_class(
         input_shape=input_shape,
+        input_tensor=input_tensor,
+        pooling=pooling,
         embed_dims=MODEL_CONFIGS["B4"]["embedding_dims"],
         depths=MODEL_CONFIGS["B4"]["depths"],
         classes=classes,
@@ -112,7 +167,16 @@ def MiTB4(input_shape, classes, include_top, backend, as_backbone=False, **kwarg
     )
 
 
-def MiTB5(input_shape, classes, include_top, backend, as_backbone=False, **kwargs):
+def MiTB5(
+    backend,
+    include_top,
+    classes=None,
+    input_shape=(None, None, 3),
+    input_tensor=None,
+    pooling=None,
+    as_backbone=False,
+    **kwargs,
+):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
@@ -120,6 +184,8 @@ def MiTB5(input_shape, classes, include_top, backend, as_backbone=False, **kwarg
         )
     return model_class(
         input_shape=input_shape,
+        input_tensor=input_tensor,
+        pooling=pooling,
         embed_dims=MODEL_CONFIGS["B5"]["embedding_dims"],
         depths=MODEL_CONFIGS["B5"]["depths"],
         classes=classes,

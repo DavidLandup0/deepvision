@@ -53,6 +53,12 @@ class __MiTTF(tf.keras.models.Model):
                 f"Received as_backbone={as_backbone} and include_top={include_top}. "
             )
 
+        if as_backbone and classes:
+            raise ValueError(
+                f"`as_backbone` must be `False` when `classes` are set."
+                f"Received as_backbone={as_backbone} and classes={classes}. "
+            )
+
         drop_path_rate = 0.1
         dpr = [x.numpy() for x in tf.linspace(0.0, drop_path_rate, sum(depths))]
         blockwise_num_heads = [1, 2, 5, 8]
