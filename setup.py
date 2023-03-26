@@ -2,8 +2,8 @@ from setuptools import find_packages, setup
 
 setup(
     name="deepvision-toolkit",
-    version="0.1.5",
-    description="PyTorch and TensorFlow/Keras image models with automatic weight conversions and equal API/implementations - Vision Transformer (ViT), ResNetV2, EfficientNetV2, NeRFs (planned...) DeepLabV3+, ConvNeXtV2, YOLO, etc.",
+    version="0.1.6",
+    description="PyTorch and TensorFlow/Keras image models with automatic weight conversions and equal API/implementations - Vision Transformer (ViT), ResNetV2, EfficientNetV2, NeRFs, MixTransformers, SegFormer, (planned DeepLabV3+, ConvNeXtV2, YOLO, etc.)",
     url="https://github.com/DavidLandup0/deepvision",
     author="David Landup",
     author_email="david.landup.0@gmail.com",
