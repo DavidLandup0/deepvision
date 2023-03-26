@@ -148,6 +148,7 @@ class ResNetV2PT(pl.LightningModule):
         stackwise_dilations=None,
         input_shape=(3, None, None),
         pooling=None,
+        as_backbone=None,
         classes=None,
         block_type=None,
         **kwargs,
@@ -161,6 +162,7 @@ class ResNetV2PT(pl.LightningModule):
         self.stackwise_filters = stackwise_filters
         self.stackwise_blocks = stackwise_blocks
         self.stackwise_strides = stackwise_strides
+        self.as_backbone = as_backbone
 
         if self.include_top and self.classes:
             self.acc = torchmetrics.Accuracy(task="multiclass", num_classes=classes)
@@ -175,6 +177,18 @@ class ResNetV2PT(pl.LightningModule):
             raise ValueError(
                 f"`pooling` must be `None` when `include_top=True`."
                 f"Received pooling={self.pooling} and include_top={self.include_top}. "
+            )
+
+        if self.include_top and self.as_backbone:
+            raise ValueError(
+                f"`as_backbone` must be `False` when `include_top=True`."
+                f"Received as_backbone={self.as_backbone} and include_top={self.include_top}. "
+            )
+
+        if self.as_backbone and self.classes:
+            raise ValueError(
+                f"`as_backbone` must be `False` when `classes` are set."
+                f"Received as_backbone={self.as_backbone} and classes={self.classes}. "
             )
 
         self.conv1 = nn.Conv2d(
@@ -225,12 +239,14 @@ class ResNetV2PT(pl.LightningModule):
     def forward(self, input_tensor):
         inputs = parse_model_inputs("pytorch", input_tensor.shape, input_tensor)
         x = inputs
+        outputs = []
 
         x = self.conv1(x)
         x = self.maxpool1(x)
 
         for stack in self.stacks:
             x = stack(x)
+            outputs.append(x)
 
         x = self.batchnorm(x)
         x = nn.ReLU()(x)
@@ -240,12 +256,13 @@ class ResNetV2PT(pl.LightningModule):
             x = nn.AvgPool2d(x.shape[2])(x).flatten(1)
             x = self.top_dense(x)
             x = nn.Softmax(dim=1)(x)
+        elif self.as_backbone:
+            return outputs
         else:
             if self.pooling == "avg":
                 x = nn.AvgPool2d(x.shape[2])(x).flatten(1)
             elif self.pooling == "max":
                 x = nn.MaxPool2d(x.shape[2])(x).flatten(1)
-
         return x
 
     def compile(self, loss, optimizer):

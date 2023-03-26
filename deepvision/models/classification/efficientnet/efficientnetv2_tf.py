@@ -54,6 +54,7 @@ class EfficientNetV2TF(tf.keras.Model):
         depth_divisor=8,
         min_depth=8,
         bn_momentum=0.9,
+        as_backbone=None,
         activation=tf.keras.activations.swish,
         blockwise_kernel_sizes=None,
         blockwise_num_repeat=None,
@@ -77,6 +78,18 @@ class EfficientNetV2TF(tf.keras.Model):
                 f"Received pooling={pooling} and include_top={include_top}. "
             )
 
+        if include_top and as_backbone:
+            raise ValueError(
+                f"`as_backbone` must be `False` when `include_top=True`."
+                f"Received as_backbone={as_backbone} and include_top={include_top}. "
+            )
+
+        if as_backbone and classes:
+            raise ValueError(
+                f"`as_backbone` must be `False` when `classes` are set."
+                f"Received as_backbone={as_backbone} and classes={classes}. "
+            )
+
         inputs = parse_model_inputs("tensorflow", input_shape, input_tensor)
         x = inputs
 
@@ -97,6 +110,7 @@ class EfficientNetV2TF(tf.keras.Model):
         x = layers.BatchNormalization(momentum=bn_momentum, name="stem_bn")(x)
         x = layers.Activation(activation)(x)
 
+        outputs = []
         block_num = sum(blockwise_num_repeat)
         for block_index in range(len(blockwise_num_repeat)):
             # Scale the input/output filters by the
@@ -140,6 +154,7 @@ class EfficientNetV2TF(tf.keras.Model):
                     name=f"block{block_index+1}_{repeat+1}",
                 )
                 x = conv_block(x)
+                outputs.append(x)
 
         top_filters = _make_divisible(
             filter_num=1280,
@@ -159,12 +174,15 @@ class EfficientNetV2TF(tf.keras.Model):
             momentum=bn_momentum,
         )(x)
         output = layers.Activation(activation)(x)
+        outputs.append(output)
 
         if include_top:
             output = layers.GlobalAveragePooling2D(name="avg_pool")(output)
             output = layers.Dense(classes, activation="softmax", name="predictions")(
                 output
             )
+        elif as_backbone:
+            output = outputs
         else:
             if pooling == "avg":
                 output = layers.GlobalAveragePooling2D(name="avg_pool")(output)
@@ -180,6 +198,7 @@ class EfficientNetV2TF(tf.keras.Model):
         self.width_coefficient = width_coefficient
         self.depth_coefficient = depth_coefficient
         self.pooling = pooling
+        self.as_backbone = as_backbone
         self.classes = classes
         self.dropout_rate = dropout_rate
         self.drop_connect_rate = drop_connect_rate
