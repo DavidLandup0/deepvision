@@ -53,6 +53,7 @@ def ResNet18V2(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    as_backbone=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -66,6 +67,7 @@ def ResNet18V2(
         input_tensor=input_tensor,
         block_type="basic",
         pooling=pooling,
+        as_backbone=as_backbone,
         classes=classes,
         stackwise_filters=MODEL_CONFIGS["ResNet18V2"]["stackwise_filters"],
         stackwise_blocks=MODEL_CONFIGS["ResNet18V2"]["stackwise_blocks"],
@@ -82,6 +84,7 @@ def ResNet34V2(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    as_backbone=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -95,6 +98,7 @@ def ResNet34V2(
         input_tensor=input_tensor,
         block_type="basic",
         pooling=pooling,
+        as_backbone=as_backbone,
         classes=classes,
         stackwise_filters=MODEL_CONFIGS["ResNet34V2"]["stackwise_filters"],
         stackwise_blocks=MODEL_CONFIGS["ResNet34V2"]["stackwise_blocks"],
@@ -111,6 +115,7 @@ def ResNet50V2(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    as_backbone=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -124,6 +129,7 @@ def ResNet50V2(
         input_tensor=input_tensor,
         block_type="bottleneck",
         pooling=pooling,
+        as_backbone=as_backbone,
         classes=classes,
         stackwise_filters=MODEL_CONFIGS["ResNet50V2"]["stackwise_filters"],
         stackwise_blocks=MODEL_CONFIGS["ResNet50V2"]["stackwise_blocks"],
@@ -140,6 +146,7 @@ def ResNet101V2(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    as_backbone=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -153,6 +160,7 @@ def ResNet101V2(
         input_tensor=input_tensor,
         block_type="bottleneck",
         pooling=pooling,
+        as_backbone=as_backbone,
         classes=classes,
         stackwise_filters=MODEL_CONFIGS["ResNet101V2"]["stackwise_filters"],
         stackwise_blocks=MODEL_CONFIGS["ResNet101V2"]["stackwise_blocks"],
@@ -169,6 +177,7 @@ def ResNet152V2(
     input_shape=(None, None, 3),
     input_tensor=None,
     pooling=None,
+    as_backbone=False,
     **kwargs,
 ):
     model_class = MODEL_BACKBONES.get(backend)
@@ -182,6 +191,7 @@ def ResNet152V2(
         input_tensor=input_tensor,
         block_type="bottleneck",
         pooling=pooling,
+        as_backbone=as_backbone,
         classes=classes,
         stackwise_filters=MODEL_CONFIGS["ResNet152V2"]["stackwise_filters"],
         stackwise_blocks=MODEL_CONFIGS["ResNet152V2"]["stackwise_blocks"],

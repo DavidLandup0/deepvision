@@ -137,6 +137,7 @@ class ResNetV2TF(tf.keras.Model):
         input_tensor=None,
         stackwise_dilations=None,
         pooling=None,
+        as_backbone=None,
         classes=None,
         block_type=None,
         **kwargs,
@@ -153,8 +154,21 @@ class ResNetV2TF(tf.keras.Model):
                 f"Received pooling={pooling} and include_top={include_top}. "
             )
 
+        if include_top and as_backbone:
+            raise ValueError(
+                f"`as_backbone` must be `False` when `include_top=True`."
+                f"Received as_backbone={as_backbone} and include_top={include_top}. "
+            )
+
+        if as_backbone and classes:
+            raise ValueError(
+                f"`as_backbone` must be `False` when `classes` are set."
+                f"Received as_backbone={as_backbone} and classes={classes}. "
+            )
+
         inputs = parse_model_inputs("tensorflow", input_shape, input_tensor)
         x = inputs
+        outputs = []
 
         x = layers.Conv2D(
             64,
@@ -178,15 +192,19 @@ class ResNetV2TF(tf.keras.Model):
                 block_type=block_type,
                 first_shortcut=block_type == "bottleneck" or stack_index > 0,
             )(x)
+            outputs.append(x)
 
         x = layers.BatchNormalization(epsilon=1.001e-5)(x)
         output = layers.Activation("relu")(x)
+        outputs.append(x)
 
         if include_top:
             output = layers.GlobalAveragePooling2D(name="avg_pool")(output)
             output = layers.Dense(classes, activation="softmax", name="predictions")(
                 output
             )
+        elif as_backbone:
+            output = outputs
         else:
             if pooling == "avg":
                 output = layers.GlobalAveragePooling2D(name="avg_pool")(output)

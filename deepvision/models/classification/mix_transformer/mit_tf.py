@@ -139,16 +139,16 @@ class __MiTTF(tf.keras.models.Model):
         self.transformer_blocks = []
 
     def get_config(self):
-            config = super().get_config()
-            config.update(
-                {
-                    "channels": self.channels,
-                    "num_stages": self.num_stages,
-                    "output_channels": self.output_channels,
-                    "classes": self.classes,
-                    "include_top": self.include_top,
-                    "as_backbone": self.as_backbone,
-                    "pooling": self.pooling,
-                }
-            )
-            return config
+        config = super().get_config()
+        config.update(
+            {
+                "channels": self.channels,
+                "num_stages": self.num_stages,
+                "output_channels": self.output_channels,
+                "classes": self.classes,
+                "include_top": self.include_top,
+                "as_backbone": self.as_backbone,
+                "pooling": self.pooling,
+            }
+        )
+        return config
