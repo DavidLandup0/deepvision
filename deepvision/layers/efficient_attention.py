@@ -14,6 +14,7 @@
 
 import tensorflow as tf
 from torch import nn
+from deepvision.utils.utils import same_padding
 
 """
 Based on: https://github.com/sithu31296/semantic-segmentation/blob/main/semseg/models/backbones/mit.py
@@ -31,7 +32,13 @@ class __EfficientAttentionPT(nn.Module):
         self.proj = nn.Linear(project_dim, project_dim)
 
         if sr_ratio > 1:
-            self.sr = nn.Conv2d(project_dim, project_dim, sr_ratio, sr_ratio)
+            self.sr = nn.Conv2d(
+                in_channels=project_dim,
+                out_channels=project_dim,
+                kernel_size=sr_ratio,
+                stride=sr_ratio,
+                padding=same_padding(sr_ratio, sr_ratio),
+            )
             self.norm = nn.LayerNorm(project_dim)
 
     def forward(self, x, H, W):
@@ -73,7 +80,12 @@ class __EfficientAttentionTF(tf.keras.layers.Layer):
         self.proj = tf.keras.layers.Dense(project_dim)
 
         if sr_ratio > 1:
-            self.sr = tf.keras.layers.Conv2D(project_dim, sr_ratio, strides=sr_ratio)
+            self.sr = tf.keras.layers.Conv2D(
+                filters=project_dim,
+                kernel_size=sr_ratio,
+                strides=sr_ratio,
+                padding="same",
+            )
             self.norm = tf.keras.layers.LayerNormalization()
 
     def call(self, x, H, W):
@@ -94,7 +106,7 @@ class __EfficientAttentionTF(tf.keras.layers.Layer):
 
         if self.sr_ratio > 1:
             x = tf.reshape(
-                tf.transpose(x, [0, 2, 1]), shape=[input_shape[0], input_shape[2], H, W]
+                tf.transpose(x, [0, 2, 1]), shape=[input_shape[0], H, W, input_shape[2]]
             )
             x = self.sr(x)
             x = tf.reshape(x, [input_shape[0], input_shape[2], -1])

@@ -53,13 +53,14 @@ class __MixFFNTF(tf.keras.layers.Layer):
         )
         self.fc2 = tf.keras.layers.Dense(channels)
 
-    def forward(self, x, H, W):
+    def call(self, x, H, W):
         x = self.fc1(x)
-        B, _, C = x.shape
-        x = x.transpose(1, 2).view(B, C, H, W)
+        # B, DIM, C
+        input_shape = tf.shape(x)
+        x = tf.reshape(x, (input_shape[0], H, W, input_shape[-1]))
         x = self.dwconv(x)
-        x = x.flatten(2).transpose(1, 2)
-        x = F.gelu(x)
+        x = tf.reshape(x, (input_shape[0], -1, input_shape[-1]))
+        x = tf.keras.activations.gelu(x)
         x = self.fc2(x)
         return x
 
