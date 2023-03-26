@@ -59,7 +59,7 @@ class __MixFFNTF(tf.keras.layers.Layer):
         input_shape = tf.shape(x)
         x = tf.reshape(x, (input_shape[0], H, W, input_shape[-1]))
         x = self.dwconv(x)
-        x = tf.keras.layers.Flatten()(x)
+        x = tf.reshape(x, (input_shape[0], -1, input_shape[-1]))
         x = tf.keras.activations.gelu(x)
         x = self.fc2(x)
         return x
