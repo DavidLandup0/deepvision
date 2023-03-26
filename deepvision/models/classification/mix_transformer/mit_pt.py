@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import torch
+from torch import nn
+import torchmetrics
 
 from deepvision.layers import (
     HierarchicalTransformerEncoder,
@@ -20,17 +22,50 @@ from deepvision.layers import (
 )
 
 
-class __MiTPT(torch.nn.Module):
-    def __init__(self, input_shape, embed_dims, depths, name):
+class __MiTPT(nn.Module):
+    def __init__(
+        self,
+        input_shape=None,
+        classes=None,
+        embed_dims=None,
+        depths=None,
+        as_backbone=None,
+        pooling=None,
+        name=None,
+    ):
         super().__init__()
         drop_path_rate = 0.1
         self.channels = embed_dims
         self.num_stages = 4
         self.output_channels = embed_dims
+        self.classes = classes
+        self.as_backbone = as_backbone
+        self.pooling = pooling
 
-        self.patch_embedding_layers = torch.nn.ModuleList()
-        self.transformer_blocks = torch.nn.ModuleList()
-        self.layer_norms = torch.nn.ModuleList()
+        self.patch_embedding_layers = nn.ModuleList()
+        self.transformer_blocks = nn.ModuleList()
+        self.layer_norms = nn.ModuleList()
+
+        if self.include_top and self.classes:
+            self.acc = torchmetrics.Accuracy(task="multiclass", num_classes=classes)
+
+        if self.include_top and not self.classes:
+            raise ValueError(
+                "If `include_top` is True, you should specify `classes`. "
+                f"Received: classes={self.classes}"
+            )
+
+        if self.include_top and self.pooling:
+            raise ValueError(
+                f"`pooling` must be `None` when `include_top=True`."
+                f"Received pooling={self.pooling} and include_top={self.include_top}. "
+            )
+
+        if self.include_top and self.as_backbone:
+            raise ValueError(
+                f"`as_backbone` must be `False` when `include_top=True`."
+                f"Received as_backbone={self.as_backbone} and include_top={self.include_top}. "
+            )
 
         blockwise_num_heads = [1, 2, 5, 8]
         blockwise_sr_ratios = [8, 4, 2, 1]
@@ -48,7 +83,7 @@ class __MiTPT(torch.nn.Module):
             )
             self.patch_embedding_layers.append(patch_embed_layer)
 
-            transformer_block = torch.nn.ModuleList(
+            transformer_block = nn.ModuleList(
                 [
                     HierarchicalTransformerEncoder(
                         project_dim=embed_dims[i],
@@ -63,15 +98,27 @@ class __MiTPT(torch.nn.Module):
             self.transformer_blocks.append(transformer_block)
             cur += depths[i]
 
-            self.layer_norms.append(torch.nn.LayerNorm(embed_dims[i]))
+            self.layer_norms.append(nn.LayerNorm(embed_dims[i]))
 
     def forward(self, x):
         B = x.shape[0]
-        out = []
+        outputs = []
         for i in range(self.num_stages):
             x, H, W = self.patch_embedding_layers[i](x)
             for blk in self.transformer_blocks[i]:
                 x = blk(x, H, W)
             x = self.layer_norms[i](x).reshape(B, H, W, -1).permute(0, 3, 1, 2)
-            out.append(x)
-        return out
+            outputs.append(x)
+
+        if self.include_top:
+            x = nn.AvgPool2d(x.shape[2])(x).flatten(1)
+            x = self.linear(x)
+            x = nn.Softmax(dim=1)(x)
+            return x
+        elif self.as_backbone:
+            return outputs
+        else:
+            if self.pooling == "avg":
+                return nn.AvgPool2d(x.shape[2])(x).flatten(1)
+            elif self.pooling == "max":
+                return nn.MaxPool2d(x.shape[2])(x).flatten(1)

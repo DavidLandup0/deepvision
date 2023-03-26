@@ -7,6 +7,14 @@ from deepvision.models.classification.efficientnet.efficientnetv2 import (
     EfficientNetV2M,
     EfficientNetV2S,
 )
+from deepvision.models.classification.mix_transformer.mit import (
+    MiTB0,
+    MiTB1,
+    MiTB2,
+    MiTB3,
+    MiTB4,
+    MiTB5,
+)
 from deepvision.models.classification.resnet.resnetv2 import (
     ResNet18V2,
     ResNet34V2,
@@ -25,14 +33,6 @@ from deepvision.models.classification.vision_transformer.vit import (
     ViTS32,
     ViTTiny16,
     ViTTiny32,
-)
-from deepvision.models.segmentation.backbones.mit.mit import (
-    MiTB0,
-    MiTB1,
-    MiTB2,
-    MiTB3,
-    MiTB4,
-    MiTB5,
 )
 from deepvision.models.segmentation.segformer.segformer import (
     SegFormerB0,

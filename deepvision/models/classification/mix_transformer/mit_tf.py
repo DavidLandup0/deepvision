@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import tensorflow as tf
+from tensorflow.keras import layers
 
 from deepvision.layers import (
     HierarchicalTransformerEncoder,
@@ -21,16 +22,48 @@ from deepvision.layers import (
 
 
 class __MiTTF(tf.keras.models.Model):
-    def __init__(self, input_shape, embed_dims, depths, **kwargs):
+    def __init__(
+        self,
+        input_shape=None,
+        classes=None,
+        include_top=None,
+        embed_dims=None,
+        depths=None,
+        as_backbone=None,
+        pooling=None,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         drop_path_rate = 0.1
         self.channels = embed_dims
         self.num_stages = 4
         self.output_channels = embed_dims
+        self.classes = classes
+        self.include_top = include_top
+        self.as_backbone = as_backbone
+        self.pooling = pooling
 
         self.patch_embedding_layers = []
         self.transformer_blocks = []
         self.layer_norms = []
+
+        if self.include_top and not self.classes:
+            raise ValueError(
+                "If `include_top` is True, you should specify `classes`. "
+                f"Received: classes={self.classes}"
+            )
+
+        if self.include_top and self.pooling:
+            raise ValueError(
+                f"`pooling` must be `None` when `include_top=True`."
+                f"Received pooling={self.pooling} and include_top={self.include_top}. "
+            )
+
+        if self.include_top and self.as_backbone:
+            raise ValueError(
+                f"`as_backbone` must be `False` when `include_top=True`."
+                f"Received as_backbone={self.as_backbone} and include_top={self.include_top}. "
+            )
 
         dpr = [x.numpy() for x in tf.linspace(0.0, drop_path_rate, sum(depths))]
 
@@ -62,11 +95,14 @@ class __MiTTF(tf.keras.models.Model):
             self.transformer_blocks.append(transformer_block)
             cur += depths[i]
 
-            self.layer_norms.append(tf.keras.layers.LayerNormalization())
+            self.layer_norms.append(layers.LayerNormalization())
+            self.linear = layers.Dense(
+                classes, activation="softmax", name="predictions"
+            )
 
     def call(self, x):
         B = tf.shape(x)[0]
-        out = []
+        outputs = []
         for i in range(self.num_stages):
             x, H, W = self.patch_embedding_layers[i](x)
             for blk in self.transformer_blocks[i]:
@@ -74,5 +110,17 @@ class __MiTTF(tf.keras.models.Model):
             x = self.layer_norms[i](x)
             C = tf.shape(x)[-1]
             x = tf.reshape(x, [B, H, W, C])
-            out.append(x)
-        return out
+            outputs.append(x)
+
+        if self.include_top:
+            output = layers.GlobalAveragePooling2D(name="avg_pool")(x)
+            return layers.Dense(self.classes, activation="softmax", name="predictions")(
+                output
+            )
+        elif self.as_backbone:
+            return outputs
+        else:
+            if self.pooling == "avg":
+                return layers.GlobalAveragePooling2D(name="avg_pool")(x)
+            elif self.pooling == "max":
+                return layers.GlobalMaxPooling2D(name="max_pool")(x)

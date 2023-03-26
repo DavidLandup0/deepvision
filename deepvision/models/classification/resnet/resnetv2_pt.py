@@ -218,11 +218,7 @@ class ResNetV2PT(pl.LightningModule):
             else self.stackwise_filters[-1]
         )
         self.batchnorm = nn.BatchNorm2d(final_dim)
-        self.pool = (
-            nn.AvgPool2d(7)
-            if self.pooling == "avg" or self.pooling is None
-            else nn.MaxPool2d(7)
-        )
+
         if self.include_top:
             self.top_dense = nn.Linear(final_dim, classes)
 
@@ -241,7 +237,7 @@ class ResNetV2PT(pl.LightningModule):
 
         if self.include_top:
             # [B, C, F, F] -> [B, avg C]
-            x = self.pool(x).flatten(1)
+            x = nn.AvgPool2d(x.shape[2])(x).flatten(1)
             x = self.top_dense(x)
             x = nn.Softmax(dim=1)(x)
         else:
