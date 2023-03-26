@@ -22,7 +22,13 @@ from deepvision.layers.stochasticdepth import StochasticDepth
 
 class __HierarchicalTransformerEncoderPT(nn.Module):
     def __init__(
-        self, project_dim, num_heads, sr_ratio=1, drop_prob=0.0, layer_norm_epsilon=1e-6
+        self,
+        project_dim,
+        num_heads,
+        sr_ratio=1,
+        drop_prob=0.0,
+        layer_norm_epsilon=1e-6,
+        name=None,
     ):
         super().__init__()
         self.norm1 = nn.LayerNorm(project_dim)
@@ -41,9 +47,15 @@ class __HierarchicalTransformerEncoderPT(nn.Module):
 
 class __HierarchicalTransformerEncoderTF(tf.keras.layers.Layer):
     def __init__(
-        self, project_dim, num_heads, sr_ratio=1, drop_prob=0.0, layer_norm_epsilon=1e-6
+        self,
+        project_dim,
+        num_heads,
+        sr_ratio=1,
+        drop_prob=0.0,
+        layer_norm_epsilon=1e-6,
+        **kwargs,
     ):
-        super().__init__()
+        super().__init__(**kwargs)
         self.norm1 = tf.keras.layers.LayerNormalization(epsilon=layer_norm_epsilon)
         self.attn = EfficientAttention(
             project_dim, num_heads, sr_ratio, backend="tensorflow"
@@ -75,6 +87,7 @@ def HierarchicalTransformerEncoder(
     drop_prob=0.0,
     layer_norm_epsilon=1e-6,
     backend=None,
+    name=None,
 ):
     """
     TransformerEncoder variant, which uses `deepvision.layers.EfficientAttention` in lieu of `torch.nn.MultiheadAttention` or `tf.keras.layers.MultiHeadAttention`.
@@ -119,6 +132,7 @@ def HierarchicalTransformerEncoder(
         sr_ratio=sr_ratio,
         drop_prob=drop_prob,
         layer_norm_epsilon=layer_norm_epsilon,
+        name=name,
     )
 
     return layer

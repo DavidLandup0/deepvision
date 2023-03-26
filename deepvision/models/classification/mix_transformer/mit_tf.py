@@ -77,6 +77,7 @@ class __MiTTF(tf.keras.models.Model):
                 patch_size=7 if i == 0 else 3,
                 stride=4 if i == 0 else 2,
                 backend="tensorflow",
+                name=f"patch_and_embed_{i}",
             )
             patch_embedding_layers.append(patch_embed_layer)
 
@@ -87,6 +88,7 @@ class __MiTTF(tf.keras.models.Model):
                     sr_ratio=blockwise_sr_ratios[i],
                     drop_prob=dpr[cur + k],
                     backend="tensorflow",
+                    name=f"hierarchical_encoder_{i}_{k}",
                 )
                 for k in range(depths[i])
             ]
