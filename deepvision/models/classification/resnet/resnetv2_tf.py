@@ -223,3 +223,4 @@ class ResNetV2TF(tf.keras.Model):
         self.stackwise_filters = stackwise_filters
         self.stackwise_blocks = stackwise_blocks
         self.stackwise_strides = stackwise_strides
+        self.as_backbone = as_backbone

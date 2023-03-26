@@ -198,6 +198,7 @@ class EfficientNetV2TF(tf.keras.Model):
         self.width_coefficient = width_coefficient
         self.depth_coefficient = depth_coefficient
         self.pooling = pooling
+        self.as_backbone = as_backbone
         self.classes = classes
         self.dropout_rate = dropout_rate
         self.drop_connect_rate = drop_connect_rate

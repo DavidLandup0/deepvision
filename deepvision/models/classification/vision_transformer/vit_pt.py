@@ -27,6 +27,7 @@ class ViTPT(pl.LightningModule):
         input_shape=(None, None, 3),
         input_tensor=None,
         pooling=None,
+        as_backbone=None,
         classes=None,
         patch_size=None,
         transformer_layer_num=None,
@@ -41,18 +42,6 @@ class ViTPT(pl.LightningModule):
     ):
         super().__init__()
 
-        if include_top and not classes:
-            raise ValueError(
-                "If `include_top` is True, you should specify `classes`. "
-                f"Received: classes={classes}"
-            )
-
-        if include_top and pooling:
-            raise ValueError(
-                f"`pooling` must be `None` when `include_top=True`."
-                f"Received pooling={pooling} and include_top={include_top}. "
-            )
-
         self.include_top = include_top
         self.pooling = pooling
         self.classes = classes
@@ -64,6 +53,31 @@ class ViTPT(pl.LightningModule):
         self.attention_dropout = attention_dropout
         self.activation = activation
         self.patch_size = patch_size
+        self.as_backbone = as_backbone
+
+        if self.include_top and not self.classes:
+            raise ValueError(
+                "If `include_top` is True, you should specify `classes`. "
+                f"Received: classes={self.classes}"
+            )
+
+        if self.include_top and self.pooling:
+            raise ValueError(
+                f"`pooling` must be `None` when `include_top=True`."
+                f"Received pooling={self.pooling} and include_top={self.include_top}. "
+            )
+
+        if self.include_top and self.as_backbone:
+            raise ValueError(
+                f"`as_backbone` must be `False` when `include_top=True`."
+                f"Received as_backbone={self.as_backbone} and include_top={self.include_top}. "
+            )
+
+        if self.as_backbone and self.classes:
+            raise ValueError(
+                f"`as_backbone` must be `False` when `classes` are set."
+                f"Received as_backbone={self.as_backbone} and classes={self.classes}. "
+            )
 
         # Enforce (3, 224, 224) for  default weights and then
         # interpolate for higher resolutions
@@ -97,6 +111,7 @@ class ViTPT(pl.LightningModule):
     def forward(self, input_tensor):
         inputs = parse_model_inputs("pytorch", input_tensor.shape, input_tensor)
         x = inputs
+        outputs = []
 
         if x.shape != (3, 224, 224):
             encoded_patches = self.patching_and_embedding(
@@ -112,6 +127,7 @@ class ViTPT(pl.LightningModule):
 
         for transformer_layer in self.transformer_layers:
             x = transformer_layer(x)
+            outputs.append(x)
 
         layer_norm = self.layer_norm(x)
 
@@ -119,6 +135,8 @@ class ViTPT(pl.LightningModule):
             output = layer_norm[:, 0]
             output = self.linear(output)
             output = nn.Softmax(dim=1)(output)
+        elif self.as_backbone:
+            return outputs
         else:
             if self.pooling == "avg":
                 output = layer_norm.mean(dim=1)

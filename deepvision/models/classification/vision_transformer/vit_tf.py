@@ -26,6 +26,7 @@ class ViTTF(tf.keras.Model):
         input_shape=(None, None, 3),
         input_tensor=None,
         pooling=None,
+        as_backbone=None,
         classes=None,
         patch_size=None,
         transformer_layer_num=None,
@@ -50,8 +51,21 @@ class ViTTF(tf.keras.Model):
                 f"Received pooling={pooling} and include_top={include_top}. "
             )
 
+        if include_top and as_backbone:
+            raise ValueError(
+                f"`as_backbone` must be `False` when `include_top=True`."
+                f"Received as_backbone={as_backbone} and include_top={include_top}. "
+            )
+
+        if as_backbone and classes:
+            raise ValueError(
+                f"`as_backbone` must be `False` when `classes` are set."
+                f"Received as_backbone={as_backbone} and classes={classes}. "
+            )
+
         inputs = parse_model_inputs("tensorflow", input_shape, input_tensor)
         x = inputs
+        outputs = []
 
         encoded_patches = PatchingAndEmbedding(
             project_dim=project_dim,
@@ -86,6 +100,7 @@ class ViTTF(tf.keras.Model):
                 backend="tensorflow",
                 name=f"transformer_encoder_{i}",
             )(encoded_patches)
+            outputs.append(encoded_patches)
 
         output = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
 
@@ -94,6 +109,8 @@ class ViTTF(tf.keras.Model):
             output = layers.Dense(classes, activation="softmax", name="predictions")(
                 output
             )
+        elif as_backbone:
+            output = outputs
         else:
             if pooling == "token":
                 output = layers.Lambda(lambda rep: rep[:, 0], name="token_pool")(output)
@@ -121,3 +138,4 @@ class ViTTF(tf.keras.Model):
         self.mlp_dropout = mlp_dropout
         self.attention_dropout = attention_dropout
         self.activation = activation
+        self.as_backbone = as_backbone
