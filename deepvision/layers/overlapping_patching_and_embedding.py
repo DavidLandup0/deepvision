@@ -50,10 +50,11 @@ class __OverlappingPatchingAndEmbeddingTF(tf.keras.layers.Layer):
 
     def call(self, x):
         x = self.proj(x)
-        _, H, W, C = x.shape.as_list()
-        x = tf.reshape(x, [-1, H * W, C])
+        # B, H, W, C
+        shape = tf.shape(x)
+        x = tf.reshape(x, [-1, shape[1] * shape[2], shape[3]])
         x = self.norm(x)
-        return x, H, W
+        return x, shape[1], shape[2]
 
 
 LAYER_BACKBONES = {

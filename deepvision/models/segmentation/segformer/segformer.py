@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from deepvision.models.segmentation.backbones.mit import mit
+from deepvision.models.classification.mix_transformer import mit
 from deepvision.models.segmentation.segformer.segformer_pt import __SegFormerPT
 from deepvision.models.segmentation.segformer.segformer_tf import __SegFormerTF
 
@@ -33,7 +33,11 @@ def SegFormerB0(
         )
 
     backbone = mit.MiTB0(
-        input_shape=input_shape, backend=backend, name="mit_b0_backbone"
+        input_shape=input_shape,
+        include_top=False,
+        backend=backend,
+        name="mit_b0_backbone",
+        as_backbone=True,
     )
     return model_class(
         embed_dim=256,
@@ -59,7 +63,11 @@ def SegFormerB1(
         )
 
     backbone = mit.MiTB1(
-        input_shape=input_shape, backend=backend, name="mit_b1_backbone"
+        input_shape=input_shape,
+        include_top=False,
+        backend=backend,
+        name="mit_b1_backbone",
+        as_backbone=True,
     )
     return model_class(
         embed_dim=256,
@@ -85,7 +93,11 @@ def SegFormerB2(
         )
 
     backbone = mit.MiTB2(
-        input_shape=input_shape, backend=backend, name="mit_b2_backbone"
+        input_shape=input_shape,
+        include_top=False,
+        backend=backend,
+        name="mit_b2_backbone",
+        as_backbone=True,
     )
     return model_class(
         embed_dim=768,
@@ -111,7 +123,11 @@ def SegFormerB3(
         )
 
     backbone = mit.MiTB3(
-        input_shape=input_shape, backend=backend, name="mit_b3_backbone"
+        input_shape=input_shape,
+        include_top=False,
+        backend=backend,
+        name="mit_b3_backbone",
+        as_backbone=True,
     )
     return model_class(
         embed_dim=768,
@@ -137,7 +153,11 @@ def SegFormerB4(
         )
 
     backbone = mit.MiTB4(
-        input_shape=input_shape, backend=backend, name="mit_b4_backbone"
+        input_shape=input_shape,
+        include_top=False,
+        backend=backend,
+        name="mit_b4_backbone",
+        as_backbone=True,
     )
     return model_class(
         embed_dim=768,
@@ -163,7 +183,11 @@ def SegFormerB5(
         )
 
     backbone = mit.MiTB5(
-        input_shape=input_shape, backend=backend, name="mit_b5_backbone"
+        input_shape=input_shape,
+        include_top=False,
+        backend=backend,
+        name="mit_b5_backbone",
+        as_backbone=True,
     )
     return model_class(
         embed_dim=768,
