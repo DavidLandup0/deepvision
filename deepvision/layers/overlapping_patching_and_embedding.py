@@ -18,7 +18,14 @@ from torch import nn
 
 
 class __OverlappingPatchingAndEmbeddingPT(nn.Module):
-    def __init__(self, in_channels=3, out_channels=32, patch_size=7, stride=4):
+    def __init__(
+        self,
+        in_channels=3,
+        out_channels=32,
+        patch_size=7,
+        stride=4,
+        name=None,
+    ):
         super().__init__()
         self.proj = nn.Conv2d(
             in_channels=in_channels,
@@ -38,8 +45,10 @@ class __OverlappingPatchingAndEmbeddingPT(nn.Module):
 
 
 class __OverlappingPatchingAndEmbeddingTF(tf.keras.layers.Layer):
-    def __init__(self, in_channels=3, out_channels=32, patch_size=7, stride=4):
-        super().__init__()
+    def __init__(
+        self, in_channels=3, out_channels=32, patch_size=7, stride=4, **kwargs
+    ):
+        super().__init__(**kwargs)
         self.proj = tf.keras.layers.Conv2D(
             filters=out_channels,
             kernel_size=patch_size,
@@ -64,7 +73,12 @@ LAYER_BACKBONES = {
 
 
 def OverlappingPatchingAndEmbedding(
-    in_channels=3, out_channels=32, patch_size=7, stride=4, backend=None
+    in_channels=3,
+    out_channels=32,
+    patch_size=7,
+    stride=4,
+    backend=None,
+    name=None,
 ):
     """
     ViT-inspired PatchingAndEmbedding, modified to merge overlapping patches for the SegFormer architecture.
@@ -113,6 +127,7 @@ def OverlappingPatchingAndEmbedding(
         out_channels=out_channels,
         patch_size=patch_size,
         stride=stride,
+        name=name,
     )
 
     return layer
