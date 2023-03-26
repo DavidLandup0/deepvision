@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import torch
-from torch import nn
 import torchmetrics
+from torch import nn
 
 from deepvision.layers import (
     HierarchicalTransformerEncoder,
