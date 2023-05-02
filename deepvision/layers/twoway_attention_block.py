@@ -16,7 +16,6 @@
 
 from typing import Tuple, Type
 
-import torch
 from torch import Tensor, nn
 
 from deepvision.layers.downscaling_attention import DownscalingAttention

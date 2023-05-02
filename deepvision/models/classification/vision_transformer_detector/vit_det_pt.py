@@ -69,20 +69,13 @@ class ViTDetBackbone(nn.Module):
         super().__init__()
         self.img_size = img_size
 
-        """ ADD OPTION TO TURN OFF POSITIONAL EMBEDDINGS
         self.patch_embed = PatchingAndEmbedding(
             patch_size=patch_size,
             input_shape=(in_chans, img_size, img_size),
             project_dim=embed_dim,
-            backend='pytorch'
-        )
-        """
-
-        self.patch_embed = PatchEmbed(
-            kernel_size=(patch_size, patch_size),
-            stride=(patch_size, patch_size),
-            in_chans=in_chans,
-            embed_dim=embed_dim,
+            embedding=False,
+            padding="valid",
+            backend="pytorch",
         )
 
         self.pos_embed: Optional[nn.Parameter] = None
