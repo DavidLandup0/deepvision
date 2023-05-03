@@ -23,7 +23,7 @@ from torch import Tensor, nn
 from deepvision.layers import DownscalingAttention, TwoWayAttentionBlock
 
 
-class TwoWayTransformer(nn.Module):
+class TwoWayTransformerEncoder(nn.Module):
     def __init__(
         self,
         depth: int,

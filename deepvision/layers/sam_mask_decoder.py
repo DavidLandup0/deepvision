@@ -21,7 +21,7 @@ from torch import nn
 from torch.nn import functional as F
 
 from deepvision.layers.layernorm2d import LayerNorm2d
-from deepvision.layers.mlp import MLP_PT
+from deepvision.layers.mlp import MLP
 
 
 class MaskDecoder(nn.Module):
@@ -74,23 +74,25 @@ class MaskDecoder(nn.Module):
         )
         self.output_hypernetworks_mlps = nn.ModuleList(
             [
-                MLP_PT(
+                MLP(
                     input_dim=transformer_dim,
                     embed_dim=transformer_dim,
                     output_dim=transformer_dim // 8,
                     activation=torch.nn.ReLU,
                     num_layers=3,
+                    backend="pytorch",
                 )
-                for i in range(self.num_mask_tokens)
+                for _ in range(self.num_mask_tokens)
             ]
         )
 
-        self.iou_prediction_head = MLP_PT(
+        self.iou_prediction_head = MLP(
             input_dim=transformer_dim,
             embed_dim=iou_head_hidden_dim,
             output_dim=self.num_mask_tokens,
             activation=torch.nn.ReLU,
             num_layers=iou_head_depth,
+            backend="pytorch",
         )
 
     def forward(
