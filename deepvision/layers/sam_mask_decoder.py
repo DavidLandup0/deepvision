@@ -21,6 +21,7 @@ from torch import nn
 from torch.nn import functional as F
 
 from deepvision.layers.layernorm2d import LayerNorm2d
+from deepvision.layers.mlp import MLP_PT
 
 
 class MaskDecoder(nn.Module):
@@ -73,13 +74,23 @@ class MaskDecoder(nn.Module):
         )
         self.output_hypernetworks_mlps = nn.ModuleList(
             [
-                MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
+                MLP_PT(
+                    input_dim=transformer_dim,
+                    embed_dim=transformer_dim,
+                    output_dim=transformer_dim // 8,
+                    activation=torch.nn.ReLU,
+                    num_layers=3,
+                )
                 for i in range(self.num_mask_tokens)
             ]
         )
 
-        self.iou_prediction_head = MLP(
-            transformer_dim, iou_head_hidden_dim, self.num_mask_tokens, iou_head_depth
+        self.iou_prediction_head = MLP_PT(
+            input_dim=transformer_dim,
+            embed_dim=iou_head_hidden_dim,
+            output_dim=self.num_mask_tokens,
+            activation=torch.nn.ReLU,
+            num_layers=iou_head_depth,
         )
 
     def forward(
@@ -167,30 +178,3 @@ class MaskDecoder(nn.Module):
         iou_pred = self.iou_prediction_head(iou_token_out)
 
         return masks, iou_pred
-
-
-# Lightly adapted from
-# https://github.com/facebookresearch/MaskFormer/blob/main/mask_former/modeling/transformer/transformer_predictor.py # noqa
-class MLP(nn.Module):
-    def __init__(
-        self,
-        input_dim: int,
-        hidden_dim: int,
-        output_dim: int,
-        num_layers: int,
-        sigmoid_output: bool = False,
-    ) -> None:
-        super().__init__()
-        self.num_layers = num_layers
-        h = [hidden_dim] * (num_layers - 1)
-        self.layers = nn.ModuleList(
-            nn.Linear(n, k) for n, k in zip([input_dim] + h, h + [output_dim])
-        )
-        self.sigmoid_output = sigmoid_output
-
-    def forward(self, x):
-        for i, layer in enumerate(self.layers):
-            x = F.relu(layer(x)) if i < self.num_layers - 1 else layer(x)
-        if self.sigmoid_output:
-            x = F.sigmoid(x)
-        return x

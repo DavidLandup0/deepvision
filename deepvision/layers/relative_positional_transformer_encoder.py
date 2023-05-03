@@ -20,7 +20,7 @@ import torch
 import torch.nn as nn
 
 from deepvision.layers.relative_positional_attention import RelativePositionalAttention
-from deepvision.layers.sam_mlp import MLPBlock
+from deepvision.layers.mlp import MLP_PT
 from deepvision.layers.window_partitioning import WindowPartitioning
 from deepvision.layers.window_unpartitioning import WindowUnpartitioning
 
@@ -68,8 +68,12 @@ class RelativePositionalTransformerEncoder(nn.Module):
         )
 
         self.norm2 = norm_layer(dim)
-        self.mlp = MLPBlock(
-            embedding_dim=dim, mlp_dim=int(dim * mlp_ratio), act=act_layer
+
+        self.mlp = MLP_PT(
+            output_dim=dim,
+            embed_dim=int(dim * mlp_ratio),
+            activation=act_layer,
+            num_layers=2,
         )
 
         self.window_size = window_size

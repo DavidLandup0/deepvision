@@ -17,7 +17,6 @@ from deepvision.layers.relative_positional_attention import RelativePositionalAt
 from deepvision.layers.relative_positional_transformer_encoder import (
     RelativePositionalTransformerEncoder,
 )
-from deepvision.layers.sam_mlp import MLPBlock
 from deepvision.layers.stochasticdepth import StochasticDepth
 from deepvision.layers.transformer_encoder import TransformerEncoder
 from deepvision.layers.twoway_attention_block import TwoWayAttentionBlock

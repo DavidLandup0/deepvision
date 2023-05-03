@@ -19,7 +19,7 @@ from typing import Tuple, Type
 from torch import Tensor, nn
 
 from deepvision.layers.downscaling_attention import DownscalingAttention
-from deepvision.layers.sam_mlp import MLPBlock
+from deepvision.layers.mlp import MLP_PT
 
 
 class TwoWayAttentionBlock(nn.Module):
@@ -54,7 +54,13 @@ class TwoWayAttentionBlock(nn.Module):
         )
         self.norm2 = nn.LayerNorm(embedding_dim)
 
-        self.mlp = MLPBlock(embedding_dim, mlp_dim, activation)
+        self.mlp = MLP_PT(
+            input_dim=embedding_dim,
+            embed_dim=mlp_dim,
+            output_dim=embedding_dim,
+            activation=activation,
+            num_layers=2,
+        )
         self.norm3 = nn.LayerNorm(embedding_dim)
 
         self.norm4 = nn.LayerNorm(embedding_dim)
