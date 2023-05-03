@@ -18,8 +18,10 @@ import pytorch_lightning as pl
 import torchmetrics
 from torch import nn
 
-from deepvision.layers import FusedMBConv, MBConv
-from deepvision.utils.utils import parse_model_inputs, same_padding
+from deepvision.layers import FusedMBConv
+from deepvision.layers import MBConv
+from deepvision.utils.utils import parse_model_inputs
+from deepvision.utils.utils import same_padding
 
 
 def _make_divisible(filter_num, width_coefficient, depth_divisor, min_depth):

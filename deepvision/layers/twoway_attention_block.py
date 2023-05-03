@@ -14,9 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple, Type
+from typing import Tuple
+from typing import Type
 
-from torch import Tensor, nn
+from torch import Tensor
+from torch import nn
 
 from deepvision.layers.downscaling_attention import DownscalingAttention
 from deepvision.layers.mlp import MLP

@@ -1,5 +1,5 @@
-from torch import nn
 import tensorflow as tf
+from torch import nn
 
 
 class __MLP_PT(nn.Module):
@@ -38,15 +38,24 @@ class __MLP_TF(tf.keras.layers.Layer):
         embed_dim: int,
         output_dim: int,
         num_layers: int,
-        input_dim: int = None,
-        activation=None,
+        input_dim: int = None,  # Ignored - only present for API consistency
+        activation=tf.keras.activations.gelu,
         output_act=False,
     ) -> None:
         super().__init__()
-        pass
+        h = [embed_dim] * (num_layers - 1)
+        self.num_layers = num_layers
+
+        self.layers = [tf.keras.layers.Dense(k) for k in zip(h + [output_dim])]
+        self.activation = activation
+        self.output_act = output_act
 
     def call(self, x):
-        pass
+        for i, layer in enumerate(self.layers):
+            x = self.activation(layer(x)) if i < self.num_layers - 1 else layer(x)
+        if self.output_act:
+            x = self.activation(x)
+        return x
 
 
 LAYER_BACKBONES = {

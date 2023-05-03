@@ -17,7 +17,8 @@ import math
 import tensorflow as tf
 from tensorflow.keras import layers
 
-from deepvision.layers import FusedMBConv, MBConv
+from deepvision.layers import FusedMBConv
+from deepvision.layers import MBConv
 from deepvision.utils.utils import parse_model_inputs
 
 

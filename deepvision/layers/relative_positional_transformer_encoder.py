@@ -14,13 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Tuple, Type
+from typing import Optional
+from typing import Tuple
+from typing import Type
 
 import torch
 import torch.nn as nn
 
-from deepvision.layers.relative_positional_attention import RelativePositionalAttention
 from deepvision.layers.mlp import MLP
+from deepvision.layers.relative_positional_attention import RelativePositionalAttention
 from deepvision.layers.window_partitioning import WindowPartitioning
 from deepvision.layers.window_unpartitioning import WindowUnpartitioning
 

@@ -3,7 +3,8 @@ import os
 import numpy as np
 import requests
 
-from deepvision.datasets.tiny_nerf import tiny_nerf_pt, tiny_nerf_tf
+from deepvision.datasets.tiny_nerf import tiny_nerf_pt
+from deepvision.datasets.tiny_nerf import tiny_nerf_tf
 
 file_name = "tiny_nerf_data.npz"
 url = "https://people.eecs.berkeley.edu/~bmild/nerf/tiny_nerf_data.npz"
