@@ -39,7 +39,7 @@ from deepvision.models.classification.vision_transformer_detector.vit_det import
     ViTDetH,
     ViTDetL,
 )
-from deepvision.models.segmentation.sam.sam import SAM_B
+from deepvision.models.segmentation.sam.sam import SAM_B, SAM_L, SAM_H
 from deepvision.models.segmentation.segformer.segformer import (
     SegFormerB0,
     SegFormerB1,

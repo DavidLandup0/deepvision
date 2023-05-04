@@ -14,11 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Optional, Type
+from typing import Tuple, Optional, Type
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from deepvision.layers import (
     LayerNorm2d,
@@ -46,7 +45,7 @@ class ViTDetBackbonePT(nn.Module):
         use_rel_pos: bool = False,
         rel_pos_zero_init: bool = True,
         window_size: int = 0,
-        global_attn_indexes: List[int, ...] = (),
+        global_attn_indexes: Tuple[int, ...] = (),
     ) -> None:
         """
         Args:
