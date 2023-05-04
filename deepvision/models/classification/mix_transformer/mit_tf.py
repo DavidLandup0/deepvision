@@ -15,8 +15,10 @@
 import tensorflow as tf
 from tensorflow.keras import layers
 
-from deepvision.layers import HierarchicalTransformerEncoder
-from deepvision.layers import OverlappingPatchingAndEmbedding
+from deepvision.layers import (
+    HierarchicalTransformerEncoder,
+    OverlappingPatchingAndEmbedding,
+)
 from deepvision.utils.utils import parse_model_inputs
 
 

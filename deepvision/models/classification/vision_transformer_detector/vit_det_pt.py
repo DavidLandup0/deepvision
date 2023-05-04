@@ -14,21 +14,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
-from typing import Tuple
-from typing import Type
+from typing import Optional, Tuple, Type
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from deepvision.layers import LayerNorm2d
-from deepvision.layers import PatchingAndEmbedding
-from deepvision.layers import RelativePositionalTransformerEncoder
+from deepvision.layers import (
+    LayerNorm2d,
+    PatchingAndEmbedding,
+    RelativePositionalTransformerEncoder,
+)
 
 
 # This class and its supporting functions below lightly adapted from the ViTDet backbone available at: https://github.com/facebookresearch/detectron2/blob/main/detectron2/modeling/backbone/vit.py # noqa
-class ViTDetBackbone(nn.Module):
+class ViTDetBackbonePT(nn.Module):
     def __init__(
         self,
         img_size: int = 1024,

@@ -14,14 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
-from typing import Type
+from typing import Tuple, Type
 
-from torch import Tensor
-from torch import nn
+import torch
+from torch import Tensor, nn
 
 from deepvision.layers.downscaling_attention import DownscalingAttention
-from deepvision.layers.mlp import MLP
+
+# from deepvision.layers.mlp import MLP
 
 
 class TwoWayAttentionBlock(nn.Module):
@@ -56,6 +56,9 @@ class TwoWayAttentionBlock(nn.Module):
         )
         self.norm2 = nn.LayerNorm(embedding_dim)
 
+        self.mlp = MLPBlock(embedding_dim, mlp_dim, activation)
+
+        """
         self.mlp = MLP(
             input_dim=embedding_dim,
             embed_dim=mlp_dim,
@@ -64,6 +67,7 @@ class TwoWayAttentionBlock(nn.Module):
             num_layers=2,
             backend="pytorch",
         )
+        """
         self.norm3 = nn.LayerNorm(embedding_dim)
 
         self.norm4 = nn.LayerNorm(embedding_dim)
@@ -105,3 +109,19 @@ class TwoWayAttentionBlock(nn.Module):
         keys = self.norm4(keys)
 
         return queries, keys
+
+
+class MLPBlock(nn.Module):
+    def __init__(
+        self,
+        embedding_dim: int,
+        mlp_dim: int,
+        act: Type[nn.Module] = nn.GELU,
+    ) -> None:
+        super().__init__()
+        self.lin1 = nn.Linear(embedding_dim, mlp_dim)
+        self.lin2 = nn.Linear(mlp_dim, embedding_dim)
+        self.act = act()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.lin2(self.act(self.lin1(x)))

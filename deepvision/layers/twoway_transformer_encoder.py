@@ -15,15 +15,12 @@
 # limitations under the License.
 
 import math
-from typing import Tuple
-from typing import Type
+from typing import Tuple, Type
 
 import torch
-from torch import Tensor
-from torch import nn
+from torch import Tensor, nn
 
-from deepvision.layers import DownscalingAttention
-from deepvision.layers import TwoWayAttentionBlock
+from deepvision.layers import DownscalingAttention, TwoWayAttentionBlock
 
 
 class TwoWayTransformerEncoder(nn.Module):

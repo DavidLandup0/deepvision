@@ -14,15 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
-from typing import Tuple
-from typing import Type
+from typing import Optional, Tuple, Type
 
 import torch
 from torch import nn
 
-from deepvision.layers import LayerNorm2d
-from deepvision.layers import PositionEmbeddingRandom
+from deepvision.layers import LayerNorm2d, PositionEmbeddingRandom
 
 
 class PromptEncoder(nn.Module):

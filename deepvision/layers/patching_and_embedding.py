@@ -38,7 +38,7 @@ class __PatchingAndEmbeddingTF(layers.Layer):
             raise ValueError(
                 f"Padding must be either 'same' or 'valid', but {padding} was passed."
             )
-        self.projection = layers.Conv2D(
+        self.proj = layers.Conv2D(
             filters=self.project_dim,
             kernel_size=self.patch_size,
             strides=self.patch_size,
@@ -76,7 +76,7 @@ class __PatchingAndEmbeddingTF(layers.Layer):
             `A tf.Tensor` of shape [batch, patch_num+1, embedding_dim]
         """
         # Turn images into patches and project them onto `project_dim`
-        patches = self.projection(images)
+        patches = self.proj(images)
         # If running in Patch/Projection-only mode, return patches after Conv2d
         if not self.embedding:
             return patches
@@ -206,7 +206,7 @@ class __PatchingAndEmbeddingPT(torch.nn.Module):
             raise ValueError(
                 f"Padding must be either 'same' or 'valid', but {padding} was passed."
             )
-        self.projection = nn.Conv2d(
+        self.proj = nn.Conv2d(
             input_shape[0],
             self.project_dim,
             kernel_size=self.patch_size,
@@ -243,7 +243,7 @@ class __PatchingAndEmbeddingPT(torch.nn.Module):
             `A torch.Tensor` of shape [batch, patch_num+1, embedding_dim]
         """
         # Turn images into patches and project them onto `project_dim`
-        patches = self.projection(images)
+        patches = self.proj(images)
         # If running in Patch/Projection-only mode, return patches after Conv2d
         if not self.embedding:
             return patches.permute(0, 2, 3, 1)  # BCHW -> BHWC

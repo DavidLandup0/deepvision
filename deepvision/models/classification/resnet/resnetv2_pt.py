@@ -17,8 +17,7 @@ import pytorch_lightning as pl
 import torchmetrics
 from torch import nn
 
-from deepvision.utils.utils import parse_model_inputs
-from deepvision.utils.utils import same_padding
+from deepvision.utils.utils import parse_model_inputs, same_padding
 
 
 class ResNetV2Block(nn.Module):

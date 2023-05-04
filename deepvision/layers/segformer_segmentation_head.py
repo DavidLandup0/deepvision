@@ -16,8 +16,7 @@ from typing import Tuple
 
 import tensorflow as tf
 import torch
-from torch import Tensor
-from torch import nn
+from torch import Tensor, nn
 from torch.nn import functional as F
 
 

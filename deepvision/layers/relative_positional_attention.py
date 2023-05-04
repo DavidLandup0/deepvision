@@ -14,13 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
-from typing import Tuple
-from typing import Type
+from typing import Optional, Tuple, Type
 
 import torch
-from torch import Tensor
-from torch import nn
+from torch import Tensor, nn
 
 from deepvision.layers.decomposed_relative_positional_embedding import (
     AddDecomposedRelativePositions,
