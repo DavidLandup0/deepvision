@@ -17,8 +17,8 @@ from deepvision.layers.sam_prompt_encoder import PromptEncoder
 from deepvision.layers.twoway_transformer_encoder import TwoWayTransformerEncoder
 from deepvision.models.classification.vision_transformer_detector.vit_det import (
     ViTDetB,
-    ViTDetL,
     ViTDetH,
+    ViTDetL,
 )
 from deepvision.models.segmentation.sam.sam_pt import SAM_PT
 
