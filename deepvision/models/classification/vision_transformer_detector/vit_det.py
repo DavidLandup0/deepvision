@@ -20,8 +20,33 @@ from deepvision.models.classification.vision_transformer_detector.vit_det_pt imp
 )
 
 MODEL_CONFIGS = {
-    "ViTDetB": {},
+    "ViTDetB": {
+        "prompt_embed_dim": 256,
+        "image_size": 1024,
+        "vit_patch_size": 16,
+        "encoder_embed_dim": 768,
+        "encoder_depth": 12,
+        "encoder_num_heads": 12,
+        "encoder_global_attn_indexes": [2, 5, 8, 11],
+        "mlp_ratio": 4,
+        "window_size": 14,
+    },
 }
+
+"""
+L
+ encoder_embed_dim=1024,
+        encoder_depth=24,
+        encoder_num_heads=16,
+        encoder_global_attn_indexes=[5, 11, 17, 23],
+        
+        
+H
+ encoder_embed_dim=1280,
+        encoder_depth=32,
+        encoder_num_heads=16,
+        encoder_global_attn_indexes=[7, 15, 23, 31],
+"""
 
 MODEL_BACKBONES = {"tensorflow": None, "pytorch": ViTDetBackbonePT}
 
@@ -36,27 +61,19 @@ def ViTDetB(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
 
-    prompt_embed_dim = 256
-    image_size = 1024
-    vit_patch_size = 16
-    encoder_embed_dim = 768
-    encoder_depth = 12
-    encoder_num_heads = 12
-    encoder_global_attn_indexes = [2, 5, 8, 11]
-
     model = model_class(
-        depth=encoder_depth,
-        embed_dim=encoder_embed_dim,
-        img_size=image_size,
-        mlp_ratio=4,
-        norm_layer=partial(torch.nn.LayerNorm, eps=1e-6),
-        num_heads=encoder_num_heads,
-        patch_size=vit_patch_size,
+        depth=MODEL_CONFIGS["ViTDetB"]["encoder_depth"],
+        embed_dim=MODEL_CONFIGS["ViTDetB"]["encoder_embed_dim"],
+        img_size=MODEL_CONFIGS["ViTDetB"]["image_size"],
+        mlp_ratio=MODEL_CONFIGS["ViTDetB"]["mlp_ratio"],
+        norm_layer=torch.nn.LayerNorm,
+        num_heads=MODEL_CONFIGS["ViTDetB"]["encoder_num_heads"],
+        patch_size=MODEL_CONFIGS["ViTDetB"]["vit_patch_size"],
         qkv_bias=True,
         use_rel_pos=True,
-        global_attn_indexes=encoder_global_attn_indexes,
-        window_size=14,
-        out_chans=prompt_embed_dim,
+        global_attn_indexes=MODEL_CONFIGS["ViTDetB"]["encoder_global_attn_indexes"],
+        window_size=MODEL_CONFIGS["ViTDetB"]["window_size"],
+        out_chans=MODEL_CONFIGS["ViTDetB"]["prompt_embed_dim"],
     )
 
     return model
