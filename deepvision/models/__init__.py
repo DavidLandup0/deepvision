@@ -34,9 +34,15 @@ from deepvision.models.classification.vision_transformer.vit import ViTS16
 from deepvision.models.classification.vision_transformer.vit import ViTS32
 from deepvision.models.classification.vision_transformer.vit import ViTTiny16
 from deepvision.models.classification.vision_transformer.vit import ViTTiny32
-from deepvision.models.classification.vision_transformer_detector.vit_det import ViTDetB
-from deepvision.models.classification.vision_transformer_detector.vit_det import ViTDetH
-from deepvision.models.classification.vision_transformer_detector.vit_det import ViTDetL
+from deepvision.models.object_detection.vision_transformer_detector.vit_det import (
+    ViTDetB,
+)
+from deepvision.models.object_detection.vision_transformer_detector.vit_det import (
+    ViTDetH,
+)
+from deepvision.models.object_detection.vision_transformer_detector.vit_det import (
+    ViTDetL,
+)
 from deepvision.models.segmentation.sam.mask_generator import SAMAutoMaskGenerator
 from deepvision.models.segmentation.sam.sam import SAM_B
 from deepvision.models.segmentation.sam.sam import SAM_H

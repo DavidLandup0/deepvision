@@ -15,10 +15,16 @@
 from deepvision.layers.sam_mask_decoder import MaskDecoder
 from deepvision.layers.sam_prompt_encoder import PromptEncoder
 from deepvision.layers.twoway_transformer_encoder import TwoWayTransformerEncoder
-from deepvision.models.classification.vision_transformer_detector.vit_det import ViTDetB
-from deepvision.models.classification.vision_transformer_detector.vit_det import ViTDetH
-from deepvision.models.classification.vision_transformer_detector.vit_det import ViTDetL
 from deepvision.models.load_weights import load_weights
+from deepvision.models.object_detection.vision_transformer_detector.vit_det import (
+    ViTDetB,
+)
+from deepvision.models.object_detection.vision_transformer_detector.vit_det import (
+    ViTDetH,
+)
+from deepvision.models.object_detection.vision_transformer_detector.vit_det import (
+    ViTDetL,
+)
 from deepvision.models.segmentation.sam.sam_pt import SAM_PT
 
 # All SAM models differ only in the ViTDet backbone

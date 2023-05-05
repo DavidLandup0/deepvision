@@ -16,7 +16,7 @@ from functools import partial
 
 import torch
 
-from deepvision.models.classification.vision_transformer_detector.vit_det_pt import (
+from deepvision.models.object_detection.vision_transformer_detector.vit_det_pt import (
     ViTDetBackbonePT,
 )
 

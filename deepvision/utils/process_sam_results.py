@@ -8,7 +8,6 @@ def process_mask_generator(sam_results, opacity):
     results = []
     for ann in sam_results:
         m = ann["segmentation"]
-
         color_mask = np.random.random((1, 3))
         img = np.repeat(color_mask, m.shape[0] * m.shape[1], axis=0)
         img = np.reshape(img, (m.shape[0], m.shape[1], 3))
