@@ -14,7 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, List, Tuple
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Tuple
 
 import torch
 from torch import nn
@@ -30,6 +33,7 @@ class SAM_PT(nn.Module):
         image_encoder,
         prompt_encoder,
         mask_decoder,
+        weights=None,
         pixel_mean: List[float] = [123.675, 116.28, 103.53],
         pixel_std: List[float] = [58.395, 57.12, 57.375],
     ) -> None:
@@ -53,6 +57,9 @@ class SAM_PT(nn.Module):
             "pixel_mean", torch.Tensor(pixel_mean).view(-1, 1, 1), False
         )
         self.register_buffer("pixel_std", torch.Tensor(pixel_std).view(-1, 1, 1), False)
+
+        if weights is not None:
+            self.load_state_dict(torch.load(weights))
 
     @property
     def device(self) -> Any:

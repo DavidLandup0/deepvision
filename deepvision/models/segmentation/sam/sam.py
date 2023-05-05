@@ -15,11 +15,10 @@
 from deepvision.layers.sam_mask_decoder import MaskDecoder
 from deepvision.layers.sam_prompt_encoder import PromptEncoder
 from deepvision.layers.twoway_transformer_encoder import TwoWayTransformerEncoder
-from deepvision.models.classification.vision_transformer_detector.vit_det import (
-    ViTDetB,
-    ViTDetH,
-    ViTDetL,
-)
+from deepvision.models.classification.vision_transformer_detector.vit_det import ViTDetB
+from deepvision.models.classification.vision_transformer_detector.vit_det import ViTDetH
+from deepvision.models.classification.vision_transformer_detector.vit_det import ViTDetL
+from deepvision.models.load_weights import load_weights
 from deepvision.models.segmentation.sam.sam_pt import SAM_PT
 
 # All SAM models differ only in the ViTDet backbone
@@ -43,8 +42,12 @@ MODEL_BACKBONES = {"tensorflow": None, "pytorch": SAM_PT}
 
 def SAM_B(
     backend,
+    weights="SA-1B",
     **kwargs,
 ):
+    if weights == "SA-1B":
+        weights = load_weights("SAM_B", True, backend)
+
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
@@ -84,6 +87,7 @@ def SAM_B(
         image_encoder=image_encoder,
         prompt_encoder=prompt_encoder,
         mask_decoder=mask_decoder,
+        weights=weights,
     )
 
     return model
@@ -91,8 +95,12 @@ def SAM_B(
 
 def SAM_L(
     backend,
+    weights="SA-1B",
     **kwargs,
 ):
+    if weights == "SA-1B":
+        weights = load_weights("SAM_L", True, backend)
+
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
@@ -132,6 +140,7 @@ def SAM_L(
         image_encoder=image_encoder,
         prompt_encoder=prompt_encoder,
         mask_decoder=mask_decoder,
+        weights=weights,
     )
 
     return model
@@ -139,9 +148,14 @@ def SAM_L(
 
 def SAM_H(
     backend,
+    weights="SA-1B",
     **kwargs,
 ):
+    if weights == "SA-1B":
+        weights = load_weights("SAM_H", True, backend)
+
     model_class = MODEL_BACKBONES.get(backend)
+
     if model_class is None:
         raise ValueError(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
@@ -180,6 +194,7 @@ def SAM_H(
         image_encoder=image_encoder,
         prompt_encoder=prompt_encoder,
         mask_decoder=mask_decoder,
+        weights=weights,
     )
 
     return model

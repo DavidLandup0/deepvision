@@ -14,15 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Tuple, Type
+from typing import List
+from typing import Tuple
+from typing import Type
 
 import torch
 from torch import nn
 from torch.nn import functional as F
 
 from deepvision.layers.layernorm2d import LayerNorm2d
-
-# from deepvision.layers.mlp import MLP
 
 
 class MaskDecoder(nn.Module):
@@ -76,39 +76,14 @@ class MaskDecoder(nn.Module):
 
         self.output_hypernetworks_mlps = nn.ModuleList(
             [
-                MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
+                _MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
                 for i in range(self.num_mask_tokens)
             ]
         )
 
-        self.iou_prediction_head = MLP(
+        self.iou_prediction_head = _MLP(
             transformer_dim, iou_head_hidden_dim, self.num_mask_tokens, iou_head_depth
         )
-
-        """
-        self.output_hypernetworks_mlps = nn.ModuleList(
-            [
-                MLP(
-                    input_dim=transformer_dim,
-                    embed_dim=transformer_dim,
-                    output_dim=transformer_dim // 8,
-                    activation=torch.nn.ReLU,
-                    num_layers=3,
-                    backend="pytorch",
-                )
-                for _ in range(self.num_mask_tokens)
-            ]
-        )
-
-        self.iou_prediction_head = MLP(
-            input_dim=transformer_dim,
-            embed_dim=iou_head_hidden_dim,
-            output_dim=self.num_mask_tokens,
-            activation=torch.nn.ReLU,
-            num_layers=iou_head_depth,
-            backend="pytorch",
-        )
-        """
 
     def forward(
         self,
@@ -197,7 +172,12 @@ class MaskDecoder(nn.Module):
         return masks, iou_pred
 
 
-class MLP(nn.Module):
+class _MLP(nn.Module):
+    """
+    Helper class to create a simple MLP module. Used instead of the standard `deepvision.layers.MLP`
+    to make pretrained weight loading easier.
+    """
+
     def __init__(
         self,
         input_dim: int,

@@ -12,6 +12,7 @@ def load_weights(model_name, include_top, backend):
         weight_path = MODELS_TF.get(model_name, None)
     else:
         weight_path = MODELS_PT.get(model_name, None)
+    extension = weight_path.split(".")[-1]
 
     if weight_path is None:
         raise ValueError(f"Weights do not exist for {model_name}")
@@ -22,7 +23,7 @@ def load_weights(model_name, include_top, backend):
     if not os.path.isdir(weight_location):
         os.makedirs(weight_location)
 
-    save_path = os.path.join(weight_location, model_name + ".h5")
+    save_path = os.path.join(weight_location, model_name + f".{extension}")
 
     if not os.path.exists(save_path):
         print(f"Downloading weights and storing under {save_path}")
@@ -58,4 +59,8 @@ MODELS_TF = {
     "ViTB32-notop": "https://github.com/DavidLandup0/deepvision/releases/download/0.1.5-weights/ViTB32-notop.h5",
 }
 
-MODELS_PT = {}
+MODELS_PT = {
+    "SAM_B": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth",
+    "SAM_L": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth",
+    "SAM_H": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth",
+}

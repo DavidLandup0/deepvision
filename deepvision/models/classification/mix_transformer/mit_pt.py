@@ -17,10 +17,8 @@ import torch
 import torchmetrics
 from torch import nn
 
-from deepvision.layers import (
-    HierarchicalTransformerEncoder,
-    OverlappingPatchingAndEmbedding,
-)
+from deepvision.layers import HierarchicalTransformerEncoder
+from deepvision.layers import OverlappingPatchingAndEmbedding
 
 
 class __MiTPT(pl.LightningModule):

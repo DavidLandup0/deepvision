@@ -1,37 +1,50 @@
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# All rights reserved.
+# Ported and adapted from the original code from Meta Platforms, Inc. and affiliates. Copyright
+# Original code Copyright / (c) Meta Platforms, Inc. and affiliates.
+# Modifications and adaptations / Copyright 2023 David Landup
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-# This source code is licensed under the license found in the
-# LICENSE file in the root directory of this source tree.
-
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
 
 import numpy as np
 import torch
-from torchvision.ops.boxes import batched_nms, box_area  # type: ignore
+from torchvision.ops.boxes import batched_nms  # type: ignore
+from torchvision.ops.boxes import box_area
 
-from deepvision.models.segmentation.sam.sam_predictor import SamPredictor
-from deepvision.models.segmentation.sam.utils import (
-    MaskData,
-    area_from_rle,
-    batch_iterator,
-    batched_mask_to_box,
-    box_xyxy_to_xywh,
-    build_all_layer_point_grids,
-    calculate_stability_score,
-    coco_encode_rle,
-    generate_crop_boxes,
-    is_box_near_crop_edge,
-    mask_to_rle_pytorch,
-    remove_small_regions,
-    rle_to_mask,
-    uncrop_boxes_xyxy,
-    uncrop_masks,
-    uncrop_points,
-)
+from deepvision.models.segmentation.sam.sam_predictor import PromptableSAM
+from deepvision.models.segmentation.sam.utils import MaskData
+from deepvision.models.segmentation.sam.utils import area_from_rle
+from deepvision.models.segmentation.sam.utils import batch_iterator
+from deepvision.models.segmentation.sam.utils import batched_mask_to_box
+from deepvision.models.segmentation.sam.utils import box_xyxy_to_xywh
+from deepvision.models.segmentation.sam.utils import build_all_layer_point_grids
+from deepvision.models.segmentation.sam.utils import calculate_stability_score
+from deepvision.models.segmentation.sam.utils import coco_encode_rle
+from deepvision.models.segmentation.sam.utils import generate_crop_boxes
+from deepvision.models.segmentation.sam.utils import is_box_near_crop_edge
+from deepvision.models.segmentation.sam.utils import mask_to_rle_pytorch
+from deepvision.models.segmentation.sam.utils import remove_small_regions
+from deepvision.models.segmentation.sam.utils import rle_to_mask
+from deepvision.models.segmentation.sam.utils import uncrop_boxes_xyxy
+from deepvision.models.segmentation.sam.utils import uncrop_masks
+from deepvision.models.segmentation.sam.utils import uncrop_points
 
 
-class SamAutomaticMaskGenerator:
+class SAMAutoMaskGenerator:
     def __init__(
         self,
         model,
@@ -119,7 +132,7 @@ class SamAutomaticMaskGenerator:
         if min_mask_region_area > 0:
             import cv2  # type: ignore # noqa: F401
 
-        self.predictor = SamPredictor(model)
+        self.predictor = PromptableSAM(model)
         self.points_per_batch = points_per_batch
         self.pred_iou_thresh = pred_iou_thresh
         self.stability_score_thresh = stability_score_thresh

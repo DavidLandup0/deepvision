@@ -15,10 +15,12 @@
 # limitations under the License.
 
 import math
-from typing import Tuple, Type
+from typing import Tuple
+from typing import Type
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
+from torch import nn
 
 
 class DownscalingAttention(nn.Module):

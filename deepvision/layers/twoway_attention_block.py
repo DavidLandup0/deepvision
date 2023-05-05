@@ -14,10 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple, Type
+from typing import Tuple
+from typing import Type
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
+from torch import nn
 
 from deepvision.layers.downscaling_attention import DownscalingAttention
 
@@ -56,7 +58,7 @@ class TwoWayAttentionBlock(nn.Module):
         )
         self.norm2 = nn.LayerNorm(embedding_dim)
 
-        self.mlp = MLPBlock(embedding_dim, mlp_dim, activation)
+        self.mlp = _MLPBlock(embedding_dim, mlp_dim, activation)
 
         """
         self.mlp = MLP(
@@ -111,7 +113,12 @@ class TwoWayAttentionBlock(nn.Module):
         return queries, keys
 
 
-class MLPBlock(nn.Module):
+class _MLPBlock(nn.Module):
+    """
+    Helper class for an MLP block, used instead of the `deepvision.layers.MLP` module
+    to make loading pretrained weights easier.
+    """
+
     def __init__(
         self,
         embedding_dim: int,

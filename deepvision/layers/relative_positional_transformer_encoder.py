@@ -14,7 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Tuple, Type
+from typing import Optional
+from typing import Tuple
+from typing import Type
 
 import torch
 import torch.nn as nn
@@ -79,7 +81,7 @@ class RelativePositionalTransformerEncoder(nn.Module):
         )
         """
 
-        self.mlp = MLPBlock(
+        self.mlp = _MLPBlock(
             embedding_dim=dim, mlp_dim=int(dim * mlp_ratio), act=act_layer
         )
 
@@ -104,7 +106,12 @@ class RelativePositionalTransformerEncoder(nn.Module):
         return x
 
 
-class MLPBlock(nn.Module):
+class _MLPBlock(nn.Module):
+    """
+    Helper class for an MLP block, used instead of the `deepvision.layers.MLP` module
+    to make loading pretrained weights easier.
+    """
+
     def __init__(
         self,
         embedding_dim: int,
