@@ -245,7 +245,7 @@ def TwoWayTransformerEncoder(
         )
     if activation is None:
         activation = (
-            tf.keras.activations.gelu if backend == "tensorflow" else torch.nn.GELU
+            tf.keras.activations.relu if backend == "tensorflow" else torch.nn.ReLU
         )
     layer = layer_class(
         depth=depth,
