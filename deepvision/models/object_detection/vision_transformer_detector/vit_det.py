@@ -29,7 +29,7 @@ MODEL_CONFIGS = {
         "encoder_depth": 12,
         "encoder_num_heads": 12,
         "encoder_global_attn_indexes": [2, 5, 8, 11],
-        "mlp_ratio": 4,
+        "mlp_dim": 3072,
         "window_size": 14,
     },
     "ViTDetL": {
@@ -40,7 +40,7 @@ MODEL_CONFIGS = {
         "encoder_depth": 24,
         "encoder_num_heads": 16,
         "encoder_global_attn_indexes": [5, 11, 17, 23],
-        "mlp_ratio": 4,
+        "mlp_dim": 4096,
         "window_size": 14,
     },
     "ViTDetH": {
@@ -51,7 +51,7 @@ MODEL_CONFIGS = {
         "encoder_depth": 32,
         "encoder_num_heads": 16,
         "encoder_global_attn_indexes": [7, 15, 23, 31],
-        "mlp_ratio": 4,
+        "mlp_dim": 5120,
         "window_size": 14,
     },
 }

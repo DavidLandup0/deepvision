@@ -34,7 +34,7 @@ class RelativePositionalTransformerEncoder(nn.Module):
         self,
         dim: int,
         num_heads: int,
-        mlp_ratio: float = 4.0,
+        mlp_dim=None,
         qkv_bias: bool = True,
         norm_layer: Type[nn.Module] = nn.LayerNorm,
         act_layer: Type[nn.Module] = nn.GELU,
@@ -47,7 +47,7 @@ class RelativePositionalTransformerEncoder(nn.Module):
         Args:
             dim (int): Number of input channels.
             num_heads (int): Number of attention heads in each ViT block.
-            mlp_ratio (float): Ratio of mlp hidden dim to embedding dim.
+            mlp_dim (float): MLP dim
             qkv_bias (bool): If True, add a learnable bias to query, key, value.
             norm_layer (nn.Module): Normalization layer.
             act_layer (nn.Module): Activation layer.
@@ -71,19 +71,7 @@ class RelativePositionalTransformerEncoder(nn.Module):
 
         self.norm2 = norm_layer(dim)
 
-        """
-        self.mlp = MLP(
-            output_dim=dim,
-            embed_dim=int(dim * mlp_ratio),
-            activation=act_layer,
-            num_layers=2,
-            backend="pytorch",
-        )
-        """
-
-        self.mlp = _MLPBlock(
-            embedding_dim=dim, mlp_dim=int(dim * mlp_ratio), act=act_layer
-        )
+        self.mlp = _MLPBlock(embedding_dim=dim, mlp_dim=mlp_dim, act=act_layer)
 
         self.window_size = window_size
 
