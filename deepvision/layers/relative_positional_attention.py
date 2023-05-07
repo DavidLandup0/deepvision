@@ -28,7 +28,7 @@ from deepvision.layers.decomposed_relative_positional_embedding import (
 )
 
 
-class __MultiheadRelativePositionalAttentionPT(nn.Module):
+class __RelativePositionalMultiheadAttentionPT(nn.Module):
     """Multi-head Attention block with relative position embeddings."""
 
     def __init__(
@@ -88,7 +88,7 @@ class __MultiheadRelativePositionalAttentionPT(nn.Module):
         return x
 
 
-class __MultiheadRelativePositionalAttentionTF(tf.keras.layers.Layer):
+class __RelativePositionalMultiheadAttentionTF(tf.keras.layers.Layer):
     """Multi-head Attention block with relative position embeddings."""
 
     def __init__(
@@ -158,12 +158,12 @@ class __MultiheadRelativePositionalAttentionTF(tf.keras.layers.Layer):
 
 
 LAYER_BACKBONES = {
-    "tensorflow": __MultiheadRelativePositionalAttentionTF,
-    "pytorch": __MultiheadRelativePositionalAttentionPT,
+    "tensorflow": __RelativePositionalMultiheadAttentionTF,
+    "pytorch": __RelativePositionalMultiheadAttentionPT,
 }
 
 
-def MultiheadRelativePositionalAttention(
+def RelativePositionalMultiheadAttention(
     embed_dim,
     num_heads=8,
     qkv_bias=True,

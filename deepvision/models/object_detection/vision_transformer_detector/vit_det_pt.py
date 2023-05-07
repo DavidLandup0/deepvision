@@ -110,6 +110,7 @@ class ViTDetBackbonePT(nn.Module):
                         input_shape[1] // patch_size,
                         input_shape[1] // patch_size,
                     ),
+                    backend="pytorch",
                 )
             )
 

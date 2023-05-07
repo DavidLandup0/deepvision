@@ -14,7 +14,7 @@ from deepvision.layers.overlapping_patching_and_embedding import (
 from deepvision.layers.patching_and_embedding import PatchingAndEmbedding
 from deepvision.layers.random_position_encoding import PositionEmbeddingRandom
 from deepvision.layers.relative_positional_attention import (
-    MultiheadRelativePositionalAttention,
+    RelativePositionalMultiheadAttention,
 )
 from deepvision.layers.relative_positional_transformer_encoder import (
     RelativePositionalTransformerEncoder,

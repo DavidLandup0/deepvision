@@ -16,11 +16,12 @@
 
 from typing import Tuple
 
+import tensorflow as tf
 import torch
 import torch.nn as nn
 
 
-class WindowUnpartitioning(nn.Module):
+class __WindowUnpartitioningPT(nn.Module):
     def __init__(self, window_size: int, pad_hw: Tuple[int, int], hw: Tuple[int, int]):
         super().__init__()
         self.window_size = window_size
@@ -52,3 +53,68 @@ class WindowUnpartitioning(nn.Module):
         if Hp > H or Wp > W:
             x = x[:, :H, :W, :].contiguous()
         return x
+
+
+class __WindowUnpartitioningTF(tf.keras.layers.Layer):
+    def __init__(self, window_size, pad_hw, hw):
+        super().__init__()
+        self.window_size = window_size
+        self.pad_hw = pad_hw
+        self.hw = hw
+
+    def call(self, windows):
+        """
+        Window unpartition into original sequences and removing padding.
+        Args:
+            windows (tensor): input tokens with [B * num_windows, window_size, window_size, C].
+
+        Returns:
+            x: unpartitioned sequences with [B, H, W, C].
+        """
+        Hp, Wp = self.pad_hw
+        H, W = self.hw
+        B = tf.shape(windows)[0] // (Hp * Wp // self.window_size // self.window_size)
+        x = tf.reshape(
+            windows,
+            [
+                B,
+                Hp // self.window_size,
+                self.window_size,
+                Wp // self.window_size,
+                self.window_size,
+                -1,
+            ],
+        )
+        x = tf.transpose(x, [0, 1, 3, 2, 4, 5])
+        x = tf.reshape(x, [B, Hp, Wp, -1])
+
+        if Hp > H or Wp > W:
+            x = x[:, :H, :W, :]
+        return x
+
+
+LAYER_BACKBONES = {
+    "tensorflow": __WindowUnpartitioningTF,
+    "pytorch": __WindowUnpartitioningPT,
+}
+
+
+def WindowUnpartitioning(
+    window_size,
+    pad_hw,
+    hw,
+    backend=None,
+):
+    layer_class = LAYER_BACKBONES.get(backend)
+    if layer_class is None:
+        raise ValueError(
+            f"Backend not supported: {backend}. Supported backbones are {LAYER_BACKBONES.keys()}"
+        )
+
+    layer = layer_class(
+        window_size=window_size,
+        pad_hw=pad_hw,
+        hw=hw,
+    )
+
+    return layer
