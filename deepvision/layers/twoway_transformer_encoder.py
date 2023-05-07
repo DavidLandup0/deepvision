@@ -18,6 +18,7 @@ import math
 from typing import Tuple
 from typing import Type
 
+import tensorflow as tf
 import torch
 from torch import Tensor
 from torch import nn
@@ -26,7 +27,7 @@ from deepvision.layers import DownscalingMultiheadAttention
 from deepvision.layers import TwoWayAttentionBlock
 
 
-class TwoWayTransformerEncoder(nn.Module):
+class __TwoWayTransformerEncoderPT(nn.Module):
     def __init__(
         self,
         depth: int,
@@ -64,12 +65,15 @@ class TwoWayTransformerEncoder(nn.Module):
                     activation=activation,
                     attention_downsample_rate=attention_downsample_rate,
                     skip_first_layer_pe=(i == 0),
-                    backend='pytorch'
+                    backend="pytorch",
                 )
             )
 
         self.final_attn_token_to_image = DownscalingMultiheadAttention(
-            embedding_dim, num_heads, downsample_rate=attention_downsample_rate
+            embedding_dim,
+            num_heads,
+            downsample_rate=attention_downsample_rate,
+            backend="pytorch",
         )
         self.norm_final_attn = nn.LayerNorm(embedding_dim)
 
@@ -118,3 +122,138 @@ class TwoWayTransformerEncoder(nn.Module):
         queries = self.norm_final_attn(queries)
 
         return queries, keys
+
+
+class __TwoWayTransformerEncoderTF(tf.keras.layers.Layer):
+    def __init__(
+        self,
+        depth: int,
+        embedding_dim: int,
+        num_heads: int,
+        mlp_dim: int,
+        activation=tf.keras.activations.relu,
+        attention_downsample_rate: int = 2,
+    ) -> None:
+        """
+        A transformer decoder that attends to an input image using
+        queries whose positional embedding is supplied.
+
+        Args:
+          depth (int): number of layers in the transformer
+          embedding_dim (int): the channel dimension for the input embeddings
+          num_heads (int): the number of heads for multihead attention. Must
+            divide embedding_dim
+          mlp_dim (int): the channel dimension internal to the MLP block
+          activation (nn.Module): the activation to use in the MLP block
+        """
+        super().__init__()
+        self.depth = depth
+        self.embedding_dim = embedding_dim
+        self.num_heads = num_heads
+        self.mlp_dim = mlp_dim
+        self.layers = []
+
+        for i in range(depth):
+            self.layers.append(
+                TwoWayAttentionBlock(
+                    embedding_dim=embedding_dim,
+                    num_heads=num_heads,
+                    mlp_dim=mlp_dim,
+                    activation=activation,
+                    attention_downsample_rate=attention_downsample_rate,
+                    skip_first_layer_pe=(i == 0),
+                    backend="tensorflow",
+                )
+            )
+
+        self.final_attn_token_to_image = DownscalingMultiheadAttention(
+            embedding_dim,
+            num_heads,
+            downsample_rate=attention_downsample_rate,
+            backend="tensorflow",
+        )
+        self.norm_final_attn = tf.keras.layers.LayerNormalization()
+
+    def forward(
+        self,
+        image_embedding,
+        image_pe,
+        point_embedding,
+    ):
+        """
+        Args:
+          image_embedding (torch.Tensor): image to attend to. Should be shape
+            B x embedding_dim x h x w for any h and w.
+          image_pe (torch.Tensor): the positional encoding to add to the image. Must
+            have the same shape as image_embedding.
+          point_embedding (torch.Tensor): the embedding to add to the query points.
+            Must have shape B x N_points x embedding_dim for any N_points.
+
+        Returns:
+          torch.Tensor: the processed point_embedding
+          torch.Tensor: the processed image_embedding
+        """
+        # BxCxHxW -> BxHWxC == B x N_image_tokens x C
+        input_shape = tf.shape(image_embedding)
+        bs, c, h, w = input_shape[0], input_shape[1], input_shape[2], input_shape[3]
+
+        image_embedding = image_embedding.flatten(2).permute(0, 2, 1)
+        image_pe = image_pe.flatten(2).permute(0, 2, 1)
+
+        # Prepare queries
+        queries = point_embedding
+        keys = image_embedding
+
+        # Apply transformer blocks and final layernorm
+        for layer in self.layers:
+            queries, keys = layer(
+                queries=queries,
+                keys=keys,
+                query_pe=point_embedding,
+                key_pe=image_pe,
+            )
+
+        # Apply the final attention layer from the points to the image
+        q = queries + point_embedding
+        k = keys + image_pe
+        attn_out = self.final_attn_token_to_image(q=q, k=k, v=keys)
+        queries = queries + attn_out
+        queries = self.norm_final_attn(queries)
+
+        return queries, keys
+
+
+LAYER_BACKBONES = {
+    "tensorflow": __TwoWayTransformerEncoderTF,
+    "pytorch": __TwoWayTransformerEncoderPT,
+}
+
+
+def TwoWayTransformerEncoder(
+    depth,
+    embedding_dim,
+    num_heads,
+    mlp_dim,
+    backend,
+    activation=None,
+    attention_downsample_rate=2,
+):
+    layer_class = LAYER_BACKBONES.get(backend)
+    if layer_class is None:
+        raise ValueError(
+            f"Backend not supported: {backend}. Supported backbones are {LAYER_BACKBONES.keys()}"
+        )
+    if activation is None:
+        activation = (
+            tf.keras.activations.gelu if backend == "tensorflow" else torch.nn.GELU
+        )
+    layer = layer_class(
+        depth=depth,
+        embedding_dim=embedding_dim,
+        num_heads=num_heads,
+        mlp_dim=mlp_dim,
+        activation=activation,
+        attention_downsample_rate=attention_downsample_rate,
+    )
+
+    return layer
