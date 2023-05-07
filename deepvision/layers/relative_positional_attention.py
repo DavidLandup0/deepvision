@@ -72,9 +72,9 @@ class __RelativePositionalMultiheadAttentionPT(nn.Module):
         attn = (q * self.scale) @ k.transpose(-2, -1)
 
         if self.use_rel_pos:
-            attn = AddDecomposedRelativePositions(self.rel_pos_h, self.rel_pos_w)(
-                attn, q, (H, W), (H, W)
-            )
+            attn = AddDecomposedRelativePositions(
+                self.rel_pos_h, self.rel_pos_w, backend="pytorch"
+            )(attn, q, (H, W), (H, W))
 
         attn = attn.softmax(dim=-1)
         x = (
@@ -140,9 +140,9 @@ class __RelativePositionalMultiheadAttentionTF(tf.keras.layers.Layer):
         attn = tf.matmul(q * self.scale, tf.transpose(k, [0, 2, 1]))
 
         if self.use_rel_pos:
-            attn = AddDecomposedRelativePositions(self.rel_pos_h, self.rel_pos_w)(
-                attn, q, (H, W), (H, W)
-            )
+            attn = AddDecomposedRelativePositions(
+                self.rel_pos_h, self.rel_pos_w, backend="tensorflow"
+            )(attn, q, (H, W), (H, W))
 
         attn = tf.nn.softmax(attn, axis=-1)
         x = tf.reshape(

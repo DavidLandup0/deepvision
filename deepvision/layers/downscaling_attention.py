@@ -148,14 +148,13 @@ LAYER_BACKBONES = {
 }
 
 
-def DownscalingMultiheadAttention(embedding_dim, num_heads, downsample_rate, backend):
+def DownscalingMultiheadAttention(embedding_dim, num_heads, backend, downsample_rate=1):
     """
     MultiheadAttention block that downscales the size of the embedding after projection.
-    Similar to `deepvision.layers.EfficientMultiheadAttention` which performs a reduction to save computational resources.
-    `EfficientMultiheadAttention` performs reduction using a convolutional layer, while DownscalingMultiheadAttention performs reduction
-    after projection, using a `match.sqrt()` call.
-
-
+    Similar to `deepvision.layers.EfficientMultiheadAttention` which performs a reduction
+    to save computational resources.
+    `EfficientMultiheadAttention` performs reduction using a convolutional layer,
+    while DownscalingMultiheadAttention performs reduction after projection.
     """
 
     layer_class = LAYER_BACKBONES.get(backend)
