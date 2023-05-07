@@ -22,7 +22,7 @@ Based on: https://github.com/sithu31296/semantic-segmentation/blob/main/semseg/m
 """
 
 
-class __EfficientAttentionPT(nn.Module):
+class __EfficientMultiheadAttentionPT(nn.Module):
     def __init__(self, project_dim, num_heads, sr_ratio):
         super().__init__()
         self.num_heads = num_heads
@@ -69,7 +69,7 @@ class __EfficientAttentionPT(nn.Module):
         return x
 
 
-class __EfficientAttentionTF(tf.keras.layers.Layer):
+class __EfficientMultiheadAttentionTF(tf.keras.layers.Layer):
     def __init__(self, project_dim, num_heads, sr_ratio):
         super().__init__()
         self.num_heads = num_heads
@@ -144,14 +144,14 @@ class __EfficientAttentionTF(tf.keras.layers.Layer):
 
 
 LAYER_BACKBONES = {
-    "tensorflow": __EfficientAttentionTF,
-    "pytorch": __EfficientAttentionPT,
+    "tensorflow": __EfficientMultiheadAttentionTF,
+    "pytorch": __EfficientMultiheadAttentionPT,
 }
 
 
-def EfficientAttention(project_dim, num_heads, sr_ratio, backend="pytorch"):
+def EfficientMultiheadAttention(project_dim, num_heads, sr_ratio, backend="pytorch"):
     """
-    `EfficientAttention` is a standard scaled softmax attention layer, but shortens the sequence it operates on by a reduction factor, to reduce computational cost.
+    `EfficientMultiheadAttention` is a standard scaled softmax attention layer, but shortens the sequence it operates on by a reduction factor, to reduce computational cost.
     The layer is meant to be used as part of the `deepvision.layers.HierarchicalTransformerEncoder` for the SegFormer architecture.
 
     Reference:
@@ -167,7 +167,7 @@ def EfficientAttention(project_dim, num_heads, sr_ratio, backend="pytorch"):
 
     ```
     tensor = torch.rand(1, 196, 32)
-    output = deepvision.layers.EfficientAttention(project_dim=32,
+    output = deepvision.layers.EfficientMultiheadAttention(project_dim=32,
                                                   num_heads=2,
                                                   sr_ratio=4,
                                                   backend='pytorch')(tensor, H=14, W=14)
@@ -175,7 +175,7 @@ def EfficientAttention(project_dim, num_heads, sr_ratio, backend="pytorch"):
     print(output.shape) # torch.Size([1, 196, 32])
 
     tensor = tf.random.uniform([1, 196, 32])
-    output = deepvision.layers.EfficientAttention(project_dim=32,
+    output = deepvision.layers.EfficientMultiheadAttention(project_dim=32,
                                                   num_heads=2,
                                                   sr_ratio=4,
                                                   backend='tensorflow')(tensor, H=14, W=14)

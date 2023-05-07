@@ -22,7 +22,7 @@ import torch
 from torch import Tensor
 from torch import nn
 
-from deepvision.layers import DownscalingAttention
+from deepvision.layers import DownscalingMultiheadAttention
 from deepvision.layers import TwoWayAttentionBlock
 
 
@@ -67,7 +67,7 @@ class TwoWayTransformerEncoder(nn.Module):
                 )
             )
 
-        self.final_attn_token_to_image = DownscalingAttention(
+        self.final_attn_token_to_image = DownscalingMultiheadAttention(
             embedding_dim, num_heads, downsample_rate=attention_downsample_rate
         )
         self.norm_final_attn = nn.LayerNorm(embedding_dim)

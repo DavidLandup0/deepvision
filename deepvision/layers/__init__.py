@@ -1,5 +1,5 @@
-from deepvision.layers.downscaling_attention import DownscalingAttention
-from deepvision.layers.efficient_attention import EfficientAttention
+from deepvision.layers.downscaling_attention import DownscalingMultiheadAttention
+from deepvision.layers.efficient_attention import EfficientMultiheadAttention
 from deepvision.layers.fused_mbconv import FusedMBConv
 from deepvision.layers.hierarchical_transformer_encoder import (
     HierarchicalTransformerEncoder,

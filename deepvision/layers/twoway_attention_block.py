@@ -21,7 +21,7 @@ import torch
 from torch import Tensor
 from torch import nn
 
-from deepvision.layers.downscaling_attention import DownscalingAttention
+from deepvision.layers.downscaling_attention import DownscalingMultiheadAttention
 
 # from deepvision.layers.mlp import MLP
 
@@ -50,10 +50,10 @@ class TwoWayAttentionBlock(nn.Module):
           skip_first_layer_pe (bool): skip the PE on the first layer
         """
         super().__init__()
-        self.self_attn = DownscalingAttention(embedding_dim, num_heads)
+        self.self_attn = DownscalingMultiheadAttention(embedding_dim, num_heads)
         self.norm1 = nn.LayerNorm(embedding_dim)
 
-        self.cross_attn_token_to_image = DownscalingAttention(
+        self.cross_attn_token_to_image = DownscalingMultiheadAttention(
             embedding_dim, num_heads, downsample_rate=attention_downsample_rate
         )
         self.norm2 = nn.LayerNorm(embedding_dim)
@@ -62,7 +62,7 @@ class TwoWayAttentionBlock(nn.Module):
         self.norm3 = nn.LayerNorm(embedding_dim)
 
         self.norm4 = nn.LayerNorm(embedding_dim)
-        self.cross_attn_image_to_token = DownscalingAttention(
+        self.cross_attn_image_to_token = DownscalingMultiheadAttention(
             embedding_dim, num_heads, downsample_rate=attention_downsample_rate
         )
 
