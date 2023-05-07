@@ -38,7 +38,7 @@ class ViTDetBackbonePT(nn.Module):
 
     def __init__(
         self,
-        input_shape=(None, None, 3),
+        input_shape=(3, None, None),
         input_tensor=None,
         patch_size: int = 16,
         embed_dim: int = 768,
@@ -51,7 +51,6 @@ class ViTDetBackbonePT(nn.Module):
         act_layer: Type[nn.Module] = nn.GELU,
         use_abs_pos: bool = True,
         use_rel_pos: bool = False,
-        rel_pos_zero_init: bool = True,
         window_size: int = 0,
         global_attn_indexes: Tuple[int, ...] = (),
     ) -> None:
@@ -68,7 +67,6 @@ class ViTDetBackbonePT(nn.Module):
             act_layer: Activation layer.
             use_abs_pos: If True, use absolute positional embeddings.
             use_rel_pos: If True, add relative positional embeddings to the attention map.
-            rel_pos_zero_init: If True, zero initialize relative positional parameters.
             window_size: Window size for window attention blocks.
             global_attn_indexes: Indexes for blocks using global attention.
         """
@@ -107,7 +105,6 @@ class ViTDetBackbonePT(nn.Module):
                     norm_layer=norm_layer,
                     act_layer=act_layer,
                     use_rel_pos=use_rel_pos,
-                    rel_pos_zero_init=rel_pos_zero_init,
                     window_size=window_size if i not in global_attn_indexes else 0,
                     input_size=(
                         input_shape[1] // patch_size,

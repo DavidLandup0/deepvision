@@ -21,8 +21,9 @@ from typing import Type
 import torch
 import torch.nn as nn
 
-from deepvision.layers.mlp import MLP
-from deepvision.layers.relative_positional_attention import RelativePositionalAttention
+from deepvision.layers.relative_positional_attention import (
+    MultiheadRelativePositionalAttention,
+)
 from deepvision.layers.window_partitioning import WindowPartitioning
 from deepvision.layers.window_unpartitioning import WindowUnpartitioning
 
@@ -39,7 +40,6 @@ class RelativePositionalTransformerEncoder(nn.Module):
         norm_layer: Type[nn.Module] = nn.LayerNorm,
         act_layer: Type[nn.Module] = nn.GELU,
         use_rel_pos: bool = False,
-        rel_pos_zero_init: bool = True,
         window_size: int = 0,
         input_size: Optional[Tuple[int, int]] = None,
     ) -> None:
@@ -52,7 +52,6 @@ class RelativePositionalTransformerEncoder(nn.Module):
             norm_layer (nn.Module): Normalization layer.
             act_layer (nn.Module): Activation layer.
             use_rel_pos (bool): If True, add relative positional embeddings to the attention map.
-            rel_pos_zero_init (bool): If True, zero initialize relative positional parameters.
             window_size (int): Window size for window attention blocks. If it equals 0, then
                 use global attention.
             input_size (tuple(int, int) or None): Input resolution for calculating the relative
@@ -60,13 +59,13 @@ class RelativePositionalTransformerEncoder(nn.Module):
         """
         super().__init__()
         self.norm1 = norm_layer(dim)
-        self.attn = RelativePositionalAttention(
+        self.attn = MultiheadRelativePositionalAttention(
             dim,
             num_heads=num_heads,
             qkv_bias=qkv_bias,
             use_rel_pos=use_rel_pos,
-            rel_pos_zero_init=rel_pos_zero_init,
             input_size=input_size if window_size == 0 else (window_size, window_size),
+            backend="pytorch",
         )
 
         self.norm2 = norm_layer(dim)

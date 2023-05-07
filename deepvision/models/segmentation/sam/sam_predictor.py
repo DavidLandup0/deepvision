@@ -37,7 +37,7 @@ class PromptableSAM:
         """
         super().__init__()
         self.model = sam_model
-        self.transform = ResizeLongestSide(sam_model.image_encoder.img_size)
+        self.transform = ResizeLongestSide(sam_model.image_encoder.input_shape[1])
         self.reset_image()
 
     def set_image(
@@ -90,8 +90,9 @@ class PromptableSAM:
         assert (
             len(transformed_image.shape) == 4
             and transformed_image.shape[1] == 3
-            and max(*transformed_image.shape[2:]) == self.model.image_encoder.img_size
-        ), f"set_torch_image input must be BCHW with long side {self.model.image_encoder.img_size}."
+            and max(*transformed_image.shape[2:])
+            == self.model.image_encoder.input_shape[1]
+        ), f"set_torch_image input must be BCHW with long side {self.model.image_encoder.input_shape[1]}."
         self.reset_image()
 
         self.original_size = original_image_size

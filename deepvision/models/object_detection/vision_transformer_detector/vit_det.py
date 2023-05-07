@@ -23,10 +23,10 @@ from deepvision.models.object_detection.vision_transformer_detector.vit_det_pt i
 MODEL_CONFIGS = {
     "ViTDetB": {
         "prompt_embed_dim": 256,
-        "image_size": 1024,
+        "input_shape": (3, 1024, 1024),
         "vit_patch_size": 16,
         "encoder_embed_dim": 768,
-        "encoder_depth": 12,
+        "encoder_transformer_layer_num": 12,
         "encoder_num_heads": 12,
         "encoder_global_attn_indexes": [2, 5, 8, 11],
         "mlp_dim": 3072,
@@ -34,10 +34,10 @@ MODEL_CONFIGS = {
     },
     "ViTDetL": {
         "prompt_embed_dim": 256,
-        "image_size": 1024,
+        "input_shape": (3, 1024, 1024),
         "vit_patch_size": 16,
         "encoder_embed_dim": 1024,
-        "encoder_depth": 24,
+        "encoder_transformer_layer_num": 24,
         "encoder_num_heads": 16,
         "encoder_global_attn_indexes": [5, 11, 17, 23],
         "mlp_dim": 4096,
@@ -45,10 +45,10 @@ MODEL_CONFIGS = {
     },
     "ViTDetH": {
         "prompt_embed_dim": 256,
-        "image_size": 1024,
+        "input_shape": (3, 1024, 1024),
         "vit_patch_size": 16,
         "encoder_embed_dim": 1280,
-        "encoder_depth": 32,
+        "encoder_transformer_layer_num": 32,
         "encoder_num_heads": 16,
         "encoder_global_attn_indexes": [7, 15, 23, 31],
         "mlp_dim": 5120,
@@ -70,10 +70,10 @@ def ViTDetB(
         )
 
     model = model_class(
-        depth=MODEL_CONFIGS["ViTDetB"]["encoder_depth"],
+        transformer_layer_num=MODEL_CONFIGS["ViTDetB"]["encoder_transformer_layer_num"],
         embed_dim=MODEL_CONFIGS["ViTDetB"]["encoder_embed_dim"],
-        img_size=MODEL_CONFIGS["ViTDetB"]["image_size"],
-        mlp_ratio=MODEL_CONFIGS["ViTDetB"]["mlp_ratio"],
+        input_shape=MODEL_CONFIGS["ViTDetB"]["input_shape"],
+        mlp_dim=MODEL_CONFIGS["ViTDetB"]["mlp_dim"],
         norm_layer=torch.nn.LayerNorm,
         num_heads=MODEL_CONFIGS["ViTDetB"]["encoder_num_heads"],
         patch_size=MODEL_CONFIGS["ViTDetB"]["vit_patch_size"],
@@ -81,7 +81,7 @@ def ViTDetB(
         use_rel_pos=True,
         global_attn_indexes=MODEL_CONFIGS["ViTDetB"]["encoder_global_attn_indexes"],
         window_size=MODEL_CONFIGS["ViTDetB"]["window_size"],
-        out_chans=MODEL_CONFIGS["ViTDetB"]["prompt_embed_dim"],
+        project_dim=MODEL_CONFIGS["ViTDetB"]["prompt_embed_dim"],
     )
 
     return model
@@ -98,10 +98,10 @@ def ViTDetL(
         )
 
     model = model_class(
-        depth=MODEL_CONFIGS["ViTDetL"]["encoder_depth"],
+        transformer_layer_num=MODEL_CONFIGS["ViTDetL"]["encoder_transformer_layer_num"],
         embed_dim=MODEL_CONFIGS["ViTDetL"]["encoder_embed_dim"],
-        img_size=MODEL_CONFIGS["ViTDetL"]["image_size"],
-        mlp_ratio=MODEL_CONFIGS["ViTDetL"]["mlp_ratio"],
+        input_shape=MODEL_CONFIGS["ViTDetL"]["input_shape"],
+        mlp_dim=MODEL_CONFIGS["ViTDetL"]["mlp_dim"],
         norm_layer=torch.nn.LayerNorm,
         num_heads=MODEL_CONFIGS["ViTDetL"]["encoder_num_heads"],
         patch_size=MODEL_CONFIGS["ViTDetL"]["vit_patch_size"],
@@ -109,7 +109,7 @@ def ViTDetL(
         use_rel_pos=True,
         global_attn_indexes=MODEL_CONFIGS["ViTDetL"]["encoder_global_attn_indexes"],
         window_size=MODEL_CONFIGS["ViTDetL"]["window_size"],
-        out_chans=MODEL_CONFIGS["ViTDetL"]["prompt_embed_dim"],
+        project_dim=MODEL_CONFIGS["ViTDetL"]["prompt_embed_dim"],
     )
 
     return model
@@ -126,10 +126,10 @@ def ViTDetH(
         )
 
     model = model_class(
-        depth=MODEL_CONFIGS["ViTDetH"]["encoder_depth"],
+        transformer_layer_num=MODEL_CONFIGS["ViTDetH"]["encoder_transformer_layer_num"],
         embed_dim=MODEL_CONFIGS["ViTDetH"]["encoder_embed_dim"],
-        img_size=MODEL_CONFIGS["ViTDetH"]["image_size"],
-        mlp_ratio=MODEL_CONFIGS["ViTDetH"]["mlp_ratio"],
+        input_shape=MODEL_CONFIGS["ViTDetH"]["input_shape"],
+        mlp_dim=MODEL_CONFIGS["ViTDetH"]["mlp_dim"],
         norm_layer=torch.nn.LayerNorm,
         num_heads=MODEL_CONFIGS["ViTDetH"]["encoder_num_heads"],
         patch_size=MODEL_CONFIGS["ViTDetH"]["vit_patch_size"],
@@ -137,7 +137,7 @@ def ViTDetH(
         use_rel_pos=True,
         global_attn_indexes=MODEL_CONFIGS["ViTDetH"]["encoder_global_attn_indexes"],
         window_size=MODEL_CONFIGS["ViTDetH"]["window_size"],
-        out_chans=MODEL_CONFIGS["ViTDetH"]["prompt_embed_dim"],
+        project_dim=MODEL_CONFIGS["ViTDetH"]["project_dim"],
     )
 
     return model

@@ -170,7 +170,7 @@ class SAM_PT(nn.Module):
         """
         masks = F.interpolate(
             masks,
-            (self.image_encoder.img_size, self.image_encoder.img_size),
+            (self.image_encoder.input_shape[1], self.image_encoder.input_shape[1]),
             mode="bilinear",
             align_corners=False,
         )
@@ -187,7 +187,7 @@ class SAM_PT(nn.Module):
 
         # Pad
         h, w = x.shape[-2:]
-        padh = self.image_encoder.img_size - h
-        padw = self.image_encoder.img_size - w
+        padh = self.image_encoder.input_shape[1] - h
+        padw = self.image_encoder.input_shape[1] - w
         x = F.pad(x, (0, padw, 0, padh))
         return x

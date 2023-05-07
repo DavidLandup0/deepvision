@@ -18,6 +18,7 @@ from typing import Optional
 from typing import Tuple
 from typing import Type
 
+import tensorflow as tf
 import torch
 from torch import Tensor
 from torch import nn
@@ -27,35 +28,28 @@ from deepvision.layers.decomposed_relative_positional_embedding import (
 )
 
 
-class RelativePositionalAttention(nn.Module):
+class __MultiheadRelativePositionalAttentionPT(nn.Module):
     """Multi-head Attention block with relative position embeddings."""
 
     def __init__(
         self,
-        dim: int,
+        embed_dim: int,
         num_heads: int = 8,
         qkv_bias: bool = True,
         use_rel_pos: bool = False,
-        rel_pos_zero_init: bool = True,
         input_size: Optional[Tuple[int, int]] = None,
     ) -> None:
         """
         Args:
-            dim (int): Number of input channels.
-            num_heads (int): Number of attention heads.
-            qkv_bias (bool):  If True, add a learnable bias to query, key, value.
-            rel_pos (bool): If True, add relative positional embeddings to the attention map.
-            rel_pos_zero_init (bool): If True, zero initialize relative positional parameters.
-            input_size (tuple(int, int) or None): Input resolution for calculating the relative
-                positional parameter size.
+
         """
         super().__init__()
         self.num_heads = num_heads
-        head_dim = dim // num_heads
+        head_dim = embed_dim // num_heads
         self.scale = head_dim**-0.5
 
-        self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
-        self.proj = nn.Linear(dim, dim)
+        self.qkv = nn.Linear(embed_dim, embed_dim * 3, bias=qkv_bias)
+        self.proj = nn.Linear(embed_dim, embed_dim)
 
         self.use_rel_pos = use_rel_pos
         if self.use_rel_pos:
@@ -92,3 +86,121 @@ class RelativePositionalAttention(nn.Module):
         x = self.proj(x)
 
         return x
+
+
+class __MultiheadRelativePositionalAttentionTF(tf.keras.layers.Layer):
+    """Multi-head Attention block with relative position embeddings."""
+
+    def __init__(
+        self,
+        embed_dim,
+        num_heads=8,
+        qkv_bias=True,
+        use_rel_pos=False,
+        input_size=None,
+    ) -> None:
+        """
+        Args:
+
+        """
+        super().__init__()
+        self.num_heads = num_heads
+        head_dim = embed_dim // num_heads
+        self.scale = head_dim**-0.5
+
+        self.qkv = tf.keras.layers.Dense(embed_dim * 3, use_bias=qkv_bias)
+        self.proj = tf.keras.layers.Dense(embed_dim)
+
+        self.use_rel_pos = use_rel_pos
+        if self.use_rel_pos:
+            assert (
+                input_size is not None
+            ), "Input size must be provided if using relative positional encoding."
+            # initialize relative positional embeddings
+
+            self.rel_pos_h = self.add_weight(
+                shape=[2 * input_size[0], head_dim], name="rel_pos_h", trainable=True
+            )
+            self.rel_pos_w = self.add_weight(
+                shape=[2 * input_size[1], head_dim], name="rel_pos_w", trainable=True
+            )
+
+    def call(self, x):
+        input_shape = tf.shape(x)
+        B, H, W, _ = input_shape
+        # qkv with shape (B, H * W, nHead, C, 3)
+        qkv = tf.transpose(
+            tf.reshape(self.qkv(x), [B, H * W, self.num_heads, -1, 3]), [0, 1, 2, 4, 3]
+        )
+        # q, k, v with shape (B * nHead, H * W, C)
+        q, k, v = tf.unstack(
+            tf.reshape(qkv, [B * self.num_heads, H * W, -1, 3]), axis=3
+        )
+
+        attn = tf.matmul(q * self.scale, tf.transpose(k, [0, 2, 1]))
+
+        if self.use_rel_pos:
+            attn = AddDecomposedRelativePositions(self.rel_pos_h, self.rel_pos_w)(
+                attn, q, (H, W), (H, W)
+            )
+
+        attn = tf.nn.softmax(attn, axis=-1)
+        x = tf.reshape(
+            tf.transpose(
+                tf.reshape(tf.matmul(attn, v), [B, H, W, self.num_heads, -1]),
+                [0, 3, 1, 2, 4],
+            ),
+            [B, H, W, -1],
+        )
+        x = self.proj(x)
+
+        return x
+
+
+LAYER_BACKBONES = {
+    "tensorflow": __MultiheadRelativePositionalAttentionTF,
+    "pytorch": __MultiheadRelativePositionalAttentionPT,
+}
+
+
+def MultiheadRelativePositionalAttention(
+    embed_dim,
+    num_heads=8,
+    qkv_bias=True,
+    use_rel_pos=False,
+    input_size=None,
+    backend=None,
+):
+    """
+    Multihead Relative Positional Attention block, as used in MVitV2, Swin and ViTDet:
+        - "MViTv2: Improved Multiscale Vision Transformers for Classification and Detection": https://arxiv.org/abs/2112.01526
+        - "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows": https://arxiv.org/abs/2103.14030
+        - "Exploring Plain Vision Transformer Backbones for Object Detection": https://arxiv.org/abs/2203.16527
+
+    Can be used as a drop-in replacement for MultiheadAttention, but additionally optionally uses relative positional embeddings instead of
+    absolute positional embeddings.
+
+    Args:
+        embed_dim: The dimensionality of the output.
+        num_heads: default 8, Number of attention heads.
+        qkv_bias: default True, Whether to add a learnable bias to query, key, value or not.
+        use_rel_pos: default False, Whether to add relative positional embeddings to the attention map.
+        input_size: default None, Input size
+        backend: default None, Which backend to use.
+    """
+
+    layer_class = LAYER_BACKBONES.get(backend)
+    if layer_class is None:
+        raise ValueError(
+            f"Backend not supported: {backend}. Supported backbones are {LAYER_BACKBONES.keys()}"
+        )
+
+    layer = layer_class(
+        embed_dim=embed_dim,
+        num_heads=num_heads,
+        qkv_bias=qkv_bias,
+        use_rel_pos=use_rel_pos,
+        input_size=input_size,
+    )
+
+    return layer

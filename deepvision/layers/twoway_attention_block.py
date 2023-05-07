@@ -59,17 +59,6 @@ class TwoWayAttentionBlock(nn.Module):
         self.norm2 = nn.LayerNorm(embedding_dim)
 
         self.mlp = _MLPBlock(embedding_dim, mlp_dim, activation)
-
-        """
-        self.mlp = MLP(
-            input_dim=embedding_dim,
-            embed_dim=mlp_dim,
-            output_dim=embedding_dim,
-            activation=activation,
-            num_layers=2,
-            backend="pytorch",
-        )
-        """
         self.norm3 = nn.LayerNorm(embedding_dim)
 
         self.norm4 = nn.LayerNorm(embedding_dim)
