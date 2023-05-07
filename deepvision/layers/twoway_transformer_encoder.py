@@ -64,6 +64,7 @@ class TwoWayTransformerEncoder(nn.Module):
                     activation=activation,
                     attention_downsample_rate=attention_downsample_rate,
                     skip_first_layer_pe=(i == 0),
+                    backend='pytorch'
                 )
             )
 
