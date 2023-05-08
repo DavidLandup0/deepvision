@@ -80,7 +80,7 @@ def SAM_B(
         num_multimask_outputs=MODEL_CONFIGS["SAM"]["num_multimask_outputs"],
         transformer=TwoWayTransformerEncoder(
             depth=MODEL_CONFIGS["SAM"]["transformer_depth"],
-            embedding_dim=MODEL_CONFIGS["SAM"]["prompt_embed_dim"],
+            project_dim=MODEL_CONFIGS["SAM"]["prompt_embed_dim"],
             mlp_dim=MODEL_CONFIGS["SAM"]["transformer_mlp_dim"],
             num_heads=MODEL_CONFIGS["SAM"]["transformer_num_heads"],
             backend=backend,
@@ -134,7 +134,7 @@ def SAM_L(
         num_multimask_outputs=MODEL_CONFIGS["SAM"]["num_multimask_outputs"],
         transformer=TwoWayTransformerEncoder(
             depth=MODEL_CONFIGS["SAM"]["transformer_depth"],
-            embedding_dim=MODEL_CONFIGS["SAM"]["prompt_embed_dim"],
+            project_dim=MODEL_CONFIGS["SAM"]["prompt_embed_dim"],
             mlp_dim=MODEL_CONFIGS["SAM"]["transformer_mlp_dim"],
             num_heads=MODEL_CONFIGS["SAM"]["transformer_num_heads"],
             backend=backend,
@@ -189,7 +189,7 @@ def SAM_H(
         num_multimask_outputs=MODEL_CONFIGS["SAM"]["num_multimask_outputs"],
         transformer=TwoWayTransformerEncoder(
             depth=MODEL_CONFIGS["SAM"]["transformer_depth"],
-            embedding_dim=MODEL_CONFIGS["SAM"]["prompt_embed_dim"],
+            project_dim=MODEL_CONFIGS["SAM"]["prompt_embed_dim"],
             mlp_dim=MODEL_CONFIGS["SAM"]["transformer_mlp_dim"],
             num_heads=MODEL_CONFIGS["SAM"]["transformer_num_heads"],
             backend=backend,

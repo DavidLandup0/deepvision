@@ -29,7 +29,7 @@ from deepvision.layers.mlp import MLP
 class __TwoWayAttentionBlockPT(nn.Module):
     def __init__(
         self,
-        embedding_dim: int,
+        project_dim: int,
         num_heads: int,
         mlp_dim: int = 2048,
         activation: Type[nn.Module] = nn.ReLU,
@@ -43,7 +43,7 @@ class __TwoWayAttentionBlockPT(nn.Module):
         inputs.
 
         Arguments:
-          embedding_dim (int): the channel dimension of the embeddings
+          project_dim (int): the channel dimension of the embeddings
           num_heads (int): the number of heads in the attention layers
           mlp_dim (int): the hidden dimension of the mlp block
           activation (nn.Module): the activation of the mlp block
@@ -51,24 +51,24 @@ class __TwoWayAttentionBlockPT(nn.Module):
         """
         super().__init__()
         self.self_attn = DownscalingMultiheadAttention(
-            embedding_dim, num_heads, backend="pytorch"
+            project_dim, num_heads, backend="pytorch"
         )
-        self.norm1 = nn.LayerNorm(embedding_dim)
+        self.norm1 = nn.LayerNorm(project_dim)
 
         self.cross_attn_token_to_image = DownscalingMultiheadAttention(
-            embedding_dim,
+            project_dim,
             num_heads,
             downsample_rate=attention_downsample_rate,
             backend="pytorch",
         )
-        self.norm2 = nn.LayerNorm(embedding_dim)
+        self.norm2 = nn.LayerNorm(project_dim)
 
-        self.mlp = _MLPBlock(embedding_dim, mlp_dim, activation)
-        self.norm3 = nn.LayerNorm(embedding_dim)
+        self.mlp = _MLPBlock(project_dim, mlp_dim, activation)
+        self.norm3 = nn.LayerNorm(project_dim)
 
-        self.norm4 = nn.LayerNorm(embedding_dim)
+        self.norm4 = nn.LayerNorm(project_dim)
         self.cross_attn_image_to_token = DownscalingMultiheadAttention(
-            embedding_dim,
+            project_dim,
             num_heads,
             downsample_rate=attention_downsample_rate,
             backend="pytorch",
@@ -113,7 +113,7 @@ class __TwoWayAttentionBlockPT(nn.Module):
 class __TwoWayAttentionBlockTF(tf.keras.layers.Layer):
     def __init__(
         self,
-        embedding_dim,
+        project_dim,
         num_heads,
         mlp_dim=2048,
         activation=tf.keras.activations.relu,
@@ -127,7 +127,7 @@ class __TwoWayAttentionBlockTF(tf.keras.layers.Layer):
         inputs.
 
         Arguments:
-          embedding_dim (int): the channel dimension of the embeddings
+          project_dim (int): the channel dimension of the embeddings
           num_heads (int): the number of heads in the attention layers
           mlp_dim (int): the hidden dimension of the mlp block
           activation (nn.Module): the activation of the mlp block
@@ -135,12 +135,12 @@ class __TwoWayAttentionBlockTF(tf.keras.layers.Layer):
         """
         super().__init__()
         self.self_attn = DownscalingMultiheadAttention(
-            embedding_dim, num_heads, backend="tensorflow"
+            project_dim, num_heads, backend="tensorflow"
         )
         self.norm1 = tf.keras.layers.LayerNormalization()
 
         self.cross_attn_token_to_image = DownscalingMultiheadAttention(
-            embedding_dim,
+            project_dim,
             num_heads,
             downsample_rate=attention_downsample_rate,
             backend="tensorflow",
@@ -148,7 +148,7 @@ class __TwoWayAttentionBlockTF(tf.keras.layers.Layer):
         self.norm2 = tf.keras.layers.LayerNormalization()
 
         self.mlp = MLP(
-            output_dim=embedding_dim,
+            output_dim=project_dim,
             embed_dim=mlp_dim,
             activation=activation,
             num_layers=2,
@@ -159,7 +159,7 @@ class __TwoWayAttentionBlockTF(tf.keras.layers.Layer):
 
         self.norm4 = tf.keras.layers.LayerNormalization()
         self.cross_attn_image_to_token = DownscalingMultiheadAttention(
-            embedding_dim,
+            project_dim,
             num_heads,
             downsample_rate=attention_downsample_rate,
             backend="tensorflow",
@@ -207,13 +207,13 @@ class _MLPBlock(nn.Module):
 
     def __init__(
         self,
-        embedding_dim: int,
+        project_dim: int,
         mlp_dim: int,
         act: Type[nn.Module] = nn.GELU,
     ) -> None:
         super().__init__()
-        self.lin1 = nn.Linear(embedding_dim, mlp_dim)
-        self.lin2 = nn.Linear(mlp_dim, embedding_dim)
+        self.lin1 = nn.Linear(project_dim, mlp_dim)
+        self.lin2 = nn.Linear(mlp_dim, project_dim)
         self.act = act()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -227,7 +227,7 @@ LAYER_BACKBONES = {
 
 
 def TwoWayAttentionBlock(
-    embedding_dim,
+    project_dim,
     num_heads,
     backend,
     mlp_dim=2048,
@@ -247,7 +247,7 @@ def TwoWayAttentionBlock(
         )
 
     layer = layer_class(
-        embedding_dim=embedding_dim,
+        project_dim=project_dim,
         num_heads=num_heads,
         mlp_dim=mlp_dim,
         activation=activation,

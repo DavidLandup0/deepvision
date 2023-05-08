@@ -32,22 +32,20 @@ class __DownscalingMultiheadAttentionPT(nn.Module):
 
     def __init__(
         self,
-        embedding_dim: int,
+        project_dim: int,
         num_heads: int,
         downsample_rate: int = 1,
     ) -> None:
         super().__init__()
-        self.embedding_dim = embedding_dim
-        self.internal_dim = embedding_dim // downsample_rate
+        self.project_dim = project_dim
+        self.internal_dim = project_dim // downsample_rate
         self.num_heads = num_heads
-        assert (
-            self.internal_dim % num_heads == 0
-        ), "num_heads must divide embedding_dim."
+        assert self.internal_dim % num_heads == 0, "num_heads must divide project_dim."
 
-        self.q_proj = nn.Linear(embedding_dim, self.internal_dim)
-        self.k_proj = nn.Linear(embedding_dim, self.internal_dim)
-        self.v_proj = nn.Linear(embedding_dim, self.internal_dim)
-        self.out_proj = nn.Linear(self.internal_dim, embedding_dim)
+        self.q_proj = nn.Linear(project_dim, self.internal_dim)
+        self.k_proj = nn.Linear(project_dim, self.internal_dim)
+        self.v_proj = nn.Linear(project_dim, self.internal_dim)
+        self.out_proj = nn.Linear(self.internal_dim, project_dim)
 
     def _separate_heads(self, x: Tensor, num_heads: int) -> Tensor:
         b, n, c = x.shape
@@ -90,19 +88,17 @@ class __DownscalingMultiheadAttentionTF(tf.keras.layers.Layer):
     after projection to queries, keys, and values.
     """
 
-    def __init__(self, embedding_dim, num_heads, downsample_rate=1, **kwargs) -> None:
+    def __init__(self, project_dim, num_heads, downsample_rate=1, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.embedding_dim = embedding_dim
-        self.internal_dim = embedding_dim // downsample_rate
+        self.project_dim = project_dim
+        self.internal_dim = project_dim // downsample_rate
         self.num_heads = num_heads
-        assert (
-            self.internal_dim % num_heads == 0
-        ), "num_heads must divide embedding_dim."
+        assert self.internal_dim % num_heads == 0, "num_heads must divide project_dim."
 
         self.q_proj = tf.keras.layers.Dense(self.internal_dim)
         self.k_proj = tf.keras.layers.Dense(self.internal_dim)
         self.v_proj = tf.keras.layers.Dense(self.internal_dim)
-        self.out_proj = tf.keras.layers.Dense(embedding_dim)
+        self.out_proj = tf.keras.layers.Dense(project_dim)
 
     def _separate_heads(self, x: tf.Tensor, num_heads: int) -> tf.Tensor:
         input_shape = tf.shape(x)
@@ -148,7 +144,7 @@ LAYER_BACKBONES = {
 }
 
 
-def DownscalingMultiheadAttention(embedding_dim, num_heads, backend, downsample_rate=1):
+def DownscalingMultiheadAttention(project_dim, num_heads, backend, downsample_rate=1):
     """
     MultiheadAttention block that downscales the size of the embedding after projection.
     Similar to `deepvision.layers.EfficientMultiheadAttention` which performs a reduction
@@ -164,7 +160,7 @@ def DownscalingMultiheadAttention(embedding_dim, num_heads, backend, downsample_
         )
 
     layer = layer_class(
-        embedding_dim=embedding_dim,
+        project_dim=project_dim,
         num_heads=num_heads,
         downsample_rate=downsample_rate,
     )

@@ -31,7 +31,7 @@ class __TwoWayTransformerEncoderPT(nn.Module):
     def __init__(
         self,
         depth: int,
-        embedding_dim: int,
+        project_dim: int,
         num_heads: int,
         mlp_dim: int,
         activation: Type[nn.Module] = nn.ReLU,
@@ -43,15 +43,15 @@ class __TwoWayTransformerEncoderPT(nn.Module):
 
         Args:
           depth (int): number of layers in the transformer
-          embedding_dim (int): the channel dimension for the input embeddings
+          project_dim (int): the channel dimension for the input embeddings
           num_heads (int): the number of heads for multihead attention. Must
-            divide embedding_dim
+            divide project_dim
           mlp_dim (int): the channel dimension internal to the MLP block
           activation (nn.Module): the activation to use in the MLP block
         """
         super().__init__()
         self.depth = depth
-        self.embedding_dim = embedding_dim
+        self.project_dim = project_dim
         self.num_heads = num_heads
         self.mlp_dim = mlp_dim
         self.layers = nn.ModuleList()
@@ -59,7 +59,7 @@ class __TwoWayTransformerEncoderPT(nn.Module):
         for i in range(depth):
             self.layers.append(
                 TwoWayAttentionBlock(
-                    embedding_dim=embedding_dim,
+                    project_dim=project_dim,
                     num_heads=num_heads,
                     mlp_dim=mlp_dim,
                     activation=activation,
@@ -70,12 +70,12 @@ class __TwoWayTransformerEncoderPT(nn.Module):
             )
 
         self.final_attn_token_to_image = DownscalingMultiheadAttention(
-            embedding_dim,
+            project_dim,
             num_heads,
             downsample_rate=attention_downsample_rate,
             backend="pytorch",
         )
-        self.norm_final_attn = nn.LayerNorm(embedding_dim)
+        self.norm_final_attn = nn.LayerNorm(project_dim)
 
     def forward(
         self,
@@ -86,11 +86,11 @@ class __TwoWayTransformerEncoderPT(nn.Module):
         """
         Args:
           image_embedding (torch.Tensor): image to attend to. Should be shape
-            B x embedding_dim x h x w for any h and w.
+            B x project_dim x h x w for any h and w.
           image_pe (torch.Tensor): the positional encoding to add to the image. Must
             have the same shape as image_embedding.
           point_embedding (torch.Tensor): the embedding to add to the query points.
-            Must have shape B x N_points x embedding_dim for any N_points.
+            Must have shape B x N_points x project_dim for any N_points.
 
         Returns:
           torch.Tensor: the processed point_embedding
@@ -128,7 +128,7 @@ class __TwoWayTransformerEncoderTF(tf.keras.layers.Layer):
     def __init__(
         self,
         depth: int,
-        embedding_dim: int,
+        project_dim: int,
         num_heads: int,
         mlp_dim: int,
         activation=tf.keras.activations.relu,
@@ -140,15 +140,15 @@ class __TwoWayTransformerEncoderTF(tf.keras.layers.Layer):
 
         Args:
           depth (int): number of layers in the transformer
-          embedding_dim (int): the channel dimension for the input embeddings
+          project_dim (int): the channel dimension for the input embeddings
           num_heads (int): the number of heads for multihead attention. Must
-            divide embedding_dim
+            divide project_dim
           mlp_dim (int): the channel dimension internal to the MLP block
           activation (nn.Module): the activation to use in the MLP block
         """
         super().__init__()
         self.depth = depth
-        self.embedding_dim = embedding_dim
+        self.project_dim = project_dim
         self.num_heads = num_heads
         self.mlp_dim = mlp_dim
         self.layers = []
@@ -156,7 +156,7 @@ class __TwoWayTransformerEncoderTF(tf.keras.layers.Layer):
         for i in range(depth):
             self.layers.append(
                 TwoWayAttentionBlock(
-                    embedding_dim=embedding_dim,
+                    project_dim=project_dim,
                     num_heads=num_heads,
                     mlp_dim=mlp_dim,
                     activation=activation,
@@ -167,7 +167,7 @@ class __TwoWayTransformerEncoderTF(tf.keras.layers.Layer):
             )
 
         self.final_attn_token_to_image = DownscalingMultiheadAttention(
-            embedding_dim,
+            project_dim,
             num_heads,
             downsample_rate=attention_downsample_rate,
             backend="tensorflow",
@@ -183,11 +183,11 @@ class __TwoWayTransformerEncoderTF(tf.keras.layers.Layer):
         """
         Args:
           image_embedding (torch.Tensor): image to attend to. Should be shape
-            B x embedding_dim x h x w for any h and w.
+            B x project_dim x h x w for any h and w.
           image_pe (torch.Tensor): the positional encoding to add to the image. Must
             have the same shape as image_embedding.
           point_embedding (torch.Tensor): the embedding to add to the query points.
-            Must have shape B x N_points x embedding_dim for any N_points.
+            Must have shape B x N_points x project_dim for any N_points.
 
         Returns:
           torch.Tensor: the processed point_embedding
@@ -234,7 +234,7 @@ LAYER_BACKBONES = {
 
 def TwoWayTransformerEncoder(
     depth,
-    embedding_dim,
+    project_dim,
     num_heads,
     mlp_dim,
     backend,
@@ -252,7 +252,7 @@ def TwoWayTransformerEncoder(
         )
     layer = layer_class(
         depth=depth,
-        embedding_dim=embedding_dim,
+        project_dim=project_dim,
         num_heads=num_heads,
         mlp_dim=mlp_dim,
         activation=activation,
