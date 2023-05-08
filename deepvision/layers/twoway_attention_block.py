@@ -152,7 +152,9 @@ class __TwoWayAttentionBlockTF(tf.keras.layers.Layer):
             embed_dim=mlp_dim,
             activation=activation,
             num_layers=2,
+            backend="tensorflow",
         )
+
         self.norm3 = tf.keras.layers.LayerNormalization()
 
         self.norm4 = tf.keras.layers.LayerNormalization()

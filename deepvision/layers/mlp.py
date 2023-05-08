@@ -46,7 +46,7 @@ class __MLP_TF(tf.keras.layers.Layer):
         h = [embed_dim] * (num_layers - 1)
         self.num_layers = num_layers
 
-        self.layers = [tf.keras.layers.Dense(k) for k in zip(h + [output_dim])]
+        self.layers = [tf.keras.layers.Dense(k) for k in (h + [output_dim])]
         self.activation = activation
         self.output_act = output_act
 

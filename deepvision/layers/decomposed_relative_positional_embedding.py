@@ -201,7 +201,6 @@ LAYER_BACKBONES = {
 
 
 def AddDecomposedRelativePositions(rel_pos_h, rel_pos_w, backend):
-
     layer_class = LAYER_BACKBONES.get(backend)
     if layer_class is None:
         raise ValueError(

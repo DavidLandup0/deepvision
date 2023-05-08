@@ -174,7 +174,7 @@ class __TwoWayTransformerEncoderTF(tf.keras.layers.Layer):
         )
         self.norm_final_attn = tf.keras.layers.LayerNormalization()
 
-    def forward(
+    def call(
         self,
         image_embedding,
         image_pe,
@@ -197,8 +197,11 @@ class __TwoWayTransformerEncoderTF(tf.keras.layers.Layer):
         input_shape = tf.shape(image_embedding)
         bs, c, h, w = input_shape[0], input_shape[1], input_shape[2], input_shape[3]
 
-        image_embedding = image_embedding.flatten(2).permute(0, 2, 1)
-        image_pe = image_pe.flatten(2).permute(0, 2, 1)
+        image_embedding = tf.transpose(
+            tf.reshape(image_embedding, [bs, c, -1]), perm=[0, 2, 1]
+        )
+
+        image_pe = tf.transpose(tf.reshape(image_pe, [bs, c, -1]), perm=[0, 2, 1])
 
         # Prepare queries
         queries = point_embedding
