@@ -52,7 +52,9 @@ class PromptEncoder(nn.Module):
         self.embed_dim = embed_dim
         self.input_image_size = input_image_size
         self.image_embedding_size = image_embedding_size
-        self.pe_layer = PositionEmbeddingRandom(embed_dim // 2)
+        self.pe_layer = PositionEmbeddingRandom(
+            num_pos_feats=embed_dim // 2, backend="pytorch"
+        )
 
         self.num_point_embeddings: int = 4  # pos/neg point + 2 box corners
         point_embeddings = [

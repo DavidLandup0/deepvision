@@ -23,7 +23,7 @@ import torch
 from torch import nn
 
 
-class PositionEmbeddingRandom(nn.Module):
+class __RandomPositionEmbeddingPT(nn.Module):
     """
     Positional encoding using random spatial frequencies.
     """
@@ -67,3 +67,36 @@ class PositionEmbeddingRandom(nn.Module):
         coords[:, :, 0] = coords[:, :, 0] / image_size[1]
         coords[:, :, 1] = coords[:, :, 1] / image_size[0]
         return self._pe_encoding(coords.to(torch.float))  # B x N x C
+
+
+class __RandomPositionEmbeddingTF(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def forward(self, size: Tuple[int, int]) -> torch.Tensor:
+        pass
+
+
+LAYER_BACKBONES = {
+    "tensorflow": __RandomPositionEmbeddingTF,
+    "pytorch": __RandomPositionEmbeddingPT,
+}
+
+
+def RandomPositionEmbedding(
+    backend,
+    num_pos_feats=64,
+    scale=None,
+):
+    layer_class = LAYER_BACKBONES.get(backend)
+    if layer_class is None:
+        raise ValueError(
+            f"Backend not supported: {backend}. Supported backbones are {LAYER_BACKBONES.keys()}"
+        )
+
+    layer = layer_class(
+        num_pos_feats=num_pos_feats,
+        scale=scale,
+    )
+
+    return layer
