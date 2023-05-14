@@ -106,7 +106,7 @@ class __RelativePositionalTransformerEncoderTF(tf.keras.layers.Layer):
         num_heads,
         mlp_dim,
         qkv_bias,
-        norm_layer=tf.keras.layers.LayerNormalization,
+        norm_layer=layers.LayerNormalization,
         act_layer=tf.keras.activations.gelu,
         use_rel_pos=False,
         window_size=0,

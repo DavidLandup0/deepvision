@@ -20,7 +20,7 @@ from typing import Type
 
 import tensorflow as tf
 import torch
-from torch import Tensor
+from tensorflow.keras import layers
 from torch import nn
 
 from deepvision.layers.decomposed_relative_positional_embedding import (
@@ -88,7 +88,7 @@ class __RelativePositionalMultiheadAttentionPT(nn.Module):
         return x
 
 
-class __RelativePositionalMultiheadAttentionTF(tf.keras.layers.Layer):
+class __RelativePositionalMultiheadAttentionTF(layers.Layer):
     """Multi-head Attention block with relative position embeddings."""
 
     def __init__(
@@ -108,8 +108,8 @@ class __RelativePositionalMultiheadAttentionTF(tf.keras.layers.Layer):
         head_dim = project_dim // num_heads
         self.scale = head_dim**-0.5
 
-        self.qkv = tf.keras.layers.Dense(project_dim * 3, use_bias=qkv_bias)
-        self.proj = tf.keras.layers.Dense(project_dim)
+        self.qkv = layers.Dense(project_dim * 3, use_bias=qkv_bias)
+        self.proj = layers.Dense(project_dim)
 
         self.use_rel_pos = use_rel_pos
         if self.use_rel_pos:

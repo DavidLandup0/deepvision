@@ -36,8 +36,6 @@ class __AddDecomposedRelativePositionsPT(nn.Module):
         k_size: Tuple[int, int],
     ) -> torch.Tensor:
         """
-        Calculate decomposed Relative Positional Embeddings from `mvitv2`.
-        https://github.com/facebookresearch/mvit/blob/19786631e330df9f3622e5402b4a419a263a2c80/mvit/models/attention.py
         Args:
             attn (Tensor): attention map.
             q (Tensor): query q in the attention layer with shape (B, q_h * q_w, C).
@@ -125,7 +123,7 @@ class __AddDecomposedRelativePositionsTF(tf.keras.layers.Layer):
         k_size: Tuple[int, int],
     ) -> tf.Tensor:
         """
-        Calculate decomposed Relative Positional Embeddings from :paper:`mvitv2`.
+        Calculate decomposed Relative Positional Embeddings from `mvitv2`.
         https://github.com/facebookresearch/mvit/blob/19786631e330df9f3622e5402b4a419a263a2c80/mvit/models/attention.py
         Args:
             attn (Tensor): attention map.
@@ -211,6 +209,19 @@ LAYER_BACKBONES = {
 
 
 def AddDecomposedRelativePositions(rel_pos_h, rel_pos_w, backend):
+    """
+    Calculate decomposed Relative Positional Embeddings from `mvitv2`.
+
+        "MViTv2: Improved Multiscale Vision Transformers for Classification and Detection":
+            - https://arxiv.org/abs/2112.01526
+            - https://github.com/facebookresearch/mvit/blob/19786631e330df9f3622e5402b4a419a263a2c80/mvit/models/attention.py
+        Args:
+            q_size: tuple specifying the spatial sequence size of query q with (q_h, q_w).
+            k_size: tuple specifying the spatial sequence size of key k with (k_h, k_w).
+
+        Returns:
+            Attention map with added relative positional embeddings.
+    """
     layer_class = LAYER_BACKBONES.get(backend)
     if layer_class is None:
         raise ValueError(

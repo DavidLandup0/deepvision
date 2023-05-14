@@ -19,6 +19,7 @@ from typing import Type
 
 import tensorflow as tf
 import torch
+from tensorflow.keras import layers
 from torch import Tensor
 from torch import nn
 
@@ -110,7 +111,7 @@ class __TwoWayAttentionBlockPT(nn.Module):
         return queries, keys
 
 
-class __TwoWayAttentionBlockTF(tf.keras.layers.Layer):
+class __TwoWayAttentionBlockTF(layers.Layer):
     def __init__(
         self,
         project_dim,
@@ -137,7 +138,7 @@ class __TwoWayAttentionBlockTF(tf.keras.layers.Layer):
         self.self_attn = DownscalingMultiheadAttention(
             project_dim, num_heads, backend="tensorflow"
         )
-        self.norm1 = tf.keras.layers.LayerNormalization()
+        self.norm1 = layers.LayerNormalization()
 
         self.cross_attn_token_to_image = DownscalingMultiheadAttention(
             project_dim,
@@ -145,7 +146,7 @@ class __TwoWayAttentionBlockTF(tf.keras.layers.Layer):
             downsample_rate=attention_downsample_rate,
             backend="tensorflow",
         )
-        self.norm2 = tf.keras.layers.LayerNormalization()
+        self.norm2 = layers.LayerNormalization()
 
         self.mlp = MLP(
             output_dim=project_dim,
@@ -155,9 +156,9 @@ class __TwoWayAttentionBlockTF(tf.keras.layers.Layer):
             backend="tensorflow",
         )
 
-        self.norm3 = tf.keras.layers.LayerNormalization()
+        self.norm3 = layers.LayerNormalization()
 
-        self.norm4 = tf.keras.layers.LayerNormalization()
+        self.norm4 = layers.LayerNormalization()
         self.cross_attn_image_to_token = DownscalingMultiheadAttention(
             project_dim,
             num_heads,
