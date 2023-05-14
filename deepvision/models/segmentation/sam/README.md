@@ -29,5 +29,5 @@ To build SAM, DeepVision offers both PyTorch (all) and TensorFlow (most) impleme
 - `deepvision.layers.RandomPositionEmbedding`
 - `deepvision.layers.AddDecomposedRelativePositions`
 
-For examples of usages of these building blocks, take a look at [Segment Anything PyTorch and TensorFlow Components](https://github.com/DavidLandup0/deepvision/blob/main/examples/Segment%20Anything%20Model%20with%20DeepVision.ipynb).
+For examples of usages of these building blocks, take a look at [Segment Anything PyTorch and TensorFlow Components](https://github.com/DavidLandup0/deepvision/blob/main/examples/Segment%20Anything%20PyTorch%20and%20TensorFlow%20Components.ipynb).
 For examples of usages of the Segment Anything Model, take a look at [Segment Anything Model with DeepVision](https://github.com/DavidLandup0/deepvision/blob/main/examples/Segment%20Anything%20Model%20with%20DeepVision.ipynb)
