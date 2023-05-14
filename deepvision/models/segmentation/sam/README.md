@@ -4,6 +4,8 @@ The Segment Anything Model (SAM) is meant to be a foundational model for segment
 
 To this end, the model is trained to accept an image and up to 4 prompts - using keypoints, boxes, rough valid masks and text, and output segmentations for the requested objects in the image. Most notably, the model outputs multiple *valid* masks, which allows for ambiguous queries, and confidence scores for each mask. While text-prompting isn't released publically, using keypoints and boxes is.
 
+![image](https://github.com/DavidLandup0/deepvision/assets/60978046/610ba409-2851-442c-9e5d-b1d8de89b735)
+
 To make this possible, SAM has three main components:
 
 - **Image Encoder** - A ViTDet backbone, with minimal modifications. The size of the backbone defines the size of the SAM model, with ViTDet B(ase), L(arge) and H(uge), without the object detection head, outputting a vector of length 768, 1024 and 1280 for the variants  respectively.
@@ -14,3 +16,18 @@ Most of the components are slashed together from existing implementations, such 
 
 - `DownscalingMultiheadAttention` downscales the the size of the embedding after projection to queries, keys, and values, similar to the `EfficientMultiheadAttention` mechanism, but differs in the way downscaling is done.`EfficientMultiheadAttention` performs reduction using a convolutional layer, while `DownscalingMultiheadAttention` performs reduction after projection.
 - `TwoWayAttentionBlock` has four layers - self-attention on sparse inputs, cross-attention from sparse to dense inputs, an MLP for sparse inputs and cross-attention of dense inputs to sparse inputs. This is the block that allows us to interchangeably embed and decode sparse (texts, keypoints, boxes) and dense (masks) inputs.
+
+To build SAM, DeepVision offers both PyTorch (all) and TensorFlow (most) implementations of the components:
+
+- `deepvision.layers.WindowUnpartitioning`
+- `deepvision.layers.WindowPartitioning`
+- `deepvision.layers.DownscalingMultiheadAttention`
+- `deepvision.layers.TwoWayAttentionBlock`
+- `deepvision.layers.TwoWayTransformerDecoder`
+- `deepvision.layers.RelativePositionalTransformerEncoder`
+- `deepvision.layers.RelativePositionalMultiheadAttention`
+- `deepvision.layers.RandomPositionEmbedding`
+- `deepvision.layers.AddDecomposedRelativePositions`
+
+For examples of usages of these building blocks, take a look at [Segment Anything PyTorch and TensorFlow Components](https://github.com/DavidLandup0/deepvision/blob/main/examples/Segment%20Anything%20Model%20with%20DeepVision.ipynb).
+For examples of usages of the Segment Anything Model, take a look at [Segment Anything Model with DeepVision](https://github.com/DavidLandup0/deepvision/blob/main/examples/Segment%20Anything%20Model%20with%20DeepVision.ipynb)
