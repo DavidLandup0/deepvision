@@ -15,7 +15,7 @@
 import tensorflow as tf
 from torch import nn
 
-from deepvision.layers.efficient_attention import EfficientAttention
+from deepvision.layers.efficient_attention import EfficientMultiheadAttention
 from deepvision.layers.mix_ffn import MixFFN
 from deepvision.layers.stochasticdepth import StochasticDepth
 
@@ -32,7 +32,7 @@ class __HierarchicalTransformerEncoderPT(nn.Module):
     ):
         super().__init__()
         self.norm1 = nn.LayerNorm(project_dim)
-        self.attn = EfficientAttention(project_dim, num_heads, sr_ratio)
+        self.attn = EfficientMultiheadAttention(project_dim, num_heads, sr_ratio)
         self.drop_path = StochasticDepth(drop_prob, backend="pytorch")
         self.norm2 = nn.LayerNorm(project_dim, eps=layer_norm_epsilon)
         self.mlp = MixFFN(
@@ -57,7 +57,7 @@ class __HierarchicalTransformerEncoderTF(tf.keras.layers.Layer):
     ):
         super().__init__(**kwargs)
         self.norm1 = tf.keras.layers.LayerNormalization(epsilon=layer_norm_epsilon)
-        self.attn = EfficientAttention(
+        self.attn = EfficientMultiheadAttention(
             project_dim, num_heads, sr_ratio, backend="tensorflow"
         )
         self.drop_path = StochasticDepth(drop_prob, backend="tensorflow")
@@ -90,17 +90,17 @@ def HierarchicalTransformerEncoder(
     name=None,
 ):
     """
-    TransformerEncoder variant, which uses `deepvision.layers.EfficientAttention` in lieu of `torch.nn.MultiheadAttention` or `tf.keras.layers.MultiHeadAttention`.
-    `EfficientAttention` shorten the sequence they operate on by a reduction factor, to reduce computational cost.
+    TransformerEncoder variant, which uses `deepvision.layers.EfficientMultiheadAttention` in lieu of `torch.nn.MultiheadAttention` or `tf.keras.layers.MultiHeadAttention`.
+    `EfficientMultiheadAttention` shorten the sequence they operate on by a reduction factor, to reduce computational cost.
     The `HierarchicalTransformerEncoder` is designed to encode feature maps at multiple spatial levels, similar to how CNNs encode multiple spatial levels.
 
     Reference:
         - ["SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers"](https://arxiv.org/pdf/2105.15203v2.pdf)
 
     Args:
-        project_dim: the dimensionality of the projection of the encoder, and output of the `EfficientAttention`
-        num_heads: the number of heads for the `EfficientAttention` layer
-        sr_ratio: the reduction ratio to apply within the `EfficientAttention` layer
+        project_dim: the dimensionality of the projection of the encoder, and output of the `EfficientMultiheadAttention`
+        num_heads: the number of heads for the `EfficientMultiheadAttention` layer
+        sr_ratio: the reduction ratio to apply within the `EfficientMultiheadAttention` layer
         layer_norm_epsilon: default 1e-06, the epsilon for Layer Normalization layers
         drop_prob: the drop probability for the `DropPath` layers
         backend: the backend framework to use

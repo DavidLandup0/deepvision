@@ -21,11 +21,15 @@ from tensorflow.keras import layers
 
 
 class __PatchingAndEmbeddingTF(layers.Layer):
-    def __init__(self, project_dim, patch_size, padding="valid", **kwargs):
+    def __init__(
+        self, project_dim, patch_size, padding="valid", embedding=True, **kwargs
+    ):
         super().__init__(**kwargs)
         self.project_dim = project_dim
         self.patch_size = patch_size
         self.padding = padding
+        self.embedding = embedding
+
         if patch_size < 0:
             raise ValueError(
                 f"The patch_size cannot be a negative number. Received {patch_size}"
@@ -34,7 +38,7 @@ class __PatchingAndEmbeddingTF(layers.Layer):
             raise ValueError(
                 f"Padding must be either 'same' or 'valid', but {padding} was passed."
             )
-        self.projection = layers.Conv2D(
+        self.proj = layers.Conv2D(
             filters=self.project_dim,
             kernel_size=self.patch_size,
             strides=self.patch_size,
@@ -72,7 +76,11 @@ class __PatchingAndEmbeddingTF(layers.Layer):
             `A tf.Tensor` of shape [batch, patch_num+1, embedding_dim]
         """
         # Turn images into patches and project them onto `project_dim`
-        patches = self.projection(images)
+        patches = self.proj(images)
+        # If running in Patch/Projection-only mode, return patches after Conv2d
+        if not self.embedding:
+            return patches
+
         patch_shapes = tf.shape(patches)
         patches_flattened = tf.reshape(
             patches,
@@ -174,12 +182,21 @@ class __PatchingAndEmbeddingTF(layers.Layer):
 
 
 class __PatchingAndEmbeddingPT(torch.nn.Module):
-    def __init__(self, project_dim, input_shape, patch_size, padding="valid", **kwargs):
+    def __init__(
+        self,
+        project_dim,
+        input_shape,
+        patch_size,
+        padding="valid",
+        embedding=True,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self.project_dim = project_dim
         self.patch_size = patch_size
         self.input_shape = input_shape
         self.padding = padding
+        self.embedding = embedding
 
         if patch_size < 0:
             raise ValueError(
@@ -189,7 +206,7 @@ class __PatchingAndEmbeddingPT(torch.nn.Module):
             raise ValueError(
                 f"Padding must be either 'same' or 'valid', but {padding} was passed."
             )
-        self.projection = nn.Conv2d(
+        self.proj = nn.Conv2d(
             input_shape[0],
             self.project_dim,
             kernel_size=self.patch_size,
@@ -197,13 +214,14 @@ class __PatchingAndEmbeddingPT(torch.nn.Module):
             padding=self.padding,
         )
 
-        self.class_token = nn.Parameter(torch.rand(1, 1, self.project_dim))
-        self.num_patches = (
-            input_shape[1] // self.patch_size * input_shape[2] // self.patch_size
-        )
-        self.position_embedding = torch.nn.Embedding(
-            num_embeddings=self.num_patches + 1, embedding_dim=self.project_dim
-        )
+        if self.embedding:
+            self.class_token = nn.Parameter(torch.rand(1, 1, self.project_dim))
+            self.num_patches = (
+                input_shape[1] // self.patch_size * input_shape[2] // self.patch_size
+            )
+            self.position_embedding = torch.nn.Embedding(
+                num_embeddings=self.num_patches + 1, embedding_dim=self.project_dim
+            )
 
     def forward(
         self,
@@ -225,7 +243,11 @@ class __PatchingAndEmbeddingPT(torch.nn.Module):
             `A torch.Tensor` of shape [batch, patch_num+1, embedding_dim]
         """
         # Turn images into patches and project them onto `project_dim`
-        patches = self.projection(images)
+        patches = self.proj(images)
+        # If running in Patch/Projection-only mode, return patches after Conv2d
+        if not self.embedding:
+            return patches.permute(0, 2, 3, 1)  # BCHW -> BHWC
+
         patch_shapes = patches.shape
 
         patches_flattened = torch.reshape(
@@ -317,7 +339,12 @@ LAYER_BACKBONES = {
 
 
 def PatchingAndEmbedding(
-    project_dim, patch_size, backend, input_shape=None, padding="valid"
+    project_dim,
+    patch_size,
+    backend,
+    input_shape=None,
+    padding="valid",
+    embedding=True,
 ):
     """
     Layer to patchify images, prepend a class token, positionally embed and
@@ -343,10 +370,11 @@ def PatchingAndEmbedding(
         patch_size: the patch size
         padding: default 'valid', the padding to apply for patchifying images
         backend: the backend framework to use
+        embedding: whether to add positional embeddings to the projection or not.
 
     Returns:
-        Patchified and linearly projected input images, including a prepended learnable class token
-        with shape (batch, num_patches+1, project_dim)
+        Patchified and linearly projected input images, optionally including a prepended learnable class token
+        with shape (batch, num_patches+1, project_dim), and optionally including positional embeddings
 
     Basic usage:
 
@@ -378,6 +406,7 @@ def PatchingAndEmbedding(
         patch_size=patch_size,
         input_shape=input_shape,
         padding=padding,
+        embedding=embedding,
     )
 
     return layer

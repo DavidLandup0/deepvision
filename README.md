@@ -376,12 +376,12 @@ Currently, these models are supported (parameter counts are *equal* between back
 
 | Architecture | Parameters | FLOPs | Size (MB) |
 |--------------|------------|-------|-----------|
-| SegFormerB0  | 1,841,013  |       |           |
-| SegFormerB1  | 5,910,997  |       |           |
-| SegFormerB2  | 11,640,981 |       |           |
-| SegFormerB3  | 16,721,301 |       |           |
-| SegFormerB4  | 20,930,389 |       |           |
-| SegFormerB5  | 26,234,645 |       |           |
+| SegFormerB0  | 3,714,915  |       |           |
+| SegFormerB1  | 13,678,019 |       |           |
+| SegFormerB2  | 27,348,931 |       |           |
+| SegFormerB3  | 47,224,771 |       |           |
+| SegFormerB4  | 63,995,331 |       |           |
+| SegFormerB5  | 84,595,651 |       |           |
 
 - Mix-Transformer (MiT) Family:
 
@@ -394,7 +394,13 @@ Currently, these models are supported (parameter counts are *equal* between back
 | MiTB4        | 60,847,818 |       |           |
 | MiTB5        | 81,448,138 |       |           |
 
+#### PyTorch-Only Models
 
+| Architecture | Parameters  | FLOPs | Size (MB) |
+|--------------|-------------|-------|-----------|
+| SAM_B        | 93,735,472  |       |           |
+| SAM_L        | 312,342,832 |       |           |
+| SAM_H        | 641,090,608 |       |           |
 
 ## DeepVision as a Components Provider
 
