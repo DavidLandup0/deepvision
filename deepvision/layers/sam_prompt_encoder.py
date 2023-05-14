@@ -22,7 +22,7 @@ import torch
 from torch import nn
 
 from deepvision.layers import LayerNorm2d
-from deepvision.layers import PositionEmbeddingRandom
+from deepvision.layers import RandomPositionEmbedding
 
 
 class PromptEncoder(nn.Module):
@@ -52,7 +52,7 @@ class PromptEncoder(nn.Module):
         self.embed_dim = embed_dim
         self.input_image_size = input_image_size
         self.image_embedding_size = image_embedding_size
-        self.pe_layer = PositionEmbeddingRandom(
+        self.pe_layer = RandomPositionEmbedding(
             num_pos_feats=embed_dim // 2, backend="pytorch"
         )
 
