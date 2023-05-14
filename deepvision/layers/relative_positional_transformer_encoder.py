@@ -209,11 +209,9 @@ def RelativePositionalTransformerEncoder(
     backend=None,
 ):
     """
-    Transformer Encoder Encoder utilizing the RelativePositionalMultiheadAttention block instead of the standard MultiheadAttention.
-
-    Can be used as a drop-in replacement for a TransformerEncoder, but additionally optionally uses relative positional embeddings instead of
+    Transformer Encoder Encoder utilizing the `RelativePositionalMultiheadAttention` block instead of the standard `MultiheadAttention`.
+    Can be used as a drop-in replacement for a `TransformerEncoder`, but additionally optionally uses relative positional embeddings instead of
     absolute positional embeddings.
-
     """
 
     layer_class = LAYER_BACKBONES.get(backend)
