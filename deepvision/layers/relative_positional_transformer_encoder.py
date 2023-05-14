@@ -35,7 +35,7 @@ class __RelativePositionalTransformerEncoderPT(nn.Module):
 
     def __init__(
         self,
-        dim,
+        project_dim,
         num_heads,
         mlp_dim,
         qkv_bias,
@@ -47,7 +47,7 @@ class __RelativePositionalTransformerEncoderPT(nn.Module):
     ) -> None:
         """
         Args:
-            dim (int): Number of input channels.
+            project_dim (int): Number of input channels.
             num_heads (int): Number of attention heads in each ViT block.
             mlp_dim (float): MLP dim
             qkv_bias (bool): If True, add a learnable bias to query, key, value.
@@ -60,9 +60,9 @@ class __RelativePositionalTransformerEncoderPT(nn.Module):
                 positional parameter size.
         """
         super().__init__()
-        self.norm1 = norm_layer(dim)
+        self.norm1 = norm_layer(project_dim)
         self.attn = RelativePositionalMultiheadAttention(
-            dim,
+            project_dim,
             num_heads=num_heads,
             qkv_bias=qkv_bias,
             use_rel_pos=use_rel_pos,
@@ -70,9 +70,9 @@ class __RelativePositionalTransformerEncoderPT(nn.Module):
             backend="pytorch",
         )
 
-        self.norm2 = norm_layer(dim)
+        self.norm2 = norm_layer(project_dim)
 
-        self.mlp = _MLPBlock(embedding_dim=dim, mlp_dim=mlp_dim, act=act_layer)
+        self.mlp = _MLPBlock(project_dim=project_dim, mlp_dim=mlp_dim, act=act_layer)
 
         self.window_size = window_size
 
@@ -102,7 +102,7 @@ class __RelativePositionalTransformerEncoderTF(tf.keras.layers.Layer):
 
     def __init__(
         self,
-        dim,
+        project_dim,
         num_heads,
         mlp_dim,
         qkv_bias,
@@ -114,7 +114,7 @@ class __RelativePositionalTransformerEncoderTF(tf.keras.layers.Layer):
     ) -> None:
         """
         Args:
-            dim (int): Number of input channels.
+            project_dim (int): Number of input channels.
             num_heads (int): Number of attention heads in each ViT block.
             mlp_dim (float): MLP dim
             qkv_bias (bool): If True, add a learnable bias to query, key, value.
@@ -127,9 +127,9 @@ class __RelativePositionalTransformerEncoderTF(tf.keras.layers.Layer):
                 positional parameter size.
         """
         super().__init__()
-        self.norm1 = norm_layer(dim)
+        self.norm1 = norm_layer()
         self.attn = RelativePositionalMultiheadAttention(
-            dim,
+            project_dim,
             num_heads=num_heads,
             qkv_bias=qkv_bias,
             use_rel_pos=use_rel_pos,
@@ -137,10 +137,14 @@ class __RelativePositionalTransformerEncoderTF(tf.keras.layers.Layer):
             backend="tensorflow",
         )
 
-        self.norm2 = norm_layer(dim)
+        self.norm2 = norm_layer()
 
         self.mlp = MLP(
-            output_dim=dim, embed_dim=mlp_dim, activation=act_layer, num_layers=2
+            output_dim=project_dim,
+            embed_dim=mlp_dim,
+            activation=act_layer,
+            num_layers=2,
+            backend="tensorflow",
         )
 
         self.window_size = window_size
@@ -173,13 +177,13 @@ class _MLPBlock(nn.Module):
 
     def __init__(
         self,
-        embedding_dim: int,
+        project_dim: int,
         mlp_dim: int,
         act: Type[nn.Module] = nn.GELU,
     ) -> None:
         super().__init__()
-        self.lin1 = nn.Linear(embedding_dim, mlp_dim)
-        self.lin2 = nn.Linear(mlp_dim, embedding_dim)
+        self.lin1 = nn.Linear(project_dim, mlp_dim)
+        self.lin2 = nn.Linear(mlp_dim, project_dim)
         self.act = act()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -193,7 +197,7 @@ LAYER_BACKBONES = {
 
 
 def RelativePositionalTransformerEncoder(
-    dim,
+    project_dim,
     mlp_dim,
     num_heads=8,
     qkv_bias=True,
@@ -231,7 +235,7 @@ def RelativePositionalTransformerEncoder(
         )
 
     layer = layer_class(
-        dim=dim,
+        project_dim=project_dim,
         num_heads=num_heads,
         mlp_dim=mlp_dim,
         qkv_bias=qkv_bias,

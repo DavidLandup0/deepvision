@@ -33,7 +33,7 @@ class __RelativePositionalMultiheadAttentionPT(nn.Module):
 
     def __init__(
         self,
-        embed_dim: int,
+        project_dim: int,
         num_heads: int = 8,
         qkv_bias: bool = True,
         use_rel_pos: bool = False,
@@ -45,11 +45,11 @@ class __RelativePositionalMultiheadAttentionPT(nn.Module):
         """
         super().__init__()
         self.num_heads = num_heads
-        head_dim = embed_dim // num_heads
+        head_dim = project_dim // num_heads
         self.scale = head_dim**-0.5
 
-        self.qkv = nn.Linear(embed_dim, embed_dim * 3, bias=qkv_bias)
-        self.proj = nn.Linear(embed_dim, embed_dim)
+        self.qkv = nn.Linear(project_dim, project_dim * 3, bias=qkv_bias)
+        self.proj = nn.Linear(project_dim, project_dim)
 
         self.use_rel_pos = use_rel_pos
         if self.use_rel_pos:
@@ -93,7 +93,7 @@ class __RelativePositionalMultiheadAttentionTF(tf.keras.layers.Layer):
 
     def __init__(
         self,
-        embed_dim,
+        project_dim,
         num_heads=8,
         qkv_bias=True,
         use_rel_pos=False,
@@ -105,11 +105,11 @@ class __RelativePositionalMultiheadAttentionTF(tf.keras.layers.Layer):
         """
         super().__init__()
         self.num_heads = num_heads
-        head_dim = embed_dim // num_heads
+        head_dim = project_dim // num_heads
         self.scale = head_dim**-0.5
 
-        self.qkv = tf.keras.layers.Dense(embed_dim * 3, use_bias=qkv_bias)
-        self.proj = tf.keras.layers.Dense(embed_dim)
+        self.qkv = tf.keras.layers.Dense(project_dim * 3, use_bias=qkv_bias)
+        self.proj = tf.keras.layers.Dense(project_dim)
 
         self.use_rel_pos = use_rel_pos
         if self.use_rel_pos:
@@ -119,10 +119,14 @@ class __RelativePositionalMultiheadAttentionTF(tf.keras.layers.Layer):
             # initialize relative positional embeddings
 
             self.rel_pos_h = self.add_weight(
-                shape=[2 * input_size[0], head_dim], name="rel_pos_h", trainable=True
+                shape=[2 * input_size[0] - 1, head_dim],
+                name="rel_pos_h",
+                trainable=True,
             )
             self.rel_pos_w = self.add_weight(
-                shape=[2 * input_size[1], head_dim], name="rel_pos_w", trainable=True
+                shape=[2 * input_size[1] - 1, head_dim],
+                name="rel_pos_w",
+                trainable=True,
             )
 
     def call(self, x):
@@ -164,7 +168,7 @@ LAYER_BACKBONES = {
 
 
 def RelativePositionalMultiheadAttention(
-    embed_dim,
+    project_dim,
     num_heads=8,
     qkv_bias=True,
     use_rel_pos=False,
@@ -181,7 +185,7 @@ def RelativePositionalMultiheadAttention(
     absolute positional embeddings.
 
     Args:
-        embed_dim: The dimensionality of the output.
+        project_dim: The dimensionality of the output.
         num_heads: default 8, Number of attention heads.
         qkv_bias: default True, Whether to add a learnable bias to query, key, value or not.
         use_rel_pos: default False, Whether to add relative positional embeddings to the attention map.
@@ -196,7 +200,7 @@ def RelativePositionalMultiheadAttention(
         )
 
     layer = layer_class(
-        embed_dim=embed_dim,
+        project_dim=project_dim,
         num_heads=num_heads,
         qkv_bias=qkv_bias,
         use_rel_pos=use_rel_pos,

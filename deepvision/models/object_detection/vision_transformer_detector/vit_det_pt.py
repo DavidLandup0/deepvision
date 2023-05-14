@@ -98,7 +98,7 @@ class ViTDetBackbonePT(nn.Module):
         for i in range(transformer_layer_num):
             self.blocks.append(
                 RelativePositionalTransformerEncoder(
-                    dim=embed_dim,
+                    project_dim=embed_dim,
                     num_heads=num_heads,
                     mlp_dim=mlp_dim,
                     qkv_bias=qkv_bias,

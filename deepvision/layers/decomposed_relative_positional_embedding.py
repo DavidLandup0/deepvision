@@ -18,8 +18,8 @@ from typing import Tuple
 
 import tensorflow as tf
 import torch
-import torch.functional as F
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 class __AddDecomposedRelativePositionsPT(nn.Module):
@@ -36,7 +36,7 @@ class __AddDecomposedRelativePositionsPT(nn.Module):
         k_size: Tuple[int, int],
     ) -> torch.Tensor:
         """
-        Calculate decomposed Relative Positional Embeddings from :paper:`mvitv2`.
+        Calculate decomposed Relative Positional Embeddings from `mvitv2`.
         https://github.com/facebookresearch/mvit/blob/19786631e330df9f3622e5402b4a419a263a2c80/mvit/models/attention.py
         Args:
             attn (Tensor): attention map.
@@ -98,7 +98,6 @@ class __AddDecomposedRelativePositionsPT(nn.Module):
         relative_coords = (q_coords - k_coords) + (k_size - 1) * max(
             q_size / k_size, 1.0
         )
-
         return rel_pos_resized[relative_coords.long()]
 
 
@@ -144,6 +143,7 @@ class __AddDecomposedRelativePositionsTF(tf.keras.layers.Layer):
 
         B, _, dim = q.shape
         r_q = tf.reshape(q, (B, q_h, q_w, dim))
+        # print(r_q.shape, Rh.shape)
         rel_h = tf.einsum("bhwc,hkc->bhwk", r_q, Rh)
         rel_w = tf.einsum("bhwc,wkc->bhwk", r_q, Rw)
 
@@ -168,30 +168,40 @@ class __AddDecomposedRelativePositionsTF(tf.keras.layers.Layer):
         Returns:
             Extracted positional embeddings according to relative positions.
         """
+
         max_rel_dist = int(2 * max(q_size, k_size) - 1)
         if rel_pos.shape[0] != max_rel_dist:
+            """
+            We should resize from (145, 96) -> (96, 145) and interpolate to (96, 127).
+            However, tf.image.resize() doesn't operate only on one dimension, so we have to resize to the same
+            dimension on shape[0] and interpolate the dimension on shape[1]. Since channels-last format is forced here,
+            we also need to reshape to (145, 96, 1) and interpolate to (127, 96, 1), hence the difference in the implementations.
+            """
+            rel_pos = tf.reshape(rel_pos, shape=[1, rel_pos.shape[0], -1])
+            rel_pos = tf.transpose(rel_pos, perm=[1, 2, 0])
             rel_pos_resized = tf.image.resize(
-                tf.transpose(
-                    tf.reshape(rel_pos, [1, rel_pos.shape[0], -1]), perm=[0, 2, 1]
-                ),
-                [max_rel_dist],
-                method="linear",
+                rel_pos,
+                size=[rel_pos.shape[1], max_rel_dist],
+                method="bilinear",
             )
+            rel_pos_resized = tf.transpose(rel_pos_resized, perm=[2, 0, 1])
             rel_pos_resized = tf.transpose(
-                tf.reshape(rel_pos_resized, [-1, max_rel_dist]), perm=[1, 0]
+                tf.reshape(rel_pos_resized, shape=[-1, max_rel_dist]), perm=[1, 0]
             )
         else:
             rel_pos_resized = rel_pos
 
-        q_coords = tf.reshape(tf.range(q_size), [q_size, 1]) * max(k_size / q_size, 1.0)
-        k_coords = tf.reshape(tf.range(k_size), [1, k_size]) * max(q_size / k_size, 1.0)
-        relative_coords = (q_coords - k_coords) + (k_size - 1) * max(
-            q_size / k_size, 1.0
-        )
+        q_coords = tf.cast(
+            tf.reshape(tf.range(q_size), [int(q_size), 1]), tf.float32
+        ) * tf.cast(tf.math.maximum(k_size / q_size, 1.0), tf.float32)
+        k_coords = tf.cast(
+            tf.reshape(tf.range(k_size), [int(k_size), 1]), tf.float32
+        ) * tf.cast(tf.math.maximum(q_size / k_size, 1.0), tf.float32)
+        relative_coords = tf.cast((q_coords - k_coords), tf.float32) + tf.cast(
+            (k_size - 1), tf.float32
+        ) * tf.cast(tf.math.maximum(q_size / k_size, 1.0), tf.float32)
 
-        return tf.gather(
-            rel_pos_resized, tf.cast(tf.reshape(relative_coords, [-1]), tf.int32)
-        )
+        return tf.gather(rel_pos_resized, tf.cast(relative_coords, tf.int32))
 
 
 LAYER_BACKBONES = {
