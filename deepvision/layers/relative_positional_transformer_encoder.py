@@ -14,13 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
-from typing import Tuple
 from typing import Type
 
 import tensorflow as tf
 import torch
 import torch.nn as nn
+from tensorflow.keras import layers
 
 from deepvision.layers.mlp import MLP
 from deepvision.layers.relative_positional_attention import (

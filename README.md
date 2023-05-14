@@ -395,6 +395,15 @@ Currently, these models are supported (parameter counts are *equal* between back
 | MiTB5        | 81,448,138 |       |           |
 
 
+#### PyTorch Only Models
+
+| Architecture | Parameters | FLOPs | Size (MB) |
+|--------------|------------|-------|-----------|
+| SAM_B        | 3,321,962  |       |           |
+| SAM_L        | 13,156,554 |       |           |
+| SAM_H        | 24,201,418 |       |           |
+
+
 
 ## DeepVision as a Components Provider
 
