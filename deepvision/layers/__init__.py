@@ -22,6 +22,6 @@ from deepvision.layers.relative_positional_transformer_encoder import (
 from deepvision.layers.stochasticdepth import StochasticDepth
 from deepvision.layers.transformer_encoder import TransformerEncoder
 from deepvision.layers.twoway_attention_block import TwoWayAttentionBlock
-from deepvision.layers.twoway_transformer_encoder import TwoWayTransformerEncoder
+from deepvision.layers.twoway_transformer_decoder import TwoWayTransformerDecoder
 from deepvision.layers.window_partitioning import WindowPartitioning
 from deepvision.layers.window_unpartitioning import WindowUnpartitioning

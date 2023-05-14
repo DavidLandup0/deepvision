@@ -137,7 +137,7 @@ def ViTDetH(
         use_rel_pos=True,
         global_attn_indexes=MODEL_CONFIGS["ViTDetH"]["encoder_global_attn_indexes"],
         window_size=MODEL_CONFIGS["ViTDetH"]["window_size"],
-        project_dim=MODEL_CONFIGS["ViTDetH"]["project_dim"],
+        project_dim=MODEL_CONFIGS["ViTDetH"]["prompt_embed_dim"],
     )
 
     return model

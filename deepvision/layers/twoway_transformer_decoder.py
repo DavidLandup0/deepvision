@@ -27,7 +27,7 @@ from deepvision.layers import DownscalingMultiheadAttention
 from deepvision.layers import TwoWayAttentionBlock
 
 
-class __TwoWayTransformerEncoderPT(nn.Module):
+class __TwoWayTransformerDecoderPT(nn.Module):
     def __init__(
         self,
         depth: int,
@@ -124,7 +124,7 @@ class __TwoWayTransformerEncoderPT(nn.Module):
         return queries, keys
 
 
-class __TwoWayTransformerEncoderTF(tf.keras.layers.Layer):
+class __TwoWayTransformerDecoderTF(tf.keras.layers.Layer):
     def __init__(
         self,
         depth: int,
@@ -135,8 +135,7 @@ class __TwoWayTransformerEncoderTF(tf.keras.layers.Layer):
         attention_downsample_rate: int = 2,
     ) -> None:
         """
-        A transformer decoder that attends to an input image using
-        queries whose positional embedding is supplied.
+        A transformer decoder that attends to an input image using queries whose positional embedding is supplied.
 
         Args:
           depth (int): number of layers in the transformer
@@ -227,12 +226,12 @@ class __TwoWayTransformerEncoderTF(tf.keras.layers.Layer):
 
 
 LAYER_BACKBONES = {
-    "tensorflow": __TwoWayTransformerEncoderTF,
-    "pytorch": __TwoWayTransformerEncoderPT,
+    "tensorflow": __TwoWayTransformerDecoderTF,
+    "pytorch": __TwoWayTransformerDecoderPT,
 }
 
 
-def TwoWayTransformerEncoder(
+def TwoWayTransformerDecoder(
     depth,
     project_dim,
     num_heads,

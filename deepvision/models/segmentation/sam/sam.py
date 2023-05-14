@@ -14,7 +14,7 @@
 
 from deepvision.layers.sam_mask_decoder import MaskDecoder
 from deepvision.layers.sam_prompt_encoder import PromptEncoder
-from deepvision.layers.twoway_transformer_encoder import TwoWayTransformerEncoder
+from deepvision.layers.twoway_transformer_decoder import TwoWayTransformerDecoder
 from deepvision.models.load_weights import load_weights
 from deepvision.models.object_detection.vision_transformer_detector.vit_det import (
     ViTDetB,
@@ -78,7 +78,7 @@ def SAM_B(
 
     mask_decoder = MaskDecoder(
         num_multimask_outputs=MODEL_CONFIGS["SAM"]["num_multimask_outputs"],
-        transformer=TwoWayTransformerEncoder(
+        transformer=TwoWayTransformerDecoder(
             depth=MODEL_CONFIGS["SAM"]["transformer_depth"],
             project_dim=MODEL_CONFIGS["SAM"]["prompt_embed_dim"],
             mlp_dim=MODEL_CONFIGS["SAM"]["transformer_mlp_dim"],
@@ -132,7 +132,7 @@ def SAM_L(
 
     mask_decoder = MaskDecoder(
         num_multimask_outputs=MODEL_CONFIGS["SAM"]["num_multimask_outputs"],
-        transformer=TwoWayTransformerEncoder(
+        transformer=TwoWayTransformerDecoder(
             depth=MODEL_CONFIGS["SAM"]["transformer_depth"],
             project_dim=MODEL_CONFIGS["SAM"]["prompt_embed_dim"],
             mlp_dim=MODEL_CONFIGS["SAM"]["transformer_mlp_dim"],
@@ -187,7 +187,7 @@ def SAM_H(
 
     mask_decoder = MaskDecoder(
         num_multimask_outputs=MODEL_CONFIGS["SAM"]["num_multimask_outputs"],
-        transformer=TwoWayTransformerEncoder(
+        transformer=TwoWayTransformerDecoder(
             depth=MODEL_CONFIGS["SAM"]["transformer_depth"],
             project_dim=MODEL_CONFIGS["SAM"]["prompt_embed_dim"],
             mlp_dim=MODEL_CONFIGS["SAM"]["transformer_mlp_dim"],
