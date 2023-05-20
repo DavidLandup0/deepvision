@@ -84,10 +84,9 @@ class __BinaryDiceLossTF(tf.keras.losses.Loss):
         if tf.cast(label_smoothing, dtype=tf.bool):
             y_true = self._smooth_labels(y_true, y_pred, label_smoothing)
 
-        """if self.class_ids is not None:
-            y_true, y_pred = losses_utils.gather_channels(
-                y_true, y_pred, indices=self.class_ids
-            )"""
+        if self.class_ids is not None:
+            y_true = tf.gather(y_true, self.class_ids, axis=-1)
+            y_pred = tf.gather(y_pred, self.class_ids, axis=-1)
 
         if self.axis not in [[1, 2], [1, 2, 3], [2, 3], [2, 3, 4]]:
             raise ValueError(
