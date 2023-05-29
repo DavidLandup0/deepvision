@@ -358,7 +358,7 @@ def PatchingAndEmbedding(
         An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale
         by Alexey Dosovitskiy et al. (https://arxiv.org/abs/2010.11929)
 
-        Acknowledgements and other implementations:
+    Acknowledgements and other implementations:
         - The TensorFlow layer was originally implemented by David Landup for KerasCV.
         - HuggingFace's implementations: https://github.com/huggingface/transformers/blob/main/src/transformers/models/vit/modeling_vit.py
             and https://github.com/huggingface/transformers/blob/main/src/transformers/models/vit/modeling_tf_vit.py
