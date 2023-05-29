@@ -142,6 +142,17 @@ class __EfficientMultiheadAttentionTF(tf.keras.layers.Layer):
         x = self.proj(attn)
         return x
 
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "project_dim": self.project_dim,
+                "num_heads": self.num_heads,
+                "sr_ratio": self.sr_ratio,
+            }
+        )
+        return config
+
 
 LAYER_BACKBONES = {
     "tensorflow": __EfficientMultiheadAttentionTF,

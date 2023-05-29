@@ -18,6 +18,7 @@ from deepvision.layers.segformer_segmentation_head import SegFormerHead
 from deepvision.utils.utils import parse_model_inputs
 
 
+@tf.keras.utils.register_keras_serializable(package="deepvision", name="SegFormer")
 class __SegFormerTF(tf.keras.Model):
     def __init__(
         self,
@@ -56,3 +57,14 @@ class __SegFormerTF(tf.keras.Model):
         self.num_classes = num_classes
         self.embed_dim = embed_dim
         self.softmax_output = softmax_output
+
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "num_classes": self.num_classes,
+                "embed_dim": self.embed_dim,
+                "softmax_output": self.softmax_output,
+            }
+        )
+        return config

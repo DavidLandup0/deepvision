@@ -64,6 +64,16 @@ class __MixFFNTF(tf.keras.layers.Layer):
         x = self.fc2(x)
         return x
 
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "channels": self.channels,
+                "mid_channels": self.mid_channels,
+            }
+        )
+        return config
+
 
 LAYER_BACKBONES = {
     "tensorflow": __MixFFNTF,

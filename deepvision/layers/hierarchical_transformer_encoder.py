@@ -73,6 +73,19 @@ class __HierarchicalTransformerEncoderTF(tf.keras.layers.Layer):
         x = x + self.drop_path(self.mlp(self.norm2(x), H, W))
         return x
 
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "project_dim": self.project_dim,
+                "num_heads": self.num_heads,
+                "sr_ratio": self.sr_ratio,
+                "drop_prob": self.drop_prob,
+                "layer_norm_epsilon": self.layer_norm_epsilon,
+            }
+        )
+        return config
+
 
 LAYER_BACKBONES = {
     "tensorflow": __HierarchicalTransformerEncoderTF,
