@@ -59,7 +59,8 @@ class __BinaryDiceLossTF(tf.keras.losses.Loss):
         Usage with the TensorFlow `compile()` API:
 
         ```
-        model.compile(optimizer='adam', loss=deepvision.losses.BinaryDice(backend='tensorflow'))
+        loss = deepvision.losses.BinaryDice(backend='tensorflow')
+        model.compile(optimizer='adam', loss=loss)
         ```
         """
         super().__init__(name=name, **kwargs)
@@ -163,6 +164,18 @@ class __BinaryDiceLossPT(torch.nn.Module):
 
         # Compute Dice Loss between y_true and y_pred
         print(dice(y_true, y_pred).numpy()) # 0.16937321
+        ```
+
+        Usage with the DeepVision/PyTorch Lightning `compile()` API:
+
+        ```
+        loss = deepvision.losses.BinaryDiceLoss(backend='pytorch')
+        optimizer = torch.optim.Adam(pt_model.parameters(), 1e-4)
+
+        pt_model.compile(loss=loss, optimizer=optimizer)
+
+        trainer = pl.Trainer(accelerator=device, max_epochs=N)
+        trainer.fit(pt_model, train_dataloader, val_dataloader)
         ```
         """
         super().__init__()
