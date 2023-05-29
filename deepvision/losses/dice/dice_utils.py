@@ -74,6 +74,7 @@ def _adaptive_dice_score_tf(numerator, denominator):
     weights = tf.exp(-1.0 * dice_score)
     weighted_dice = tf.reduce_sum(weights * dice_score)
     normalizer = tf.cast(tf.size(input=dice_score), dtype=tf.float32) * tf.exp(-1.0)
+    normalizer = tf.cast(normalizer, weighted_dice.dtype)
     norm_dice_score = weighted_dice / normalizer
 
     return norm_dice_score
