@@ -2,10 +2,10 @@ import numpy as np
 import tensorflow as tf
 import torch
 
-from deepvision.losses.dice import BinaryDiceLoss
+from deepvision.losses.dice.binary_dice import BinaryDiceLoss
 
 
-def _test_binary_dice_loss_numeric():
+def test_binary_dice_loss_numeric():
     y_true = np.array(([[[[1], [1]], [[1], [0]]], [[[0], [1]], [[1], [1]]]]))
 
     y_pred = np.array(
