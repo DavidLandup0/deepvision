@@ -70,7 +70,7 @@ class __MiTTF(tf.keras.models.Model):
 
         for i in range(num_stages):
             patch_embed_layer = OverlappingPatchingAndEmbedding(
-                in_channels=3 if i == 0 else embed_dims[i - 1],
+                in_channels=input_shape[-1] if i == 0 else embed_dims[i - 1],
                 out_channels=embed_dims[0] if i == 0 else embed_dims[i],
                 patch_size=7 if i == 0 else 3,
                 stride=4 if i == 0 else 2,
