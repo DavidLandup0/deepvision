@@ -46,7 +46,8 @@ $ pip install deepvision-toolkit
       </td>  
       <td>
           <ul>
-	      <img src="https://github.com/DavidLandup0/deepvision/assets/60978046/95fbfb38-2422-4af4-9ca5-4e3c6c0c8c1f" width="350px">
+	      <img src="https://github.com/DavidLandup0/deepvision/assets/60978046/d88ca247-222a-480c-875b-b267a904e392" width="350px">
+		  
           </ul>
       </td>  
     </tr>
