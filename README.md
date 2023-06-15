@@ -34,19 +34,19 @@ $ pip install deepvision-toolkit
     <tr valign="top">
       <td>
         <ul>
-            ![image](https://github.com/DavidLandup0/deepvision/assets/60978046/1ecc1434-5a2e-4a68-a8bd-61f0244c7f98)
+	<img src="https://github.com/DavidLandup0/deepvision/assets/60978046/1ecc1434-5a2e-4a68-a8bd-61f0244c7f98" width="350px">
       </td>
       <td>
-             ![image](https://github.com/DavidLandup0/deepvision/assets/60978046/fea8a7b5-f04d-4769-8c3d-84246696d585)
+	     <img src="https://github.com/DavidLandup0/deepvision/assets/60978046/fea8a7b5-f04d-4769-8c3d-84246696d585" width="350px">
       </td>
       <td>
           <ul>
-              ![image](https://github.com/DavidLandup0/deepvision/assets/60978046/348cde3f-330c-4879-8dec-ca02827dbd19)
+	      <img src="https://github.com/DavidLandup0/deepvision/assets/60978046/348cde3f-330c-4879-8dec-ca02827dbd19" width="350px">
           </ul>
       </td>  
       <td>
           <ul>
-              ![image](https://github.com/DavidLandup0/deepvision/assets/60978046/95fbfb38-2422-4af4-9ca5-4e3c6c0c8c1f)
+	      <img src="https://github.com/DavidLandup0/deepvision/assets/60978046/95fbfb38-2422-4af4-9ca5-4e3c6c0c8c1f" width="350px">
           </ul>
       </td>  
     </tr>
