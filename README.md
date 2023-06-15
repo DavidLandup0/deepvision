@@ -15,6 +15,165 @@ ______________________________________________________________________
 ```console
 $ pip install deepvision-toolkit
 ```
+<table align="center">
+  <tbody>
+    <tr align="center" valign="bottom">
+      <td>
+        <b>Volumetric Modelling</b>
+      </td>
+      <td>
+        <b>Segmentation</b>
+      </td>
+      <td>
+        <b>Image Classification</b>
+      </td>
+      <td>
+        <b>Explainability Tools</b>
+      </td>
+    </tr>
+    <tr valign="top">
+      <td>
+        <ul>
+	<img src="https://github.com/DavidLandup0/deepvision/assets/60978046/1ecc1434-5a2e-4a68-a8bd-61f0244c7f98" width="350px">
+      </td>
+      <td>
+	     <img src="https://github.com/DavidLandup0/deepvision/assets/60978046/05ff9412-4061-4e01-bcbe-75833462899e" width="350px">
+      </td>
+      <td>
+          <ul>
+	      <img src="https://github.com/DavidLandup0/deepvision/assets/60978046/348cde3f-330c-4879-8dec-ca02827dbd19" width="350px">
+          </ul>
+      </td>  
+      <td>
+          <ul>
+	      <img src="https://github.com/DavidLandup0/deepvision/assets/60978046/d88ca247-222a-480c-875b-b267a904e392" width="350px">
+          </ul>
+      </td>  
+    </tr>
+</td>
+    </tr>
+  </tbody>
+</table>
+
+<table align="center">
+	<tbody>
+		<tr align="center" valign="bottom">
+			<td>
+				<b>Models</b>
+			</td>
+			<td colspan="2">
+				<b>Components</b>
+			</td>
+			<td>
+				<b>Special Cases</b>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td>
+				<ul>
+					<details>
+						<summary>
+							<b>Semantic Segmentation</b>
+						</summary>
+						<ul>
+							<li>
+								<a href="https://github.com/DavidLandup0/deepvision/tree/main/deepvision/models/segmentation/segformer">SegFormer</a>
+							</li>
+						</ul>
+					</details>
+					<details>
+						<summary>
+							<b>Volumetric Modelling</b>
+						</summary>
+						<ul>
+							<li>
+								<a href="https://github.com/DavidLandup0/deepvision/tree/main/deepvision/models/volumetric/nerf">Neural Radiance Fields (NeRF)</a>
+							</li>
+						</ul>
+					</details>
+					<details>
+						<summary>
+							<b>Image Classification</b>
+						</summary>
+						<ul>
+							<li>
+								<a href="https://github.com/DavidLandup0/deepvision/tree/main/deepvision/models/classification/efficientnet">EfficientNetV2</a>
+							</li>
+							<li>
+								<a href="https://github.com/DavidLandup0/deepvision/tree/main/deepvision/models/classification/vision_transformer">Vision Transformer (ViT)</a>
+							</li>
+							<li>
+								<a href="https://github.com/DavidLandup0/deepvision/tree/main/deepvision/models/classification/resnet">ResNetV2</a>
+							</li>
+							<li>
+								<a href="https://github.com/DavidLandup0/deepvision/tree/main/deepvision/models/classification/mix_transformer">Mix-Transformer</a>
+							</li>
+						</ul>
+					</details>
+				</td>
+				<td>
+					<details>
+						<summary>
+							<b>Backbones</b>
+						</summary>
+						<ul>
+							<li>
+								<a href="https://github.com/DavidLandup0/deepvision/tree/main/deepvision/models/classification/efficientnet">EfficientNetV2</a>
+							</li>
+							<li>
+								<a href="https://github.com/DavidLandup0/deepvision/tree/main/deepvision/models/classification/vision_transformer">Vision Transformer (ViT)</a>
+							</li>
+							<li>
+								<a href="https://github.com/DavidLandup0/deepvision/tree/main/deepvision/models/classification/resnet">ResNetV2</a>
+							</li>
+							<li>
+								<a href="https://github.com/DavidLandup0/deepvision/tree/main/deepvision/models/classification/mix_transformer">Mix-Transformer</a>
+							</li>
+							<li>
+								<a href="https://github.com/DavidLandup0/deepvision/tree/main/deepvision/models/object_detection/vision_transformer_detector">ViTDet</a>
+							</li>
+						</ul>
+					</details>
+					<details>
+						<summary>
+							<b>Losses</b>
+						</summary>
+						<ul>
+							<li>
+								<a href="https://github.com/DavidLandup0/deepvision/tree/main/deepvision/losses/dice">Dice Loss</a>
+							</li>
+						</ul>
+					</details>
+				</td>
+				<td>
+					<details>
+						<summary>
+							<b>Datasets</b>
+						</summary>
+						<ul>
+							<li>
+								<a href="https://github.com/DavidLandup0/deepvision/tree/main/deepvision/datasets/tiny_nerf">NeRF_Tiny</a>
+							</li>
+						</ul>
+					</details>
+				</td>
+				<td>
+					<details>
+						<summary>
+							<b>Segment Anything</b>
+						</summary>
+						<ul>
+							<li>
+								<a href="https://github.com/DavidLandup0/deepvision/tree/main/deepvision/models/segmentation/sam">SegmentAnything</a>
+							</li>
+						</ul>
+					</details>
+				</td>
+			</tr>
+		</td>
+	</tr>
+</tbody>
+</table>
 
 </div>
 
