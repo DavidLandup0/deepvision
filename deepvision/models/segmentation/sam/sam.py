@@ -48,10 +48,10 @@ MODEL_BACKBONES = {"tensorflow": None, "pytorch": SAM_PT}
 
 def SAM_B(
     backend,
-    weights="SA-1B",
+    pretrained=True,
     **kwargs,
 ):
-    if weights == "SA-1B":
+    if pretrained:
         weights = load_weights("SAM_B", True, backend)
 
     model_class = MODEL_BACKBONES.get(backend)
@@ -102,10 +102,10 @@ def SAM_B(
 
 def SAM_L(
     backend,
-    weights="SA-1B",
+    pretrained=True,
     **kwargs,
 ):
-    if weights == "SA-1B":
+    if pretrained:
         weights = load_weights("SAM_L", True, backend)
 
     model_class = MODEL_BACKBONES.get(backend)
@@ -156,10 +156,10 @@ def SAM_L(
 
 def SAM_H(
     backend,
-    weights="SA-1B",
+    pretrained=True,
     **kwargs,
 ):
-    if weights == "SA-1B":
+    if pretrained:
         weights = load_weights("SAM_H", True, backend)
 
     model_class = MODEL_BACKBONES.get(backend)

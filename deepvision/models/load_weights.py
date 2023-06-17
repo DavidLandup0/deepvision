@@ -63,4 +63,6 @@ MODELS_PT = {
     "SAM_B": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth",
     "SAM_L": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth",
     "SAM_H": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth",
+    "CLIP_B16": "D:/jup/CLIP_B16.pt",
+    "CLIP_B32": "D:/jup/CLIP_B32.pt",
 }

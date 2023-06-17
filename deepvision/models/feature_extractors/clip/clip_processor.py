@@ -41,11 +41,19 @@ class __CLIPProcessorPT:
 
         self.tokenizer = CLIPTokenizer()
 
-    def process_image(self, image):
-        if isinstance(image, str):
-            image = Image.open(image)
-        return self.image_transform(image)
-
+    def process_images(self, images):
+        if isinstance(images, str):
+            images = [images]
+        
+        processed_images = []
+        for image in images:
+            if isinstance(image, str):
+                image = Image.open(image)
+                image = self.image_transform(image)
+                processed_images.append(image)
+        processed_images = torch.stack(processed_images)
+        return processed_images
+    
     def process_texts(self, texts, context_length: int = 77, truncate: bool = False):
         if isinstance(texts, str):
             texts = [texts]
@@ -71,10 +79,13 @@ class __CLIPProcessorPT:
 
         return result
 
-    def process_pair(self, image, texts):
-        image = self.process_image(image)
+    def process_pair(self, images, texts, device=None):
+        images = self.process_images(images)
         texts = self.process_texts(texts)
-        return (image, texts)
+        if device:
+            images = images.to(device)
+            texts = texts.to(device)
+        return (images, texts)
 
 
 LAYER_BACKBONES = {

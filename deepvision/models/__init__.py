@@ -37,7 +37,6 @@ from deepvision.models.classification.vision_transformer.vit import ViTTiny32
 from deepvision.models.feature_extractors.clip.clip_image_encoder import (
     CLIPImageEncoder,
 )
-from deepvision.models.feature_extractors.clip.clip_model import CLIP
 from deepvision.models.feature_extractors.clip.clip_model import CLIP_B16
 from deepvision.models.feature_extractors.clip.clip_processor import CLIPProcessor
 from deepvision.models.object_detection.vision_transformer_detector.vit_det import (
