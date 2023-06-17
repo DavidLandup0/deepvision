@@ -1,15 +1,15 @@
+import tensorflow as tf
 import torch
-from torch import nn
 
 
-class __QuickGELUPT(nn.Module):
+class __QuickGELUPT(torch.nn.Module):
     def forward(self, x: torch.Tensor):
         return x * torch.sigmoid(1.702 * x)
 
 
-class __QuickGELUTF(nn.Module):
-    def forward(self, x: torch.Tensor):
-        return x * torch.sigmoid(1.702 * x)
+class __QuickGELUTF(tf.keras.layers.Layer):
+    def call(self, x: tf.Tensor):
+        return x * tf.math.sigmoid(1.702 * x)
 
 
 ACTIVATION_BACKBONES = {"tensorflow": __QuickGELUTF, "pytorch": __QuickGELUPT}
