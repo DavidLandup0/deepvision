@@ -12,7 +12,10 @@ class __ResidualTransformerEncoderPT(nn.Module):
         self.width = width
         self.layers = layers
         self.resblocks = nn.Sequential(
-            *[ResidualAttention(width, heads, attn_mask) for _ in range(layers)]
+            *[
+                ResidualAttention(width, heads, attn_mask, backend="pytorch")
+                for _ in range(layers)
+            ]
         )
 
     def forward(self, x: torch.Tensor):
@@ -27,7 +30,10 @@ class __ResidualTransformerEncoderTF(nn.Module):
         self.width = width
         self.layers = layers
         self.resblocks = nn.Sequential(
-            *[ResidualAttention(width, heads, attn_mask) for _ in range(layers)]
+            *[
+                ResidualAttention(width, heads, attn_mask, backend="tensorflow")
+                for _ in range(layers)
+            ]
         )
 
     def forward(self, x: torch.Tensor):
@@ -40,7 +46,13 @@ LAYER_BACKBONES = {
 }
 
 
-def ResidualTransformerEncoder(width, layers, heads, attn_mask, backend):
+def ResidualTransformerEncoder(
+    width,
+    layers,
+    heads,
+    backend,
+    attn_mask=None,
+):
     model_class = LAYER_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(

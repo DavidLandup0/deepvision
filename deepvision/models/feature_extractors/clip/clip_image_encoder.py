@@ -48,7 +48,9 @@ class __CLIPImageEncoderTF(nn.Module):
         )
         self.ln_pre = nn.LayerNorm(width)
 
-        self.transformer = ResidualTransformerEncoder(width, layers, heads)
+        self.transformer = ResidualTransformerEncoder(
+            width, layers, heads, backend="tensorflow"
+        )
 
         self.ln_post = nn.LayerNorm(width)
         self.proj = nn.Parameter(scale * torch.randn(width, output_dim))
@@ -119,7 +121,9 @@ class __CLIPImageEncoderPT(nn.Module):
         )
         self.ln_pre = nn.LayerNorm(width)
 
-        self.transformer = ResidualTransformerEncoder(width, layers, heads)
+        self.transformer = ResidualTransformerEncoder(
+            width, layers, heads, backend="pytorch"
+        )
 
         self.ln_post = nn.LayerNorm(width)
         self.proj = nn.Parameter(scale * torch.randn(width, output_dim))

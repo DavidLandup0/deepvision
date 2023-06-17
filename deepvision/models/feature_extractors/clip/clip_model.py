@@ -78,6 +78,7 @@ class __CLIPPT(nn.Module):
             layers=transformer_layers,
             heads=transformer_heads,
             attn_mask=self.build_attention_mask(),
+            backend="pytorch",
         )
 
         self.vocab_size = vocab_size
