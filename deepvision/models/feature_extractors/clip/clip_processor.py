@@ -1,6 +1,7 @@
 from typing import List
 from typing import Union
 
+import tensorflow as tf
 import torch
 from PIL import Image
 from pkg_resources import packaging
@@ -9,14 +10,15 @@ from torchvision.transforms import Compose
 from torchvision.transforms import Normalize
 from torchvision.transforms import Resize
 from torchvision.transforms import ToTensor
-import tensorflow as tf
 
 from deepvision.models.feature_extractors.clip.clip_tokenizer import CLIPTokenizer
 
 BICUBIC = Image.BICUBIC
 
+
 def _convert_image_to_rgb(image):
     return image.convert("RGB")
+
 
 class __CLIPProcessorPT:
     def __init__(self, input_resolution):
@@ -38,7 +40,7 @@ class __CLIPProcessorPT:
     def process_images(self, images):
         if isinstance(images, str):
             images = [images]
-        
+
         processed_images = []
         for image in images:
             if isinstance(image, str):
@@ -47,7 +49,7 @@ class __CLIPProcessorPT:
                 processed_images.append(image)
         processed_images = torch.stack(processed_images)
         return processed_images
-    
+
     def process_texts(self, texts, context_length: int = 77, truncate: bool = False):
         if isinstance(texts, str):
             texts = [texts]
@@ -80,10 +82,10 @@ class __CLIPProcessorPT:
             images = images.to(device)
             texts = texts.to(device)
         return (images, texts)
-    
+
+
 class __CLIPProcessorTF:
     def __init__(self, input_resolution):
-
         self.input_resolution = input_resolution
         self.image_transform = self.transform_image
         self.tokenizer = CLIPTokenizer()
@@ -95,15 +97,24 @@ class __CLIPProcessorTF:
 
         image = tf.io.read_file(image_path)
         image = tf.image.decode_jpeg(image, channels=3)
-        image = tf.image.resize(image, (input_resolution, input_resolution), method=tf.image.ResizeMethod.BICUBIC) / 255.0
-        image = tf.image.central_crop(image, central_fraction=input_resolution / image.shape[0])
+        image = (
+            tf.image.resize(
+                image,
+                (input_resolution, input_resolution),
+                method=tf.image.ResizeMethod.BICUBIC,
+            )
+            / 255.0
+        )
+        image = tf.image.central_crop(
+            image, central_fraction=input_resolution / image.shape[0]
+        )
         image = (image - mean) / std
         return image
 
     def process_images(self, images):
         if isinstance(images, str):
             images = [images]
-        
+
         processed_images = []
         for image in images:
             if isinstance(image, str):
@@ -111,7 +122,7 @@ class __CLIPProcessorTF:
                 processed_images.append(image)
         processed_images = tf.stack(processed_images)
         return processed_images
-    
+
     def process_texts(self, texts, context_length: int = 77, truncate: bool = False):
         if isinstance(texts, str):
             texts = [texts]
@@ -139,8 +150,10 @@ class __CLIPProcessorTF:
 
     def process_pair(self, images, texts, device=None):
         if device:
-            raise ValueError("device argument is only supported for the PyTorch backend")
-        
+            raise ValueError(
+                "device argument is only supported for the PyTorch backend"
+            )
+
         images = self.process_images(images)
         texts = self.process_texts(texts)
         return (images, texts)

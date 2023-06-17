@@ -3,10 +3,10 @@ from typing import Tuple
 from typing import Union
 
 import numpy as np
+import tensorflow as tf
 import torch
 import torch.nn.functional as F
 from torch import nn
-import tensorflow as tf
 
 from deepvision.layers.residual_transformer_encoder import ResidualTransformerEncoder
 from deepvision.models.feature_extractors.clip.clip_image_encoder import (
@@ -27,7 +27,6 @@ MODEL_CONFIGS = {
         "image_resolution": 224,
         "vision_patch_size": 16,
     },
-
     "CLIP_B32": {
         "embed_dim": 512,
         "context_length": 77,
@@ -39,7 +38,7 @@ MODEL_CONFIGS = {
         "vision_width": 768,
         "image_resolution": 224,
         "vision_patch_size": 32,
-    }
+    },
 }
 
 
@@ -71,6 +70,7 @@ class __CLIPPT(nn.Module):
             layers=vision_layers,
             heads=vision_heads,
             output_dim=embed_dim,
+            backend='pytorch',
         )
 
         self.transformer = ResidualTransformerEncoder(
@@ -98,17 +98,19 @@ class __CLIPPT(nn.Module):
         mask.fill_(float("-inf"))
         mask.triu_(1)  # zero out the lower diagonal
         return mask
-    
+
     @property
     def dtype(self):
         return self.visual.conv1.weight.dtype
-    
+
     def initialize_parameters(self):
         nn.init.normal_(self.token_embedding.weight, std=0.02)
         nn.init.normal_(self.positional_embedding, std=0.01)
 
-        proj_std = (self.transformer.width ** -0.5) * ((2 * self.transformer.layers) ** -0.5)
-        attn_std = self.transformer.width ** -0.5
+        proj_std = (self.transformer.width**-0.5) * (
+            (2 * self.transformer.layers) ** -0.5
+        )
+        attn_std = self.transformer.width**-0.5
         fc_std = (2 * self.transformer.width) ** -0.5
         for block in self.transformer.resblocks:
             nn.init.normal_(block.attn.in_proj_weight, std=attn_std)
@@ -117,7 +119,7 @@ class __CLIPPT(nn.Module):
             nn.init.normal_(block.mlp.c_proj.weight, std=proj_std)
 
         if self.text_projection is not None:
-            nn.init.normal_(self.text_projection, std=self.transformer.width ** -0.5)
+            nn.init.normal_(self.text_projection, std=self.transformer.width**-0.5)
 
     def encode_images(self, image):
         return self.visual(image.type(self.dtype))
@@ -152,7 +154,8 @@ class __CLIPPT(nn.Module):
 
         # shape = [global_batch_size, global_batch_size]
         return logits_per_image, logits_per_text
-    
+
+
 """
 
 class __CLIPTF(nn.Module):
@@ -256,6 +259,7 @@ MODEL_BACKBONES = {
     "tensorflow": None,
     "pytorch": __CLIPPT,
 }
+
 
 def CLIP_B16(pretrained=True, backend=None):
     embed_dim = MODEL_CONFIGS["CLIP_B16"]["embed_dim"]
