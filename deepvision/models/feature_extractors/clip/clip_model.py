@@ -70,7 +70,7 @@ class __CLIPPT(nn.Module):
             layers=vision_layers,
             heads=vision_heads,
             output_dim=embed_dim,
-            backend='pytorch',
+            backend="pytorch",
         )
 
         self.transformer = ResidualTransformerEncoder(

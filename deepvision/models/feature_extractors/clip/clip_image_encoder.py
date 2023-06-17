@@ -168,8 +168,6 @@ def CLIPImageEncoder(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
 
-    model = model_class(
-        input_resolution, patch_size, width, layers, heads, output_dim
-    )
+    model = model_class(input_resolution, patch_size, width, layers, heads, output_dim)
 
     return model
