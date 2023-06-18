@@ -157,23 +157,19 @@ class __CLIPPT(nn.Module):
         return logits_per_image, logits_per_text
 
 
-"""
-
-class __CLIPTF(nn.Module):
+class __CLIPTF(tf.keras.Model):
     def __init__(
         self,
-        embed_dim: int,
-        # vision
-        image_resolution: int,
-        vision_layers: Union[Tuple[int, int, int, int], int],
-        vision_width: int,
-        vision_patch_size: int,
-        # text
-        context_length: int,
-        vocab_size: int,
-        transformer_width: int,
-        transformer_heads: int,
-        transformer_layers: int,
+        embed_dim,
+        image_resolution,
+        vision_layers,
+        vision_width,
+        vision_patch_size,
+        context_length,
+        vocab_size,
+        transformer_width,
+        transformer_heads,
+        transformer_layers,
     ):
         super().__init__()
 
@@ -187,7 +183,7 @@ class __CLIPTF(nn.Module):
             layers=vision_layers,
             heads=vision_heads,
             output_dim=embed_dim,
-            backend='tensorflow',
+            backend="tensorflow",
         )
 
         self.transformer = ResidualTransformerEncoder(
@@ -195,69 +191,57 @@ class __CLIPTF(nn.Module):
             layers=transformer_layers,
             heads=transformer_heads,
             attn_mask=self.build_attention_mask(),
-            backend='tensorflow'
+            backend="tensorflow",
         )
 
         self.vocab_size = vocab_size
         self.token_embedding = tf.keras.layers.Embedding(vocab_size, transformer_width)
-        self.positional_embedding = nn.Parameter(
-            torch.empty(self.context_length, transformer_width)
+        self.positional_embedding = self.add_weight(
+            shape=tf.random.normal((self.context_length, transformer_width), stddev=0.01).shape
         )
         self.ln_final = tf.keras.layers.LayerNormalization()
 
-        self.text_projection = tf.Variable(tf.empty([transformer_width, embed_dim]))
-        self.logit_scale = tf.Variable(tf.ones([]) * np.log(1 / 0.07))
+        self.text_projection = self.add_weight(shape=tf.random.normal(shape=(transformer_width, embed_dim)).shape)
+        self.logit_scale = tf.Variable(tf.ones([]) * tf.math.log(1 / 0.07))
 
     def build_attention_mask(self):
-        # Lazily create a causal attention mask, with full attention between the vision tokens.
-        # Pytorch uses an additive attention mask, so it's filled with `-inf`
-        mask = torch.empty(self.context_length, self.context_length)
-        mask.fill_(float("-inf"))
-        mask.triu_(1)  # zero out the lower diagonal
-        return mask
-    
-    @property
-    def dtype(self):
-        return self.visual.conv1.weight.dtype
+        mask = tf.ones((self.context_length, self.context_length)) * float("-inf")
+        mask = tf.linalg.band_part(mask, 0, -1)  # zero out the lower diagonal
+        mask = tf.where(tf.equal(mask, 0), mask, tf.fill(mask.shape, float("-inf")))
+        return tf.cast(mask, tf.float32)
 
     def encode_images(self, image):
-        return self.visual(image.type(self.dtype))
+        return self.visual(image)
 
     def encode_text(self, text):
-        x = self.token_embedding(text).type(self.dtype)  # [batch_size, n_ctx, d_model]
+        x = self.token_embedding(text)  # [batch_size, n_ctx, d_model]
 
-        x = x + self.positional_embedding.type(self.dtype)
-        x = x.permute(1, 0, 2)  # NLD -> LND
+        x = x + self.positional_embedding
+        x = tf.transpose(x, [1, 0, 2])  # NLD -> LND
         x = self.transformer(x)
-        x = x.permute(1, 0, 2)  # LND -> NLD
-        x = self.ln_final(x).type(self.dtype)
+        x = tf.transpose(x, [1, 0, 2])  # LND -> NLD
+        x = self.ln_final(x)
 
-        # x.shape = [batch_size, n_ctx, transformer.width]
-        # take features from the eot embedding (eot_token is the highest number in each sequence)
-        x = x[torch.arange(x.shape[0]), text.argmax(dim=-1)] @ self.text_projection
+        x = tf.einsum("bld,cd->blc", x, self.text_projection)
 
         return x
 
-    def forward(self, image, text):
+    def call(self, image, text):
         image_features = self.encode_images(image)
         text_features = self.encode_text(text)
 
-        # Normalize the features
-        image_features = image_features / image_features.norm(dim=1, keepdim=True)
-        text_features = text_features / text_features.norm(dim=1, keepdim=True)
+        image_features = image_features / tf.norm(image_features, axis=1, keepdims=True)
+        text_features = text_features / tf.norm(text_features, axis=1, keepdims=True)
 
-        # Compute cosine similarity, and return as logits
-        logit_scale = self.logit_scale.exp()
-        logits_per_image = logit_scale * image_features @ text_features.t()
-        logits_per_text = logits_per_image.t()
+        logit_scale = tf.exp(self.logit_scale)
+        logits_per_image = logit_scale * tf.matmul(image_features, text_features, transpose_b=True)
+        logits_per_text = tf.transpose(logits_per_image)
 
-        # shape = [global_batch_size, global_batch_size]
         return logits_per_image, logits_per_text
 
-"""
 
 MODEL_BACKBONES = {
-    "tensorflow": None,
+    "tensorflow": __CLIPTF,
     "pytorch": __CLIPPT,
 }
 

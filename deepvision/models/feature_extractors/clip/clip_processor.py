@@ -10,6 +10,7 @@ from torchvision.transforms import Compose
 from torchvision.transforms import Normalize
 from torchvision.transforms import Resize
 from torchvision.transforms import ToTensor
+import numpy as np
 
 from deepvision.models.feature_extractors.clip.clip_tokenizer import CLIPTokenizer
 
@@ -133,7 +134,7 @@ class __CLIPProcessorTF:
             [sot_token] + self.tokenizer.encode(text) + [eot_token] for text in texts
         ]
 
-        result = torch.zeros(len(all_tokens), context_length, dtype=torch.int)
+        result = np.zeros(shape=[len(all_tokens), context_length])
 
         for i, tokens in enumerate(all_tokens):
             if len(tokens) > context_length:
@@ -144,8 +145,9 @@ class __CLIPProcessorTF:
                     raise RuntimeError(
                         f"Input {texts[i]} is too long for context length {context_length}"
                     )
-            result[i, : len(tokens)] = torch.tensor(tokens)
-
+            result[i, : len(tokens)] = tokens
+        
+        result = tf.stack(result)
         return result
 
     def process_pair(self, images, texts, device=None):
