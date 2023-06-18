@@ -25,3 +25,6 @@ from deepvision.layers.twoway_attention_block import TwoWayAttentionBlock
 from deepvision.layers.twoway_transformer_decoder import TwoWayTransformerDecoder
 from deepvision.layers.window_partitioning import WindowPartitioning
 from deepvision.layers.window_unpartitioning import WindowUnpartitioning
+from deepvision.layers.residual_attention import ResidualAttention
+from deepvision.layers.residual_transformer_encoder import ResidualTransformerEncoder
+from deepvision.layers.clip_patching_and_embedding import CLIPPatchingAndEmbedding

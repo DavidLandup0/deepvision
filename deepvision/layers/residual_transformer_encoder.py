@@ -1,17 +1,17 @@
 import torch
-from torch import nn
+import tensorflow as tf
 
 from deepvision.layers.residual_attention import ResidualAttention
 
 
-class __ResidualTransformerEncoderPT(nn.Module):
+class __ResidualTransformerEncoderPT(torch.nn.Module):
     def __init__(
         self, width: int, layers: int, heads: int, attn_mask: torch.Tensor = None
     ):
         super().__init__()
         self.width = width
         self.layers = layers
-        self.resblocks = nn.Sequential(
+        self.resblocks = torch.nn.Sequential(
             *[
                 ResidualAttention(width, heads, attn_mask, backend="pytorch")
                 for _ in range(layers)
@@ -22,21 +22,21 @@ class __ResidualTransformerEncoderPT(nn.Module):
         return self.resblocks(x)
 
 
-class __ResidualTransformerEncoderTF(nn.Module):
+class __ResidualTransformerEncoderTF(tf.keras.layers.Layer):
     def __init__(
         self, width: int, layers: int, heads: int, attn_mask: torch.Tensor = None
     ):
         super().__init__()
         self.width = width
         self.layers = layers
-        self.resblocks = nn.Sequential(
-            *[
+        self.resblocks = tf.keras.Sequential(
+            [
                 ResidualAttention(width, heads, attn_mask, backend="tensorflow")
                 for _ in range(layers)
             ]
         )
 
-    def forward(self, x: torch.Tensor):
+    def call(self, x: torch.Tensor):
         return self.resblocks(x)
 
 
