@@ -1,3 +1,4 @@
+from deepvision.layers.clip_patching_and_embedding import CLIPPatchingAndEmbedding
 from deepvision.layers.downscaling_attention import DownscalingMultiheadAttention
 from deepvision.layers.efficient_attention import EfficientMultiheadAttention
 from deepvision.layers.fused_mbconv import FusedMBConv
@@ -19,12 +20,11 @@ from deepvision.layers.relative_positional_attention import (
 from deepvision.layers.relative_positional_transformer_encoder import (
     RelativePositionalTransformerEncoder,
 )
+from deepvision.layers.residual_attention import ResidualAttention
+from deepvision.layers.residual_transformer_encoder import ResidualTransformerEncoder
 from deepvision.layers.stochasticdepth import StochasticDepth
 from deepvision.layers.transformer_encoder import TransformerEncoder
 from deepvision.layers.twoway_attention_block import TwoWayAttentionBlock
 from deepvision.layers.twoway_transformer_decoder import TwoWayTransformerDecoder
 from deepvision.layers.window_partitioning import WindowPartitioning
 from deepvision.layers.window_unpartitioning import WindowUnpartitioning
-from deepvision.layers.residual_attention import ResidualAttention
-from deepvision.layers.residual_transformer_encoder import ResidualTransformerEncoder
-from deepvision.layers.clip_patching_and_embedding import CLIPPatchingAndEmbedding

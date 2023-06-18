@@ -102,7 +102,7 @@ class __CLIPPT(nn.Module):
 
     @property
     def dtype(self):
-        return self.visual.conv1.weight.dtype
+        return self.visual.patch_embed.conv1.weight.dtype
 
     def initialize_parameters(self):
         nn.init.normal_(self.token_embedding.weight, std=0.02)

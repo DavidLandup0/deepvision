@@ -5,7 +5,7 @@ import torch
 class __QuickGELUPT(torch.nn.Module):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        
+
     def forward(self, x: torch.Tensor):
         return x * torch.sigmoid(1.702 * x)
 
@@ -13,7 +13,7 @@ class __QuickGELUPT(torch.nn.Module):
 class __QuickGELUTF(tf.keras.layers.Layer):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        
+
     def call(self, x: tf.Tensor):
         return x * tf.math.sigmoid(1.702 * x)
 

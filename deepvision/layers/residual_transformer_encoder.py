@@ -1,5 +1,5 @@
-import torch
 import tensorflow as tf
+import torch
 
 from deepvision.layers.residual_attention import ResidualAttention
 
