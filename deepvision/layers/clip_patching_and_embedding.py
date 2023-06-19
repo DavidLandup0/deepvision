@@ -1,6 +1,7 @@
+import tensorflow as tf
 import torch
 import torch.nn as nn
-import tensorflow as tf
+
 
 class __CLIPPatchingAndEmbeddingPT(nn.Module):
     def __init__(self, width, patch_size, input_resolution):
@@ -14,7 +15,7 @@ class __CLIPPatchingAndEmbeddingPT(nn.Module):
             bias=False,
         )
 
-        scale = width ** -0.5
+        scale = width**-0.5
         self.class_embedding = nn.Parameter(scale * torch.randn(width))
         self.positional_embedding = nn.Parameter(
             scale * torch.randn((input_resolution // patch_size) ** 2 + 1, width)
@@ -35,9 +36,10 @@ class __CLIPPatchingAndEmbeddingPT(nn.Module):
             dim=1,
         )  # shape = [*, grid ** 2 + 1, width]
         x = x + self.positional_embedding.to(x.dtype)
-        
+
         return x
-    
+
+
 class __CLIPPatchingAndEmbeddingTF(tf.keras.layers.Layer):
     def __init__(self, width, patch_size, input_resolution):
         super().__init__()
@@ -49,44 +51,43 @@ class __CLIPPatchingAndEmbeddingTF(tf.keras.layers.Layer):
             use_bias=False,
         )
 
-        self.class_embedding = self.add_weight(shape=((width,))
-        )
+        self.class_embedding = self.add_weight(shape=((width,)))
 
-        self.positional_embedding = self.add_weight(shape=(((input_resolution // patch_size) ** 2 + 1, width)), trainable=True)
+        self.positional_embedding = self.add_weight(
+            shape=(((input_resolution // patch_size) ** 2 + 1, width)), trainable=True
+        )
 
     def call(self, x):
         x = self.conv1(x)  # shape = [*, grid, grid, width]
-        print(x.shape, self.conv1.filters)
         x = tf.transpose(x, perm=[0, 3, 1, 2])  # shape = [*, width, grid, grid]
         shape = tf.shape(x)
-        x = tf.reshape(x, [shape[0], shape[1], shape[2] * shape[3]])  # shape = [*, width, grid ** 2]
+        x = tf.reshape(
+            x, [shape[0], shape[1], shape[2] * shape[3]]
+        )  # shape = [*, width, grid ** 2]
         x = tf.transpose(x, perm=(0, 2, 1))  # shape = [*, grid ** 2, width]
 
-        
         class_embedding = self.class_embedding
 
         shape = tf.shape(x)
         class_embedding_expanded = tf.expand_dims(class_embedding, axis=0)
         class_embedding_expanded = tf.expand_dims(class_embedding_expanded, axis=1)
-        class_embedding_expanded = tf.tile(
-            class_embedding_expanded,
-            (shape[0], 1, 1)
-        )
-        x = tf.concat([class_embedding_expanded, x], axis=1)  # shape = [*, grid ** 2 + 1, width]
+        class_embedding_expanded = tf.tile(class_embedding_expanded, (shape[0], 1, 1))
+        x = tf.concat(
+            [class_embedding_expanded, x], axis=1
+        )  # shape = [*, grid ** 2 + 1, width]
         positional_embedding = self.positional_embedding
         x = x + positional_embedding
 
         return x
-    
+
+
 LAYER_BACKBONES = {
     "tensorflow": __CLIPPatchingAndEmbeddingTF,
     "pytorch": __CLIPPatchingAndEmbeddingPT,
 }
 
 
-def CLIPPatchingAndEmbedding(
-    width, patch_size, input_resolution, backend
-):
+def CLIPPatchingAndEmbedding(width, patch_size, input_resolution, backend):
     layer_class = LAYER_BACKBONES.get(backend)
     if layer_class is None:
         raise ValueError(
@@ -98,5 +99,3 @@ def CLIPPatchingAndEmbedding(
     )
 
     return layer
-    
-

@@ -1,6 +1,7 @@
 from typing import List
 from typing import Union
 
+import numpy as np
 import tensorflow as tf
 import torch
 from PIL import Image
@@ -10,7 +11,6 @@ from torchvision.transforms import Compose
 from torchvision.transforms import Normalize
 from torchvision.transforms import Resize
 from torchvision.transforms import ToTensor
-import numpy as np
 
 from deepvision.models.feature_extractors.clip.clip_tokenizer import CLIPTokenizer
 
@@ -146,7 +146,7 @@ class __CLIPProcessorTF:
                         f"Input {texts[i]} is too long for context length {context_length}"
                     )
             result[i, : len(tokens)] = tokens
-        
+
         result = tf.stack(result)
         return result
 

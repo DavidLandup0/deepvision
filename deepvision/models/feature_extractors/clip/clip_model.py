@@ -197,17 +197,19 @@ class __CLIPTF(tf.keras.Model):
         self.vocab_size = vocab_size
         self.token_embedding = tf.keras.layers.Embedding(vocab_size, transformer_width)
         self.positional_embedding = self.add_weight(
-            shape=tf.random.normal((self.context_length, transformer_width), stddev=0.01).shape
+            shape=[self.context_length, transformer_width], name='positional_embedding'
         )
         self.ln_final = tf.keras.layers.LayerNormalization()
 
-        self.text_projection = self.add_weight(shape=tf.random.normal(shape=(transformer_width, embed_dim)).shape)
+        self.text_projection = self.add_weight(
+            shape=(transformer_width, embed_dim), name='text_projection'
+        )
         self.logit_scale = tf.Variable(tf.ones([]) * tf.math.log(1 / 0.07))
 
     def build_attention_mask(self):
-        mask = tf.ones((self.context_length, self.context_length)) * float("-inf")
+        mask = tf.ones((self.context_length, self.context_length))  # * float("-inf")
         mask = tf.linalg.band_part(mask, 0, -1)  # zero out the lower diagonal
-        mask = tf.where(tf.equal(mask, 0), mask, tf.fill(mask.shape, float("-inf")))
+        # mask = tf.where(tf.equal(mask, 0), mask, tf.fill(mask.shape, float("-inf")))
         return tf.cast(mask, tf.float32)
 
     def encode_images(self, image):
@@ -215,26 +217,33 @@ class __CLIPTF(tf.keras.Model):
 
     def encode_text(self, text):
         x = self.token_embedding(text)  # [batch_size, n_ctx, d_model]
-
         x = x + self.positional_embedding
-        x = tf.transpose(x, [1, 0, 2])  # NLD -> LND
         x = self.transformer(x)
-        x = tf.transpose(x, [1, 0, 2])  # LND -> NLD
         x = self.ln_final(x)
 
-        x = tf.einsum("bld,cd->blc", x, self.text_projection)
+        batch_size = x.shape[0]
+        indices_stack = tf.stack(
+            [
+                tf.range(batch_size, dtype=tf.int32),
+                tf.cast(tf.argmax(text, axis=1), tf.int32),
+            ], axis=-1
+        )
+        selected_features = tf.gather_nd(x, indices_stack)
+        x = tf.matmul(selected_features, self.text_projection)
 
         return x
 
     def call(self, image, text):
         image_features = self.encode_images(image)
         text_features = self.encode_text(text)
-
+        
         image_features = image_features / tf.norm(image_features, axis=1, keepdims=True)
         text_features = text_features / tf.norm(text_features, axis=1, keepdims=True)
 
         logit_scale = tf.exp(self.logit_scale)
-        logits_per_image = logit_scale * tf.matmul(image_features, text_features, transpose_b=True)
+        logits_per_image = logit_scale * tf.matmul(
+            image_features, text_features, transpose_b=True
+        )
         logits_per_text = tf.transpose(logits_per_image)
 
         return logits_per_image, logits_per_text

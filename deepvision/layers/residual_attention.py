@@ -34,7 +34,6 @@ class __ResidualAttentionPT(nn.Module):
         return self.attn(x, x, x, need_weights=False, attn_mask=self.attn_mask)[0]
 
     def forward(self, x: torch.Tensor):
-        print(x.shape)
         x = x + self.attention(self.ln_1(x))
         x = x + self.mlp(self.ln_2(x))
         return x
@@ -64,10 +63,10 @@ class __ResidualAttentionTF(tf.keras.layers.Layer):
             if self.attn_mask is not None
             else None
         )
+
         return self.attn(x, x, attention_mask=self.attn_mask)
 
     def call(self, x):
-        print(x.shape)
         x = x + self.attention(self.ln_1(x))
         x = x + self.mlp(self.ln_2(x))
         return x
