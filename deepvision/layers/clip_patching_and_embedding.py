@@ -51,10 +51,10 @@ class __CLIPPatchingAndEmbeddingTF(tf.keras.layers.Layer):
             use_bias=False,
         )
 
-        self.class_embedding = self.add_weight(shape=((width,)))
+        self.class_embedding = self.add_weight(shape=((width,)), name='patch_embed.class_embedding', trainable=True)
 
         self.positional_embedding = self.add_weight(
-            shape=(((input_resolution // patch_size) ** 2 + 1, width)), trainable=True
+            shape=(((input_resolution // patch_size) ** 2 + 1, width)), trainable=True, name='patch_embed.positional_embedding'
         )
 
     def call(self, x):

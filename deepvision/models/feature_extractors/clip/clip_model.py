@@ -204,7 +204,7 @@ class __CLIPTF(tf.keras.Model):
         self.text_projection = self.add_weight(
             shape=(transformer_width, embed_dim), name='text_projection'
         )
-        self.logit_scale = tf.Variable(tf.ones([]) * tf.math.log(1 / 0.07))
+        self.logit_scale = tf.Variable(tf.ones([]) * tf.math.log(1 / 0.07), name='logit_scale')
 
     def build_attention_mask(self):
         mask = tf.ones((self.context_length, self.context_length))  # * float("-inf")
@@ -236,7 +236,7 @@ class __CLIPTF(tf.keras.Model):
     def call(self, image, text):
         image_features = self.encode_images(image)
         text_features = self.encode_text(text)
-        
+
         image_features = image_features / tf.norm(image_features, axis=1, keepdims=True)
         text_features = text_features / tf.norm(text_features, axis=1, keepdims=True)
 
