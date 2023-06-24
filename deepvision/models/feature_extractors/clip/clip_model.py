@@ -197,14 +197,16 @@ class __CLIPTF(tf.keras.Model):
         self.vocab_size = vocab_size
         self.token_embedding = tf.keras.layers.Embedding(vocab_size, transformer_width)
         self.positional_embedding = self.add_weight(
-            shape=[self.context_length, transformer_width], name='positional_embedding'
+            shape=[self.context_length, transformer_width], name="positional_embedding"
         )
         self.ln_final = tf.keras.layers.LayerNormalization()
 
         self.text_projection = self.add_weight(
-            shape=(transformer_width, embed_dim), name='text_projection'
+            shape=(transformer_width, embed_dim), name="text_projection"
         )
-        self.logit_scale = tf.Variable(tf.ones([]) * tf.math.log(1 / 0.07), name='logit_scale')
+        self.logit_scale = tf.Variable(
+            tf.ones([]) * tf.math.log(1 / 0.07), name="logit_scale"
+        )
 
     def build_attention_mask(self):
         mask = tf.ones((self.context_length, self.context_length))  # * float("-inf")
@@ -226,7 +228,8 @@ class __CLIPTF(tf.keras.Model):
             [
                 tf.range(batch_size, dtype=tf.int32),
                 tf.cast(tf.argmax(text, axis=1), tf.int32),
-            ], axis=-1
+            ],
+            axis=-1,
         )
         selected_features = tf.gather_nd(x, indices_stack)
         x = tf.matmul(selected_features, self.text_projection)

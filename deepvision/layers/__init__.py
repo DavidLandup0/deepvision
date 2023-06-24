@@ -9,6 +9,7 @@ from deepvision.layers.identity import Identity
 from deepvision.layers.layernorm2d import LayerNorm2d
 from deepvision.layers.mbconv import MBConv
 from deepvision.layers.mix_ffn import MixFFN
+from deepvision.layers.multiheadattention import MultiHeadAttention
 from deepvision.layers.overlapping_patching_and_embedding import (
     OverlappingPatchingAndEmbedding,
 )

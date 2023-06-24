@@ -311,8 +311,8 @@ def FusedMBConv(
 def tf_to_pt(layer, dummy_input=None):
     """
     Params:
-    layer: TensorFlow layer to convert weights from.
-    dummy_input: Dummy input, mimicking the expected input for the translated PyTorch layer.
+        layer: TensorFlow layer to convert weights from.
+        dummy_input: Dummy input, mimicking the expected input for the translated PyTorch layer.
 
     Returns:
         PyTorch MBConv block with weights transferred from the provided TensorFlow layer.
@@ -392,8 +392,8 @@ def tf_to_pt(layer, dummy_input=None):
 def pt_to_tf(layer, dummy_input=None):
     """
     Params:
-    layer: PyTorch layer to convert weights from.
-    dummy_input: Dummy input, mimicking the expected input for the translated TensorFlow layer.
+        layer: PyTorch layer to convert weights from.
+        dummy_input: Dummy input, mimicking the expected input for the translated TensorFlow layer.
 
     Returns:
         TensorFlow MBConv block with weights transferred from the provided PyTorch layer.
