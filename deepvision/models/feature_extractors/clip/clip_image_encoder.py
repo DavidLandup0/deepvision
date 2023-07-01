@@ -67,6 +67,7 @@ class __CLIPImageEncoderPT(nn.Module):
         layers: int,
         heads: int,
         output_dim: int,
+        mha,
     ):
         super().__init__()
         self.input_resolution = input_resolution
@@ -81,7 +82,7 @@ class __CLIPImageEncoderPT(nn.Module):
         self.ln_pre = nn.LayerNorm(width)
 
         self.transformer = ResidualTransformerEncoder(
-            width, layers, heads, backend="pytorch"
+            width, layers, heads, backend="pytorch", mha=mha
         )
 
         self.ln_post = nn.LayerNorm(width)
@@ -95,7 +96,6 @@ class __CLIPImageEncoderPT(nn.Module):
         x = x.permute(1, 0, 2)  # NLD -> LND
         x = self.transformer(x)
         x = x.permute(1, 0, 2)  # LND -> NLD
-
         x = self.ln_post(x[:, 0, :])
 
         x = self.proj(x)
@@ -110,7 +110,7 @@ MODEL_BACKBONES = {
 
 
 def CLIPImageEncoder(
-    input_resolution, patch_size, width, layers, heads, output_dim, backend
+    input_resolution, patch_size, width, layers, heads, output_dim, backend, mha
 ):
     model_class = MODEL_BACKBONES.get(backend)
     if model_class is None:
@@ -118,6 +118,6 @@ def CLIPImageEncoder(
             f"Backend not supported: {backend}. Supported backbones are {MODEL_BACKBONES.keys()}"
         )
 
-    model = model_class(input_resolution, patch_size, width, layers, heads, output_dim)
+    model = model_class(input_resolution, patch_size, width, layers, heads, output_dim, mha)
 
     return model

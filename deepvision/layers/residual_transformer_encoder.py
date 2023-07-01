@@ -6,14 +6,14 @@ from deepvision.layers.residual_attention import ResidualAttention
 
 class __ResidualTransformerEncoderPT(torch.nn.Module):
     def __init__(
-        self, width: int, layers: int, heads: int, attn_mask: torch.Tensor = None
+        self, width: int, layers: int, heads: int, attn_mask: torch.Tensor = None, mha='custom'
     ):
         super().__init__()
         self.width = width
         self.layers = layers
         self.resblocks = torch.nn.Sequential(
             *[
-                ResidualAttention(width, heads, attn_mask, backend="pytorch")
+                ResidualAttention(width, heads, attn_mask, backend="pytorch", mha=mha)
                 for _ in range(layers)
             ]
         )
@@ -52,13 +52,13 @@ def ResidualTransformerEncoder(
     heads,
     backend,
     attn_mask=None,
+    mha='custom',
 ):
     model_class = LAYER_BACKBONES.get(backend)
     if model_class is None:
         raise ValueError(
             f"Backend not supported: {backend}. Supported backbones are {LAYER_BACKBONES.keys()}"
         )
-
-    model = model_class(width, layers, heads, attn_mask)
+    model = model_class(width, layers, heads, attn_mask, mha)
 
     return model

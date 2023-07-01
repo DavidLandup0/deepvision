@@ -57,6 +57,7 @@ class __CLIPPT(nn.Module):
         transformer_width: int,
         transformer_heads: int,
         transformer_layers: int,
+        mha='custom',
     ):
         super().__init__()
 
@@ -71,6 +72,7 @@ class __CLIPPT(nn.Module):
             heads=vision_heads,
             output_dim=embed_dim,
             backend="pytorch",
+            mha=mha,
         )
 
         self.transformer = ResidualTransformerEncoder(
@@ -79,6 +81,7 @@ class __CLIPPT(nn.Module):
             heads=transformer_heads,
             attn_mask=self.build_attention_mask(),
             backend="pytorch",
+            mha=mha,
         )
 
         self.vocab_size = vocab_size
@@ -90,7 +93,7 @@ class __CLIPPT(nn.Module):
 
         self.text_projection = nn.Parameter(torch.empty(transformer_width, embed_dim))
         self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
-        self.initialize_parameters()
+        #self.initialize_parameters()
 
     def build_attention_mask(self):
         # Lazily create a causal attention mask, with full attention between the vision tokens.
@@ -104,6 +107,7 @@ class __CLIPPT(nn.Module):
     def dtype(self):
         return self.visual.patch_embed.conv1.weight.dtype
 
+    """    
     def initialize_parameters(self):
         nn.init.normal_(self.token_embedding.weight, std=0.02)
         nn.init.normal_(self.positional_embedding, std=0.01)
@@ -121,22 +125,30 @@ class __CLIPPT(nn.Module):
 
         if self.text_projection is not None:
             nn.init.normal_(self.text_projection, std=self.transformer.width**-0.5)
+            """
 
     def encode_images(self, image):
-        return self.visual(image.type(self.dtype))
+        x = self.visual(image.type(self.dtype))
+        print('VISUAL OUTPUT', x)
+        return x
 
     def encode_text(self, text):
         x = self.token_embedding(text).type(self.dtype)  # [batch_size, n_ctx, d_model]
+        print('TOKEN EMBEDDING', x)
 
         x = x + self.positional_embedding.type(self.dtype)
+        print('POSITIONAL EMBEDDING', x)
         x = x.permute(1, 0, 2)  # NLD -> LND
         x = self.transformer(x)
+        print('TRANSFORMER EMBEDDING', x)
         x = x.permute(1, 0, 2)  # LND -> NLD
         x = self.ln_final(x).type(self.dtype)
+        print('LN FINAL', x)
 
         # x.shape = [batch_size, n_ctx, transformer.width]
         # take features from the eot embedding (eot_token is the highest number in each sequence)
         x = x[torch.arange(x.shape[0]), text.argmax(dim=-1)] @ self.text_projection
+        print('ENCODE TEXT OUTPUT', x)
 
         return x
 
@@ -258,7 +270,7 @@ MODEL_BACKBONES = {
 }
 
 
-def CLIP_B16(pretrained=True, backend=None):
+def CLIP_B16(pretrained=True, backend=None, mha='custom'):
     embed_dim = MODEL_CONFIGS["CLIP_B16"]["embed_dim"]
     context_length = MODEL_CONFIGS["CLIP_B16"]["context_length"]
     vocab_size = MODEL_CONFIGS["CLIP_B16"]["vocab_size"]
@@ -287,6 +299,7 @@ def CLIP_B16(pretrained=True, backend=None):
         transformer_width,
         transformer_heads,
         transformer_layers,
+        mha,
     )
 
     # PyTorch only

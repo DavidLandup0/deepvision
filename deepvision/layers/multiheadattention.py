@@ -162,7 +162,7 @@ class __MultiheadAttentionPT(torch.nn.Module):
         causal_attention_mask=None,
         output_attentions=False,
     ):
-        batch_size, seq_len, project_dim = x.size()
+        seq_len, batch_size, project_dim = x.size()
 
         query_states = self.q_proj(x) * self.scale
         key_states = self._shape(self.k_proj(x), -1, batch_size)
@@ -244,6 +244,7 @@ class __MultiheadAttentionPT(torch.nn.Module):
         attn_output = attn_output.reshape(batch_size, seq_len, project_dim)
 
         attn_output = self.out_proj(attn_output)
+        attn_output = attn_output.permute(1, 0, 2)
 
         outputs = (attn_output, attn_weights) if output_attentions else attn_output
 
